@@ -1,0 +1,77 @@
+extends SceneTree
+
+func _initialize() -> void:
+	create_timer(15).timeout.connect(func(): quit(1))
+	_run.call_deferred()
+
+func check_tree_fade(forest: Node3D) -> void:
+	var tree: Dictionary = forest.trees[0]
+	var base: Vector2 = tree.position
+	var clear_camera := Vector3(base.x + 20, 3, base.y + 6)
+	var clear_character := Vector3(base.x + 20, 0, base.y)
+	forest.reveal_character(clear_camera, clear_character, 1.0)
+	assert(tree.canopy_alpha == 1 and tree.trunk_alpha == 1 and tree.node.visible)
+	var colors := Array(tree.node.mesh.surface_get_arrays(0)[Mesh.ARRAY_COLOR])
+	assert(colors.any(func(color): return color.a == 0))
+	assert(colors.any(func(color): return color.a == 1))
+	var canopy_camera := Vector3(base.x + 2, 3, base.y + 6)
+	var canopy_character := Vector3(base.x + 2, 0, base.y)
+	forest.reveal_character(canopy_camera, canopy_character, 0.1)
+	assert(tree.canopy_alpha > 0 and tree.canopy_alpha < 1 and tree.trunk_alpha == 1)
+	assert(tree.node.visible)
+	assert(is_equal_approx(tree.node.material_override.get_shader_parameter("canopy_alpha"), tree.canopy_alpha))
+	var fading_alpha: float = tree.canopy_alpha
+	forest.reveal_character(clear_camera, clear_character, 0.05)
+	assert(tree.canopy_alpha > fading_alpha and tree.canopy_alpha < 1)
+	forest.reveal_character(canopy_camera, canopy_character, 0.25)
+	assert(tree.canopy_alpha == 0 and tree.trunk_alpha == 1 and tree.node.visible)
+	var trunk_camera := Vector3(base.x, 3, base.y + 6)
+	var trunk_character := Vector3(base.x, 0, base.y)
+	forest.reveal_character(trunk_camera, trunk_character, 0.1)
+	assert(tree.trunk_alpha > 0 and tree.trunk_alpha < 1 and tree.node.visible)
+	forest.reveal_character(trunk_camera, trunk_character, 0.2)
+	assert(tree.trunk_alpha == 0 and not tree.node.visible)
+	forest.reveal_character(clear_camera, clear_character, 0.1)
+	assert(tree.canopy_alpha > 0 and tree.canopy_alpha < 1 and tree.node.visible)
+	forest.reveal_character(clear_camera, clear_character, 0.2)
+	assert(tree.canopy_alpha == 1 and tree.trunk_alpha == 1)
+	forest.reveal_character(trunk_character, trunk_character, 1.0)
+	assert(tree.canopy_alpha == 0 and tree.trunk_alpha == 0)
+	forest.reveal_character(clear_camera, clear_character, 1.0)
+
+func _run() -> void:
+	var game: Node3D = load("res://park.tscn").instantiate()
+	root.add_child(game)
+	game.set_process(false)
+	var forest: Node3D = game.forest
+	check_tree_fade(forest)
+	assert(forest.blocked(forest.POND))
+	assert(forest.blocked(Vector2(3.25, 0)))
+	for destination in [forest.point(-3.4, 2.8), forest.point(-2.2, -1.3), forest.point(2.1, -1.7), forest.point(2.3, 1.8), forest.point(-2.45, 1.0), forest.point(3.25, 0)]:
+		game._set_target(destination)
+		assert(not game.route.is_empty())
+		for step in range(300):
+			game._process(0.45 if step % 7 == 0 else 0.05)
+			assert(not forest.blocked(Vector2(game.dinosaur.position.x, game.dinosaur.position.z)))
+			assert(absf(game.dinosaur.position.y - forest.height_at(game.dinosaur.position.x, game.dinosaur.position.z)) < 0.001)
+		assert(game.dinosaur.position.distance_to(game.target) < 0.02)
+		assert(game.camera_focus.distance_to(game.dinosaur.position) < 0.03)
+		assert(game.camera.position.distance_to(game.dinosaur.position) < 7.1)
+		var screen: Vector2 = game.camera.unproject_position(game.dinosaur.position + Vector3.UP * 0.7)
+		var hit: Vector3 = forest.ground_hit(game.camera.project_ray_origin(screen), game.camera.project_ray_normal(screen))
+		assert(absf(hit.y - forest.height_at(hit.x, hit.z)) < 0.001)
+	game.restart()
+	var touch := InputEventScreenTouch.new()
+	touch.pressed = true
+	touch.position = game.camera.unproject_position(forest.point(1.0, 2.0))
+	game._unhandled_input(touch)
+	assert(game.target.distance_to(forest.point(1.0, 2.0)) < 0.01)
+	game.restart()
+	assert(game.route.is_empty())
+	assert(game.camera_focus.is_equal_approx(game.dinosaur.position))
+	root.size = Vector2i(390, 844)
+	game._fit_camera()
+	assert(game.camera.fov == 58)
+	game.queue_free()
+	print("Forest checks passed: lake, obstacles, routes, terrain, camera, picking, reset, portrait, gradual canopy/trunk fade, reversal and coincident view points.")
+	quit()

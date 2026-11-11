@@ -1,0 +1,28 @@
+{
+  "endpoint_id": "tripo3d/h3.1/text-to-3d",
+  "request_id": "01a1ca61-a10e-7b53-9356-7d9c929a1002",
+  "input": {
+    "prompt": "One friendly baby velociraptor, premium textured cartoon 3D game character for children age 3-5. Turquoise teal skin with softly painted darker teal freckles and rounded spots along the back, pale warm cream muzzle, throat and belly, subtle fine matte pebbled skin texture. Big expressive warm eyes with white sclera, dark pupils and catchlights, friendly closed smile. Slender elongated snout, slim rounded torso, longer separated arms with three small fingers, two biped legs, broad three-toed feet, long tapering tail held behind. Recognizable velociraptor silhouette with rounded harmless small claws. Organic sculpted anatomy like a high-quality animated preschool triceratops, continuous sculpted mesh with UV painted texture, not assembled geometric spheres. Neutral standing bind pose, feet flat and separated shoulder width, arms held away from torso, tail off ground, full body unobstructed. Face forward, symmetrical pose. No base or props.",
+    "negative_prompt": "scary, aggressive, exposed teeth, extra limbs, fused legs, feet touching, arms touching torso, pedestal, props, clothing, untextured, disconnected parts",
+    "face_limit": 12000,
+    "texture": true,
+    "pbr": false,
+    "texture_quality": "detailed",
+    "geometry_quality": "standard",
+    "quad": false,
+    "model_seed": 58231,
+    "image_seed": 58231,
+    "texture_seed": 58231
+  },
+  "model_url": "https://v3b.fal.media/files/b/0ab20848/wKow80TNnR9ENHR7zKE7k_model.glb",
+  "preview_url": "https://v3b.fal.media/files/b/0ab20848/nRpp8eyIkvJqwbjRlNsTk_preview.png",
+  "source_file": "art/fal/raptor-source.glb",
+  "rigged_file": "prototypes/godot-project/assets/raptor.glb",
+  "rig_builder": "scripts/rig_bipeds.py",
+  "rejected_attempt": {
+    "request_id": "01a1ca60-ddcd-7850-aaf5-d370fc6c14b5",
+    "reason": "Provider rejected negative_prompt longer than 255 characters; no model produced."
+  },
+  "triangles": 11622,
+  "vertices": 7050
+}

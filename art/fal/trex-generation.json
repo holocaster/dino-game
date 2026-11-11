@@ -1,0 +1,28 @@
+{
+  "endpoint_id": "tripo3d/h3.1/text-to-3d",
+  "request_id": "01a1ca61-a074-7891-a8b4-6670cd9f2904",
+  "input": {
+    "prompt": "One friendly baby Tyrannosaurus rex, premium textured cartoon 3D game character for children age 3-5. Purple lavender skin with softly painted darker violet freckles and rounded patches, pale warm cream muzzle, throat and belly, subtle fine matte pebbled skin texture. Big expressive warm eyes with white sclera, dark pupils and catchlights, friendly closed smile, plump rounded head and broad short snout, two tiny separated arms, two sturdy biped legs, broad three-toed feet, long tapering tail. Rounded organic sculpted anatomy like a high-quality animated preschool triceratops, coherent continuous sculpted mesh with UV painted texture, not assembled geometric spheres. Neutral standing bind pose, feet flat and clearly separated shoulder width, arms held away from body, tail straight behind and off ground, full body unobstructed. Balanced low center of gravity, no base, no props. Face forward, symmetrical pose.",
+    "negative_prompt": "scary, aggressive, exposed teeth, extra limbs, fused legs, feet touching, arms touching torso, pedestal, props, clothing, untextured, disconnected parts",
+    "face_limit": 12000,
+    "texture": true,
+    "pbr": false,
+    "texture_quality": "detailed",
+    "geometry_quality": "standard",
+    "quad": false,
+    "model_seed": 58230,
+    "image_seed": 58230,
+    "texture_seed": 58230
+  },
+  "model_url": "https://v3b.fal.media/files/b/0ab2084c/vAmDTFv6ZlZKn8OB1dMZS_model.glb",
+  "preview_url": "https://v3b.fal.media/files/b/0ab2084c/iBLyGwrX8QhJwJWRoKAYM_preview.png",
+  "source_file": "art/fal/trex-source.glb",
+  "rigged_file": "prototypes/godot-project/assets/trex.glb",
+  "rig_builder": "scripts/rig_bipeds.py",
+  "rejected_attempt": {
+    "request_id": "01a1ca60-de3e-7b92-bca1-36de2851e2df",
+    "reason": "Provider rejected negative_prompt longer than 255 characters; no model produced."
+  },
+  "triangles": 11404,
+  "vertices": 7031
+}

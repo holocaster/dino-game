@@ -1,0 +1,22 @@
+id,title,url,source_type,publication_context,accessed,credibility,recency,bias,file
+01,Crafting A Tiny Open World: A Short Hike Postmortem,https://www.gdcvault.com/play/1026613/,indústria; relato original,2020,2026-11-07,alta,histórica,médio,sources/01_gdc_tiny_open_world.md
+02,Alba: A Wildlife Adventure,https://ustwogames.co.uk/our-games/alba-a-wildlife-adventure/,primária comercial,sem data,2026-11-07,alta para funções,sem data editorial,alto,sources/02_alba_original.md
+03,Gigantosaurus: Dino Kart — ESRB,https://www.esrb.org/ratings/38758/gigantosaurus-dino-kart/,primária institucional; classificação,sem data,2026-11-07,alta,registro atual,baixo,sources/03_esrb_dino_kart.md
+04,Gigantosaurus: Dino Kart — editora,https://outrightgames.com/game/gigantosaurus-dino-kart/,primária comercial,produto 2023; página sem data,2026-11-07,alta para funções,sem data editorial,alto,sources/04_outright_dino_kart.md
+05,Technology and Interactive Media as Tools in Early Childhood Programs,https://www.naeyc.org/files/naeyc/file/positions/ps_technology_web2.pdf,primária institucional; posição profissional,2012,2026-11-07,alta para posição,baixa para tecnologia,médio,sources/05_naeyc_tecnologia_infancia.md
+10,What is Phaser?,https://phaser.io/oss/docs/phaser/getting-started/what-is-phaser,primária técnica,documentação Phaser 4,2026-11-07,alta,alta na consulta,alto,sources/10_phaser_escopo_web.md
+11,Exporting for the Web — Godot,https://docs.godotengine.org/en/stable/tutorials/export/exporting_for_web.html,primária técnica,stable Godot 4; mutável,2026-11-07,alta,alta na consulta,médio,sources/11_godot_web.md
+12,Web browser compatibility — Unity 6.6,https://docs.unity.com/en-us/engine/6000.6/manual/platform-specific/webgl/intro/browsercompatibility,primária técnica,Unity 6.6; atualizada em 2026,2026-11-07,alta,alta,médio,sources/12_unity_web_mobile.md
+13,Babylon.js Specifications,https://www.babylonjs.com/specifications/,primária técnica; catálogo,documento vivo,2026-11-07,alta para recursos,alta na consulta,alto,sources/13_babylon_web_3d.md
+14,Phaser LICENSE.md,https://github.com/phaserjs/phaser/blob/master/LICENSE.md,primária documental; licença,master consultada em 2026,2026-11-07,alta,alta,baixo,sources/14_phaser_licenca.md
+15,Godot License,https://godotengine.org/license/,primária documental; licença,página viva,2026-11-07,alta,alta na consulta,baixo/médio,sources/15_godot_licenca.md
+16,Unity Personal,https://unity.com/products/unity-personal,primária comercial; plano,oferta consultada em 2026,2026-11-07,alta para oferta atual,alta,alto,sources/16_unity_personal.md
+17,GDevelop,https://gdevelop.io/,primária comercial; capacidades,página viva,2026-11-07,alta para funções,alta na consulta,alto,sources/17_gdevelop_visual.md
+18,Isometric Map Depth Sorting,https://phaser.io/oss/examples/v4.1.0/depth%20sorting/view/isometric-map,primária técnica; exemplo,Phaser 4.1.0,2026-11-07,alta,alta,médio,sources/18_phaser_isometrico.md
+19,Godot: 2D in 3D,https://docs.godotengine.org/en/stable/tutorials/3d/introduction_to_3d.html,primária técnica,stable Godot 4; mutável,2026-11-07,alta,alta na consulta,médio,sources/19_godot_2d_em_3d.md
+30,Designing Touch Tablet Experiences for Preschoolers,https://joanganzcooneycenter.org/wp-content/uploads/2020/02/SesameWorkshop-2012.pdf,indústria; guia original de pesquisa formativa,2012,2026-11-07,4/5,2/5,2/5,sources/30_sesame_preschool.md
+31,Touchscreen Prompts for Preschoolers,https://faculty.washington.edu/alexisr/TouchscreenPrompts.pdf,acadêmica; estudo original,2015,2026-11-07,4/5,2/5,2/5,sources/31_hiniker_prompts.md
+32,Multi-touch gestures for pre-kindergarten children,https://riunet.upv.es/server/api/core/bitstreams/8120338f-4c08-476b-9307-8ed8598d8619/content,acadêmica; estudo original,2015,2026-11-07,4/5,2/5,2/5,sources/32_nacher_gestos_contraponto.md
+33,Responsible Innovation in Technology for Children,https://www.unicef.org/innocenti/projects/responsible-innovation-technology-children,primária institucional; programa de pesquisa,fase 2 em 2024,2026-11-07,4/5,4/5,3/5,sources/33_unicef_ritec.md
+34,Sago Mini Dinosaurs,https://sagomini.com/apps/dinosaurs/,primária comercial; exemplo,sem data visível,2026-11-07,3/5,3/5,5/5,sources/34_sago_dinosaurs.md
+35,Ability of children to perform touchscreen gestures and follow prompting techniques,https://pmc.ncbi.nlm.nih.gov/articles/PMC7303424/,acadêmica; estudo original,2020,2026-11-07,3/5,3/5,2/5,sources/35_yadav_diferencas.md

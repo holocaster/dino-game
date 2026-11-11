@@ -1,0 +1,311 @@
+import { ParkAudio } from './audio.mjs?v=0.17.0';
+import { STICKERS, COLORS, award, unlocked, prizeText, loadRewards, saveRewards } from './rewards.mjs?v=0.20.0';
+
+const frame = document.querySelector('#game');
+const welcome = document.querySelector('#welcome');
+const play = document.querySelector('#play');
+const restart = document.querySelector('#restart');
+const pause = document.querySelector('#pause');
+const message = document.querySelector('#message');
+const soundButton = document.querySelector('#sound');
+const panel = document.querySelector('#race-panel');
+const panelAction = document.querySelector('#panel-action');
+const countdown = document.querySelector('#countdown');
+const controls = [...document.querySelectorAll('[data-direction]')];
+const choices = [...document.querySelectorAll('.choices')];
+let sound = null;
+let muted = false;
+let environment = { lake: 0, grove: 0 };
+let started = false;
+let state = null;
+let storage = null;
+try { storage = window.localStorage; } catch {}
+const rewards = loadRewards(storage);
+let prize = '';
+
+function renderRewards() {
+  document.querySelector('#sticker-count').textContent = `${rewards.stickers.length}/${STICKERS.length}`;
+  const list = document.querySelector('#sticker-list');
+  list.replaceChildren(...STICKERS.map(sticker => {
+    const item = document.createElement('li');
+    const owned = rewards.stickers.includes(sticker.id);
+    item.className = owned ? 'owned' : '';
+    item.textContent = owned ? sticker.name : sticker.hint;
+    item.setAttribute('aria-label', owned ? `Adesivo ${sticker.name}` : `Adesivo por ganhar: ${sticker.hint}`);
+    return item;
+  }));
+  const colors = document.querySelector('#color-choices');
+  for (const label of colors.querySelectorAll('label')) label.remove();
+  for (const color of COLORS) {
+    const label = document.createElement('label');
+    label.className = 'choice';
+    const input = document.createElement('input');
+    Object.assign(input, { type: 'radio', name: 'color', value: color.id, checked: color.id === rewards.color, disabled: !unlocked(color, rewards.stickers) });
+    input.addEventListener('change', () => {
+      rewards.color = color.id;
+      saveRewards(storage, rewards);
+      command(`color:${color.id}`);
+    });
+    const swatch = document.createElement('span');
+    swatch.className = 'swatch';
+    swatch.style.background = color.swatch;
+    const name = document.createElement('strong');
+    name.textContent = color.name;
+    const hint = document.createElement('span');
+    hint.textContent = input.disabled ? `Junte ${color.needs} adesivos` : 'Liberada';
+    label.append(input, swatch, name, hint);
+    colors.append(label);
+  }
+}
+renderRewards();
+
+function command(value) {
+  if (typeof frame.contentWindow?.parkCommand === 'function') frame.contentWindow.parkCommand(value);
+}
+
+function updateSoundButton() {
+  soundButton.setAttribute('aria-pressed', String(muted));
+  soundButton.setAttribute('aria-label', muted ? 'Ativar som' : 'Silenciar som');
+  soundButton.title = muted ? 'Som desligado' : 'Som ligado';
+  soundButton.querySelector('use').setAttribute('href', muted ? '#sound-off' : '#sound-on');
+}
+
+function audioFailed() {
+  muted = true;
+  sound?.setMuted(true);
+  updateSoundButton();
+  soundButton.title = 'Toque para tentar ativar o som';
+}
+
+function resumeAudio() {
+  try {
+    sound ??= new ParkAudio(new AudioContext());
+    sound.setMuted(muted);
+    sound.setPaused(Boolean(state?.paused));
+    sound.environment(environment);
+    sound.context.resume().catch(audioFailed);
+  } catch {
+    audioFailed();
+  }
+}
+
+function releaseDirections() {
+  for (const button of controls) button.classList.remove('held');
+  command('release');
+}
+
+function steer(direction, pressed) {
+  if (!started) return;
+  command(`${direction}-${pressed ? 'down' : 'up'}`);
+  controls.find(button => button.dataset.direction === direction)?.classList.toggle('held', pressed);
+}
+
+function pauseRace() {
+  if (!started) return;
+  releaseDirections();
+  command('pause');
+}
+
+function restartRace() {
+  releaseDirections();
+  sound?.reset();
+  command('restart');
+  resumeAudio();
+  frame.focus();
+}
+
+function renderRace(data) {
+  const previous = state;
+  state = data;
+  if (!started) return;
+  document.querySelector('#race-hud').hidden = false;
+  document.querySelector('#player-progress').value = data.progress;
+  document.querySelector('#friend-progress').value = data.rivalProgress;
+  document.querySelector('#friend-lap').hidden = data.rival === 'none';
+  document.querySelector('#fruit-count').textContent = data.fruit;
+  document.querySelector('#speed').textContent = data.recoveryBoostLeft > 0 ? 'Impulso dourado!' : `Ritmo +${Math.max(0, Math.round((data.speed / data.baseSpeed - 1) * 100))}%`;
+  countdown.hidden = data.stage !== 'countdown' || data.paused;
+  countdown.textContent = data.countdown;
+  pause.disabled = data.stage === 'finished';
+  pause.setAttribute('aria-label', data.paused ? 'Continuar corrida' : 'Pausar corrida');
+  pause.querySelector('use').setAttribute('href', data.paused ? '#play-icon' : '#pause-icon');
+  const finished = data.stage === 'finished';
+  if (finished && previous && previous.stage !== 'finished') {
+    const earned = award(rewards.stickers, data);
+    prize = prizeText(rewards.stickers, earned);
+    rewards.stickers = STICKERS.map(s => s.id).filter(id => rewards.stickers.includes(id) || earned.includes(id));
+    saveRewards(storage, rewards);
+    renderRewards();
+  }
+  const solo = data.rival === 'none';
+  panel.hidden = !data.paused && !finished;
+  if (!panel.hidden) {
+    document.querySelector('#panel-title').textContent = finished
+      ? (solo ? 'Volta tranquila completa!' : data.winner === 'player' ? 'Você chegou primeiro!' : data.winner === 'both' ? 'Chegaram juntinhos!' : 'Seu amigo chegou primeiro!')
+      : 'Uma pequena pausa';
+    document.querySelector('#panel-message').textContent = finished
+      ? [solo ? `Você pegou ${data.fruit} frutinhas.` : 'Que corrida gostosa!', prize, 'Vamos brincar de novo?'].filter(Boolean).join(' ')
+      : 'Seus dinos esperam por você.';
+    panelAction.textContent = finished ? 'Correr de novo' : 'Continuar';
+    if (previous && !previous.paused && previous.stage !== 'finished') {
+      releaseDirections();
+      panelAction.focus();
+    }
+  }
+  for (const button of controls) button.disabled = data.paused || data.stage !== 'racing';
+  sound?.setPaused(data.paused);
+  if (!previous || previous.stage !== data.stage || previous.paused !== data.paused || previous.countdown !== data.countdown || previous.fruit !== data.fruit || previous.recoveryTarget !== data.recoveryTarget || (previous.recoveryBoostLeft > 0) !== (data.recoveryBoostLeft > 0) || (previous.rivalRecoveryBoostLeft > 0) !== (data.rivalRecoveryBoostLeft > 0) || previous.rivalDistracted !== data.rivalDistracted) {
+    message.textContent = data.paused ? 'Corrida pausada.'
+      : data.stage === 'countdown' ? `Prepare-se... ${data.countdown}!`
+      : finished ? (solo ? 'Uma volta completa! Que passeio gostoso.' : 'Uma volta completa! Os dois dinos merecem comemorar.')
+      : data.rivalDistracted ? 'Seu amigo parou para olhar um passarinho!'
+      : data.recoveryBoostLeft > 0 ? 'Impulso dourado! Vamos alcançar o amigo!'
+      : data.rivalRecoveryBoostLeft > 0 ? 'Seu amigo ganhou um impulso dourado!'
+      : data.recoveryTarget === 'player' ? 'Uma fruta dourada para você alcançar o amigo!'
+      : data.recoveryTarget === 'friend' ? 'Uma fruta dourada para seu amigo alcançar você!'
+      : data.fruit > (previous?.fruit ?? 0) ? 'Uma frutinha! Seu dino ficou mais rápido.'
+      : 'Vamos! Pegue as frutinhas pelo caminho.';
+  }
+}
+
+play.addEventListener('click', () => {
+  started = true;
+  welcome.hidden = true;
+  restart.disabled = false;
+  pause.disabled = false;
+  frame.tabIndex = 0;
+  resumeAudio();
+  command('start');
+  frame.focus();
+});
+
+for (const input of document.querySelectorAll('[name="dino"], [name="track"], [name="rival"]')) {
+  input.addEventListener('change', () => {
+    const dino = document.querySelector('[name="dino"]:checked').value;
+    const track = document.querySelector('[name="track"]:checked').value;
+    const rival = document.querySelector('[name="rival"]:checked').value;
+    play.disabled = true;
+    for (const group of choices) group.disabled = true;
+    play.querySelector('span').textContent = 'Preparando a pista...';
+    document.querySelector('#load-status').textContent = 'Seu dino já está chegando.';
+    command(`select:${dino}:${track}:${rival}`);
+  });
+}
+
+document.querySelector('#choose-again').addEventListener('click', () => {
+  releaseDirections();
+  sound?.reset();
+  sound?.setPaused(true);
+  started = false;
+  command('menu');
+  panel.hidden = true;
+  welcome.hidden = false;
+  countdown.hidden = true;
+  document.querySelector('#race-hud').hidden = true;
+  restart.disabled = true;
+  pause.disabled = true;
+  for (const button of controls) button.disabled = true;
+  message.textContent = 'Escolha seu dino e uma nova pista.';
+  document.querySelector('[name="dino"]:checked').focus();
+});
+
+restart.addEventListener('click', restartRace);
+pause.addEventListener('click', () => {
+  if (state?.paused) {
+    command('resume');
+    resumeAudio();
+    frame.focus();
+  } else pauseRace();
+});
+panelAction.addEventListener('click', () => {
+  if (state?.stage === 'finished') restartRace();
+  else {
+    command('resume');
+    resumeAudio();
+    frame.focus();
+  }
+});
+
+soundButton.addEventListener('click', () => {
+  muted = !muted;
+  sound?.setMuted(muted);
+  updateSoundButton();
+  if (started && !muted) resumeAudio();
+});
+
+for (const button of controls) {
+  button.addEventListener('pointerdown', event => {
+    if (button.disabled) return;
+    event.preventDefault();
+    button.setPointerCapture(event.pointerId);
+    steer(button.dataset.direction, true);
+  });
+  for (const type of ['pointerup', 'pointercancel', 'lostpointercapture']) {
+    button.addEventListener(type, () => steer(button.dataset.direction, false));
+  }
+  button.addEventListener('keydown', event => {
+    if (event.key === ' ' || event.key === 'Enter') {
+      event.preventDefault();
+      steer(button.dataset.direction, true);
+    }
+  });
+  button.addEventListener('keyup', event => {
+    if (event.key === ' ' || event.key === 'Enter') {
+      event.preventDefault();
+      steer(button.dataset.direction, false);
+    }
+  });
+  button.addEventListener('blur', () => steer(button.dataset.direction, false));
+}
+
+for (const type of ['keydown', 'keyup']) {
+  window.addEventListener(type, event => {
+    if (!started) return;
+    if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+      event.preventDefault();
+      steer(event.key === 'ArrowLeft' ? 'left' : 'right', type === 'keydown');
+    } else if (event.key === 'Escape' && type === 'keydown' && !event.repeat) {
+      if (state?.paused) command('resume');
+      else pauseRace();
+    }
+  });
+}
+
+window.addEventListener('blur', () => {
+  releaseDirections();
+  setTimeout(() => { if (!document.hasFocus()) pauseRace(); }, 0);
+});
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    pauseRace();
+    sound?.context.suspend().catch(audioFailed);
+  }
+});
+
+window.addEventListener('message', event => {
+  if (event.source !== frame.contentWindow || event.origin !== location.origin) return;
+  const data = event.data;
+  if (data?.type === 'park-ambience') {
+    environment = { lake: data.lake, grove: data.grove };
+    sound?.environment(environment);
+  }
+  if (data?.type === 'park-sound' && started && typeof data.name === 'string') sound?.play(data.name);
+  if (data?.type === 'park-ready') {
+    command(`color:${rewards.color}`);
+    play.disabled = false;
+    for (const group of choices) group.disabled = false;
+    play.querySelector('span').textContent = 'Vamos correr';
+    document.querySelector('#load-status').textContent = 'Toque ou clique para começar.';
+  }
+  if (data?.type === 'park-error') {
+    document.querySelector('#load-status').textContent = 'Não foi possível abrir a corrida. Tente um navegador com WebGL 2.';
+    play.disabled = true;
+  }
+  if (data?.type === 'park-blur') {
+    if (!document.hasFocus()) pauseRace();
+  }
+  if (data?.type === 'park-race' && ['ready', 'countdown', 'racing', 'finished'].includes(data.stage)
+      && [data.progress, data.rivalProgress, data.speed, data.baseSpeed, data.fruit, data.countdown, data.recoveryBoostLeft, data.rivalRecoveryBoostLeft, data.golden].every(Number.isFinite)
+      && typeof data.rival === 'string' && typeof data.track === 'string' && typeof data.winner === 'string'
+      && data.baseSpeed > 0) renderRace(data);
+});

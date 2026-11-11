@@ -1,0 +1,9 @@
+# Tricerátopo em pose neutra
+
+Preparado em 2026-11-10 com ImageGen integrado, usando [o conceito aprovado](cartoon-park-v1.png) como referência de identidade. [Imagem resultante](triceratops-bind-pose.png). Não substitui a aprovação do conceito nem é uma captura do jogo.
+
+## Prompt enviado
+
+Use case: identity-preserve. Asset type: reference image for generating a riggable quadruped 3D game model. Use the attached image as the character identity and style reference. Produce a single isolated full-body render of exactly the same friendly young orange triceratops, on a fully transparent background. Preserve orange hide, yellow oval patches on back and scalloped frill, cream lower muzzle and belly, huge expressive brown eyes, happy small closed smile, the THREE SHORT rounded cream horns (two brow, one nose), rounded plump body, sturdy legs, thick tapering tail. Essential pose change: symmetrical neutral standing QUADRUPED pose with ALL FOUR FEET on the same ground level. Horizontal spine, body supported by four legs like a small rhinoceros. No raised feet and no arms. Camera: front three-quarter view from its left side, enough side visibility to show the tail and all four legs distinctly. Legs must be separated from each other by clear negative space. The near and far legs have slight lateral spacing for visibility but are symmetrical along the body. Centered full animal including every foot, frill and whole tail; 10% margin. Clean softly lit polished cartoon 3D render. No scenery, ground, pedestal, shadow plane, text, grid, panels, additional character, or props. This image will guide image-to-3D, so keep a clear readable silhouette and a neutral bind pose rather than a walking or biped pose.
+
+Parâmetro: `transparent_background=true`. Referência local: `art/concepts/cartoon-park-v1.png`.

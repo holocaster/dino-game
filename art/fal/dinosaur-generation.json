@@ -1,0 +1,17 @@
+{
+  "endpoint_id": "tripo3d/h3.1/text-to-3d",
+  "request_id": "01a1c26b-5555-77a1-9f38-dad9ee02bc24",
+  "input": {
+    "prompt": "One original friendly long-neck sauropod dinosaur character for a gentle exploration game for children aged 3 to 5. Four short sturdy legs, rounded toy-like shapes, a clearly recognizable long neck, soft sage-green body, pale cream belly, small warm dark eyes, tiny relaxed smile. Single complete animal standing in a neutral pose, feet flat on the ground, balanced tail, simple readable silhouette. Stylized low-poly 3D game asset with matte pastel materials. Character only, centered, no base, no environment. Gentle and welcoming.",
+    "negative_prompt": "scary, aggressive, sharp teeth, open mouth, claws, violence, weapons, injuries, photorealism, realistic skin, pedestal, ground plane, landscape, text, logo, multiple animals, extra legs",
+    "face_limit": 8000,
+    "texture": true,
+    "pbr": false,
+    "texture_quality": "standard",
+    "geometry_quality": "standard",
+    "quad": false
+  },
+  "model_url": "https://v3b.fal.media/files/b/0ab1d416/JlB73QliwjIuEyG4MqDsW_model.glb",
+  "preview_url": "https://v3b.fal.media/files/b/0ab1d417/XyoGuhvkHCkyMJUJNbIZd_preview.png",
+  "local_file": "prototypes/godot-project/assets/dinosaur.glb"
+}

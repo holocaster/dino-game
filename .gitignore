@@ -1,0 +1,6 @@
+.playwright-mcp/
+prototypes/godot-project/.godot/
+.env
+.env.*
+!.env.example
+node_modules/

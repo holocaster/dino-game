@@ -1,0 +1,57 @@
+{
+  "bounds": 26.0,
+  "start": [
+    0,
+    2.8
+  ],
+  "discoveries": [
+    {
+      "id": "flowers",
+      "position": [
+        -5.05,
+        0.7
+      ],
+      "message": "As flores abriram para você!"
+    },
+    {
+      "id": "tracks",
+      "position": [
+        1.0,
+        -6.3
+      ],
+      "message": "Olha as pegadas! Um amigo passou por aqui."
+    },
+    {
+      "id": "fruit",
+      "position": [
+        2.3,
+        1.8
+      ],
+      "message": "Oba! Seu amigo comeu a frutinha e ficou feliz!"
+    },
+    {
+      "id": "mushrooms",
+      "position": [
+        -11,
+        -8
+      ],
+      "message": "Olha os cogumelos! Um vale cheio de cores."
+    },
+    {
+      "id": "butterflies",
+      "position": [
+        6,
+        -12
+      ],
+      "message": "As borboletas vieram passear com você!"
+    },
+    {
+      "id": "lookout",
+      "position": [
+        0,
+        -20
+      ],
+      "message": "Chegamos ao mirante! Olha as montanhas lá longe."
+    }
+  ]
+}
