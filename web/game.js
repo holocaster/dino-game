@@ -1,5 +1,5 @@
-import { ParkAudio } from './audio.mjs?v=0.25.0';
-import { STICKERS, COLORS, award, unlocked, prizeText, loadRewards, saveRewards } from './rewards.mjs?v=0.25.0';
+import { ParkAudio } from './audio.mjs?v=0.26.0';
+import { STICKERS, COLORS, award, unlocked, prizeText, loadRewards, saveRewards } from './rewards.mjs?v=0.26.0';
 
 const frame = document.querySelector('#game');
 const welcome = document.querySelector('#welcome');
@@ -14,8 +14,8 @@ const countdown = document.querySelector('#countdown');
 const park = document.querySelector('.park');
 const streakBadge = document.querySelector('#streak');
 const lapCount = document.querySelector('#lap-count');
-let lastLapShown = false;
-let streakTimer = 0;
+const lapBanner = document.querySelector('#lap-banner');
+let shownLap = 1;
 const controls = [...document.querySelectorAll('[data-direction]')];
 const choices = [...document.querySelectorAll('.choices')];
 let sound = null;
@@ -148,6 +148,7 @@ function restartRace() {
  * @property {number} streak frutas comuns seguidas dentro do bônus
  * @property {number} lap volta atual do jogador, de 1 a laps
  * @property {number} laps 1 na floresta e na praia, 3 no vale
+ * @property {number} arrows setas de impulso que o jogador pegou
  */
 
 /** @param {RaceReport} data */
@@ -155,14 +156,14 @@ function streakText(count) {
   return count >= 4 ? 'Super rápido!' : `${count} seguidas!`;
 }
 
-function showStreak(count) {
-  streakBadge.textContent = streakText(count);
-  streakBadge.hidden = false;
-  streakBadge.classList.remove('pop');
-  void streakBadge.offsetWidth;
-  streakBadge.classList.add('pop');
-  clearTimeout(streakTimer);
-  streakTimer = setTimeout(() => { streakBadge.hidden = true; }, 1500);
+function showBadge(badge, text, duration = 1500) {
+  badge.textContent = text;
+  badge.hidden = false;
+  badge.classList.remove('pop');
+  void badge.offsetWidth;
+  badge.classList.add('pop');
+  clearTimeout(badge.timer);
+  badge.timer = setTimeout(() => { badge.hidden = true; }, duration);
 }
 
 function renderRace(data) {
@@ -173,15 +174,19 @@ function renderRace(data) {
   park.dataset.speed = level;
   sound?.speed(level);
   if (!started) return;
+  const arrow = data.stage === 'racing' && data.arrows > (previous?.arrows ?? 0);
   document.querySelector('#race-hud').hidden = false;
   document.querySelector('#lap-title').textContent = data.laps > 1 ? 'TRÊS VOLTAS' : 'UMA VOLTA';
   lapCount.hidden = !(data.laps > 1);
   lapCount.textContent = `Volta ${data.lap}/${data.laps}`;
-  if (data.lap < data.laps) lastLapShown = false;
-  const lastLap = data.stage === 'racing' && data.laps > 1 && data.lap === data.laps && !lastLapShown;
-  if (lastLap) {
-    lastLapShown = true;
-    sound?.play('last-lap');
+  if (data.stage !== 'racing') shownLap = 1;
+  const newLap = data.stage === 'racing' && data.lap > shownLap;
+  const lastLap = newLap && data.lap === data.laps;
+  if (newLap) {
+    shownLap = data.lap;
+    lapBanner.classList.toggle('last', lastLap);
+    showBadge(lapBanner, lastLap ? 'Última volta!' : `Volta ${data.lap}/${data.laps}`, lastLap ? 2500 : 1800);
+    sound?.play(lastLap ? 'last-lap' : 'lap');
   }
   document.querySelector('#player-progress').value = data.progress;
   document.querySelector('#friend-progress').value = data.rivalProgress;
@@ -189,8 +194,9 @@ function renderRace(data) {
   document.querySelector('#fruit-count').textContent = data.fruit;
   document.querySelector('#speed').textContent = data.recoveryBoostLeft > 0 ? 'Impulso dourado!' : `Ritmo +${Math.max(0, Math.round((data.speed / data.baseSpeed - 1) * 100))}%`;
   countdown.hidden = data.stage !== 'countdown' || data.paused;
-  if (data.stage !== 'racing' || data.paused) streakBadge.hidden = true;
-  else if (data.streak >= 2 && data.streak > (previous?.streak ?? 0)) showStreak(data.streak);
+  if (data.stage !== 'racing' || data.paused) streakBadge.hidden = lapBanner.hidden = true;
+  else if (arrow) showBadge(streakBadge, data.streak >= 2 ? `Impulso! ${streakText(data.streak)}` : 'Impulso!');
+  else if (data.streak >= 2 && data.streak > (previous?.streak ?? 0)) showBadge(streakBadge, streakText(data.streak));
   countdown.textContent = data.countdown;
   pause.disabled = data.stage === 'finished';
   pause.setAttribute('aria-label', data.paused ? 'Continuar corrida' : 'Pausar corrida');
@@ -203,6 +209,7 @@ function renderRace(data) {
     saveRewards(storage, rewards);
     renderRewards();
   }
+  if (arrow) sound?.play('whoosh');
   const solo = data.rival === 'none';
   panel.hidden = !data.paused && !finished;
   if (!panel.hidden) {
@@ -220,16 +227,17 @@ function renderRace(data) {
   }
   for (const button of controls) button.disabled = data.paused || data.stage !== 'racing';
   sound?.setPaused(data.paused);
-  if (!previous || previous.stage !== data.stage || previous.paused !== data.paused || previous.countdown !== data.countdown || previous.fruit !== data.fruit || previous.recoveryTarget !== data.recoveryTarget || (previous.recoveryBoostLeft > 0) !== (data.recoveryBoostLeft > 0) || (previous.rivalRecoveryBoostLeft > 0) !== (data.rivalRecoveryBoostLeft > 0) || previous.rivalDistracted !== data.rivalDistracted || lastLap) {
+  if (!previous || previous.stage !== data.stage || previous.paused !== data.paused || previous.countdown !== data.countdown || previous.fruit !== data.fruit || previous.recoveryTarget !== data.recoveryTarget || (previous.recoveryBoostLeft > 0) !== (data.recoveryBoostLeft > 0) || (previous.rivalRecoveryBoostLeft > 0) !== (data.rivalRecoveryBoostLeft > 0) || previous.rivalDistracted !== data.rivalDistracted || newLap || arrow) {
     message.textContent = data.paused ? 'Corrida pausada.'
       : data.stage === 'countdown' ? `Prepare-se... ${data.countdown}!`
       : finished ? `${data.laps > 1 ? 'Três voltas completas!' : 'Uma volta completa!'} ${solo ? 'Que passeio gostoso.' : 'Os dois dinos merecem comemorar.'}`
-      : lastLap ? 'Última volta!'
+      : newLap ? (lastLap ? 'Última volta!' : `Volta ${data.lap} de ${data.laps}!`)
       : data.rivalDistracted ? 'Seu amigo parou para olhar um passarinho!'
       : data.recoveryBoostLeft > 0 ? 'Impulso dourado! Vamos alcançar o amigo!'
       : data.rivalRecoveryBoostLeft > 0 ? 'Seu amigo ganhou um impulso dourado!'
       : data.recoveryTarget === 'player' ? 'Uma fruta dourada para você alcançar o amigo!'
       : data.recoveryTarget === 'rival' ? 'Uma fruta dourada para seu amigo alcançar você!'
+      : arrow ? 'Seta de impulso! Seu dino ficou mais rápido.'
       : data.fruit > (previous?.fruit ?? 0) && data.streak >= 2 ? `${streakText(data.streak)} Continue pegando frutinhas.`
       : data.fruit > (previous?.fruit ?? 0) ? 'Uma frutinha! Seu dino ficou mais rápido.'
       : 'Vamos! Pegue as frutinhas pelo caminho.';
@@ -271,7 +279,7 @@ document.querySelector('#choose-again').addEventListener('click', () => {
   countdown.hidden = true;
   document.querySelector('#race-hud').hidden = true;
   lapCount.hidden = true;
-  streakBadge.hidden = true;
+  streakBadge.hidden = lapBanner.hidden = true;
   restart.disabled = true;
   pause.disabled = true;
   for (const button of controls) button.disabled = true;

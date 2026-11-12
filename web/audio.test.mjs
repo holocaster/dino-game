@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { ParkAudio } from './audio.mjs';
 
 test('poças, pássaros e torcida usam efeitos curtos e suaves', () => {
-  for (const name of ['splash', 'bird', 'cheer', 'whoosh', 'last-lap']) {
+  for (const name of ['splash', 'bird', 'cheer', 'whoosh', 'lap']) {
     const calls = [];
     ParkAudio.prototype.play.call({
       tone: (...args) => calls.push(['tone', ...args]),
@@ -21,9 +21,21 @@ test('poças, pássaros e torcida usam efeitos curtos e suaves', () => {
   }
 });
 
+test('última volta toca uma fanfarra mais longa e cheia que a volta comum', () => {
+  const sound = name => {
+    const tones = [];
+    ParkAudio.prototype.play.call({ tone: (...args) => tones.push(args), rustle: () => {} }, name);
+    return { count: tones.length, end: Math.max(...tones.map(([, , duration, , delay = 0]) => delay + duration)), loud: Math.max(...tones.map(([, , , volume]) => volume)) };
+  };
+  const lap = sound('lap');
+  const last = sound('last-lap');
+  assert.ok(last.count > lap.count * 2 && last.end > lap.end * 2);
+  assert.ok(last.end <= 2 && last.loud <= 0.15);
+});
+
 test('pausa e silêncio impedem os novos efeitos', () => {
   for (const state of [{ paused: true }, { muted: true }]) {
-    for (const name of ['splash', 'bird', 'cheer', 'last-lap']) {
+    for (const name of ['splash', 'bird', 'cheer', 'lap', 'last-lap']) {
       ParkAudio.prototype.play.call({
         ...state,
         tone: () => assert.fail('Som emitido durante pausa ou silêncio'),

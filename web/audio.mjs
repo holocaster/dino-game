@@ -91,9 +91,9 @@ export class ParkAudio {
     return gain;
   }
 
-  tone(from, to, duration, volume, delay = 0) {
+  tone(from, to, duration, volume, delay = 0, type = 'sine') {
     const source = this.context.createOscillator();
-    source.type = 'sine';
+    source.type = type;
     const time = this.context.currentTime + delay;
     source.frequency.setValueAtTime(from, time);
     source.frequency.exponentialRampToValueAtTime(to, time + duration);
@@ -155,8 +155,18 @@ export class ParkAudio {
         this.rustle(850, 0.20, 0.20);
         this.tone(180, 130, 0.15, 0.055);
         break;
+      case 'lap':
+        this.tone(523, 523, 0.18, 0.08);
+        this.tone(784, 784, 0.3, 0.08, 0.14);
+        break;
       case 'last-lap':
-        [523, 659, 784].forEach((frequency, i) => this.tone(frequency, frequency * 1.06, 0.16, 0.08, i * 0.11));
+        this.rustle(1800, 0.5, 0.1);
+        this.tone(196, 98, 0.3, 0.12);
+        [523, 659, 784, 1047].forEach((frequency, i) => this.tone(frequency, frequency, 0.14, 0.1, i * 0.08, 'triangle'));
+        this.tone(1047, 1047, 0.1, 0.1, 0.42, 'triangle');
+        this.tone(1047, 1047, 0.1, 0.1, 0.54, 'triangle');
+        this.tone(196, 98, 0.3, 0.12, 0.66);
+        [1047, 1319, 1568].forEach(frequency => this.tone(frequency, frequency * 1.03, 0.8, 0.08, 0.66, 'triangle'));
         break;
       case 'happy':
         this.tone(659, 659, 0.45, 0.10);

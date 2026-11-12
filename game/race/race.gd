@@ -40,6 +40,8 @@ func _ready() -> void:
 	light.light_color = Color("fff3db")
 	light.light_energy = 0.6
 	light.shadow_enabled = true
+	light.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_2_SPLITS
+	light.directional_shadow_max_distance = 40
 	add_child(light)
 	camera = Camera3D.new()
 	add_child(camera)
@@ -288,7 +290,7 @@ func _decorate_track() -> void:
 		for column in range(12):
 			var x := start.origin.x + (column - 5.5) * 0.46
 			var z := start.origin.y + row * 0.3
-			_box(Vector3(0.46, 0.025, 0.3), forest.point(x, z) + Vector3.UP * 0.025, "fff4d4" if (row + column) % 2 else "7c9462")
+			_box(Vector3(0.46, 0.025, 0.3), forest.point(x, z) + Vector3.UP * 0.025, "fff4d4" if (row + column) % 2 else "7c9462").cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	for i in range(40):
 		var pose: Transform2D = race.sample(race.lap_length * i / 40, 6.2 if i % 2 else -6.2)
 		var p := pose.origin
@@ -299,7 +301,7 @@ func _decorate_track() -> void:
 		for side in [-1, 1]:
 			var pose: Transform2D = race.sample(race.lap_length * i / markers, side * race.TRACK_WIDTH)
 			var p: Vector3 = forest.point(pose.origin.x, pose.origin.y)
-			_sphere(p + Vector3.UP * 0.06, Vector3(0.16, 0.08, 0.16), "fff0ba")
+			_sphere(p + Vector3.UP * 0.06, Vector3(0.16, 0.08, 0.16), "fff0ba").cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 
 func reset_race() -> void:
 	race.reset()
@@ -442,12 +444,19 @@ func _process(delta: float) -> void:
 	speed_effects.advance()
 	if race.collected > collected or race.arrows_taken > arrows_taken:
 		_notify({"type": "park-sound", "name": "pickup"})
+	if race.arrows_taken > arrows_taken:
+		var nearest: Node3D = arrow_nodes[0]
+		for arrow in arrow_nodes:
+			if arrow.position.distance_squared_to(dinosaur.position) < nearest.position.distance_squared_to(dinosaur.position):
+				nearest = arrow
+		nearest.scale = Vector3.ONE * 2.2
+		create_tween().tween_property(nearest, "scale", Vector3.ONE, 0.5)
 	if race.stage == "finished" and stage != "finished":
 		_notify({"type": "park-sound", "name": "happy"})
 	report_elapsed += delta
-	if report_elapsed >= 0.1 or stage != race.stage or collected != race.collected:
+	if report_elapsed >= 0.1 or stage != race.stage or collected != race.collected or arrows_taken != race.arrows_taken:
 		report_elapsed = 0
 		_report()
 
 func _report() -> void:
-	_notify({"type": "park-race", "stage": race.stage, "countdown": ceili(race.countdown), "paused": race.paused, "progress": race.distance / race.length, "rivalProgress": race.rival_distance / race.length, "fruit": race.collected, "speed": race.speed, "baseSpeed": race.base_speed, "boostLeft": race.boost_left, "recoveryBoostLeft": race.recovery_boost_left, "rivalRecoveryBoostLeft": race.rival_recovery_boost_left, "recoveryTarget": race.recovery_fruit.get("target", ""), "dino": race.dino_id, "track": race.track_id, "winner": race.winner, "lateral": race.lateral, "rivalLateral": race.rival_lateral, "rivalSpeed": race.rival_speed, "rival": race.rival_id, "golden": race.golden_collected, "rivalDistracted": race.rival_distracted_left > 0, "speedLevel": race.speed_level(race.speed - race.base_speed), "streak": race.streak, "lap": race.lap, "laps": race.laps})
+	_notify({"type": "park-race", "stage": race.stage, "countdown": ceili(race.countdown), "paused": race.paused, "progress": race.distance / race.length, "rivalProgress": race.rival_distance / race.length, "fruit": race.collected, "speed": race.speed, "baseSpeed": race.base_speed, "boostLeft": race.boost_left, "recoveryBoostLeft": race.recovery_boost_left, "rivalRecoveryBoostLeft": race.rival_recovery_boost_left, "recoveryTarget": race.recovery_fruit.get("target", ""), "dino": race.dino_id, "track": race.track_id, "winner": race.winner, "lateral": race.lateral, "rivalLateral": race.rival_lateral, "rivalSpeed": race.rival_speed, "rival": race.rival_id, "golden": race.golden_collected, "rivalDistracted": race.rival_distracted_left > 0, "speedLevel": race.speed_level(race.speed - race.base_speed), "streak": race.streak, "lap": race.lap, "laps": race.laps, "arrows": race.arrows_taken})

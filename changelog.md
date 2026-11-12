@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.26.0 — 2026-11-12
+
+- No Vale, ao cruzar a linha de chegada aparece um aviso grande no meio da tela: "Volta 2/3" e, na última, "Última volta!" em destaque. O rodapé continua mostrando "Volta N/3".
+- Novo som `lap` (dois toques) a cada volta e `last-lap` refeito como fanfarra: arpejo subindo, duas notas de chamada, acorde sustentado e batidas graves (~1,5 s). 
+- Seta de impulso agora dá retorno: a seta pulsa na pista, aparece "Impulso!" na tela, toca um som de vento e o rodapé avisa "Seta de impulso! Seu dino ficou mais rápido.". O relatório `park-race` ganhou o campo `arrows`.
+- Desempenho: sombra do sol com 2 fatias, alcance de 40 u e mapa de 2048 px (antes 4 fatias, 100 u e 4096 px); terreno, fundo, marcadores da borda, quadriculado da largada e poças não projetam mais sombra. Numa Intel UHD 630 a 1114x655, o Vale no navegador foi de ~26 fps para 46-56 fps; nativo, o quadro ficou ~36% mais rápido nas três pistas.
+
 ## 0.25.0 — 2026-11-12
 
 - Nova pista **Vale**, terceiro cartão em "Onde vamos brincar?": estádio com duas retas de 45 u e curvas de raio 12 u (volta de ~165 u), campo aberto com árvores longe da pista, sem novos modelos. A corrida tem três voltas; progresso, chegada, vencedor e margem final da fruta dourada valem para a corrida inteira. As frutinhas repetem o mesmo sorteio a cada volta e cada corredor pode pegá-las de novo em cada volta. Floresta e Praia continuam com uma volta.

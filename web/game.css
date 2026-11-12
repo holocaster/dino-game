@@ -86,6 +86,8 @@ progress::-moz-progress-bar { background: #df9865; border-radius: 8px; }
 .streak.pop { animation: pop .45s cubic-bezier(.3, 1.6, .5, 1); }
 @keyframes pop { from { transform: translate(-50%, -50%) scale(.4); opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .streak.pop { animation: none; } }
+.lap-banner { top: 45%; padding: 12px 34px; color: var(--green); font-size: clamp(32px, 8vw, 64px); }
+.lap-banner.last { background: #c2603a; color: #fffdf1; }
 .countdown { position: absolute; left: 50%; top: 40%; transform: translate(-50%, -50%); display: grid; place-items: center; width: 110px; height: 110px; border-radius: 50%; background: #fffdf1ed; color: var(--green); font: 70px Georgia, serif; pointer-events: none; }
 .race-footer { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 18px 10px 0; }
 .invitation { text-align: center; }

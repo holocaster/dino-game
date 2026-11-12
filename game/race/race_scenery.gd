@@ -28,10 +28,12 @@ func setup(race_game: Node3D) -> void:
 		var water: MeshInstance3D = game._mesh(surface.commit(), Vector3.ZERO, "66c6d4", self)
 		water.material_override.cull_mode = BaseMaterial3D.CULL_DISABLED
 		water.material_override.roughness = 0.15
+		water.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		for reflection in range(2):
 			var p: Vector2 = pose.origin + pose.x * (reflection * 0.3 - 0.15)
 			var shine: MeshInstance3D = game._sphere(game.forest.point(p.x, p.y) + Vector3.UP * 0.04, Vector3(0.25, 0.008, 0.04), "c8eef0", self)
 			shine.rotation.y = atan2(-pose.x.x, -pose.x.y)
+			shine.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		puddles.append({"distance": progress, "pose": pose, "player_splashed": false, "rival_splashed": false})
 	for runner in range(2):
 		var splash := Node3D.new()

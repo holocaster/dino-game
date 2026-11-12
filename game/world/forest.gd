@@ -84,7 +84,7 @@ func _ready() -> void:
 				navigation.set_point_solid(Vector2i(x, z), blocked(Vector2(x, z) * 0.25))
 	var backdrop := PlaneMesh.new()
 	backdrop.size = Vector2.ONE * 200
-	place(backdrop, Vector3(0, -0.45, 0), "7caa42")
+	place(backdrop, Vector3(0, -0.45, 0), "7caa42").cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	var surface := SurfaceTool.new()
 	surface.begin(Mesh.PRIMITIVE_TRIANGLES)
 	for x in range(-48, 41):
@@ -108,6 +108,7 @@ func _ready() -> void:
 	terrain.material_override = StandardMaterial3D.new()
 	terrain.material_override.vertex_color_use_as_albedo = true
 	terrain.material_override.roughness = 1
+	terrain.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(terrain)
 	blob(Vector3(POND.x, 0.025, POND.y), Vector3(POND_SIZE.x, 0.07, POND_SIZE.y), "30aeb0")
 	for i in range(5):
@@ -266,7 +267,7 @@ func tree(p: Vector2, size: float, variant: int) -> void:
 func _beach() -> void:
 	var water := PlaneMesh.new()
 	water.size = Vector2.ONE * 200
-	place(water, Vector3(0, -0.35, 0), "55c4cd")
+	place(water, Vector3(0, -0.35, 0), "55c4cd").cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	var surface := SurfaceTool.new()
 	surface.begin(Mesh.PRIMITIVE_TRIANGLES)
 	for x in range(-47, 44):
@@ -284,6 +285,7 @@ func _beach() -> void:
 	terrain.material_override = StandardMaterial3D.new()
 	terrain.material_override.vertex_color_use_as_albedo = true
 	terrain.material_override.roughness = 1
+	terrain.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(terrain)
 	for i in range(16):
 		var angle := i * TAU / 16
@@ -298,7 +300,7 @@ func _beach() -> void:
 func _valley() -> void:
 	var backdrop := PlaneMesh.new()
 	backdrop.size = Vector2.ONE * 240
-	place(backdrop, Vector3(VALLEY_CENTER.x, -0.45, VALLEY_CENTER.y), "86b84c")
+	place(backdrop, Vector3(VALLEY_CENTER.x, -0.45, VALLEY_CENTER.y), "86b84c").cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	var surface := SurfaceTool.new()
 	surface.begin(Mesh.PRIMITIVE_TRIANGLES)
 	for x in range(-40, 40):
@@ -316,6 +318,7 @@ func _valley() -> void:
 	terrain.material_override = StandardMaterial3D.new()
 	terrain.material_override.vertex_color_use_as_albedo = true
 	terrain.material_override.roughness = 1
+	terrain.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(terrain)
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 7301
