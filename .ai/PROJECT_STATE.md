@@ -4,10 +4,10 @@ context: docs/CONTEXT.md
 brief: docs/briefs/0001-pista-longa.md
 spec: docs/specs/0001-pista-longa.md
 tickets_index: tickets/0001-pista-longa/index.md
-active_ticket: "01"
-base_sha: 007f8ebe79ba999f0dfc253bb1c40e1547ad14a9
-head_sha: 248e61db2bfd05094a2937d4ae9e86b72bfbf96a
+active_ticket: null
+base_sha: null
+head_sha: null
 review: null
 review_round: 0
 blockers: []
-next_action: spawn sdd-reviewer for ticket 01
+next_action: planner amendment to ticket 02 (stronger baseline fingerprint), then implement 02
