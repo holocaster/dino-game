@@ -31,13 +31,19 @@ const RECOVERY_LIFETIME := 5.0
 const RECOVERY_COOLDOWN := 10.0
 const RECOVERY_FINISH_MARGIN := 12.0
 const VALLEY_LAPS := 3
-const VALLEY_SECTIONS := 10
+const VALLEY_SECTIONS := 8
 const VALLEY_GAIN := 0.22
 const VALLEY_SOFTNESS := 0.6
-const VALLEY_DECAY := 0.2
+const VALLEY_DECAY := 0.28
 const VALLEY_CENTER := Vector2(24, -5)
 const VALLEY_RADIUS := 12.0
 const VALLEY_STRAIGHT := 45.0
+const VALLEY_RECOVERY_GAP := 30.0
+const VALLEY_RIVALS := {
+	"sleepy": {"miss": 0.3},
+	"playful": {"speed": 2.3, "miss": 0.6},
+	"speedy": {"speed": 2.5, "miss": 0.65}
+}
 
 var track := Curve2D.new()
 var length := 0.0
@@ -132,7 +138,7 @@ func configure(dino: String, circuit: String, rival: String = "playful") -> bool
 	dino_id = dino
 	track_id = circuit
 	rival_id = rival
-	var profile: Dictionary = RIVALS.get(rival, RIVALS.playful)
+	var profile := _rival_profile()
 	rival_base_speed = profile.speed
 	rival_reaction = profile.reaction
 	base_speed = DINOS[dino].speed
@@ -229,8 +235,9 @@ func reset() -> void:
 			for side in [-1, 1]:
 				slots.append(Vector2(start + step * 4, side * offset))
 		slots.append(Vector2(start + 8, 0))
+	var miss: float = _rival_profile().miss
 	for slot in slots:
-		fruits.append({"distance": float(slot.x), "lateral": float(slot.y), "owner": "", "respawn": 0.0, "player_taken": false, "rival_taken": false, "rival_skip": rng.randf() < RIVALS.get(rival_id, RIVALS.playful).miss})
+		fruits.append({"distance": float(slot.x), "lateral": float(slot.y), "owner": "", "respawn": 0.0, "player_taken": false, "rival_taken": false, "rival_skip": rng.randf() < miss})
 
 func start() -> void:
 	if stage == "ready":
@@ -271,7 +278,7 @@ func _steer_rival(delta: float) -> void:
 	rival_distraction_check -= delta
 	if rival_distraction_check <= 0:
 		rival_distraction_check = DISTRACTION_EVERY
-		if rng.randf() < RIVALS.get(rival_id, RIVALS.playful).distraction:
+		if rng.randf() < _rival_profile().distraction:
 			rival_distracted_left = DISTRACTION_TIME
 	var factor := _rival_steer_factor()
 	if rival_distracted_left > 0:
@@ -401,6 +408,10 @@ func _boosted(current: float, base: float) -> float:
 		return minf(base + MAX_BOOST, current + FRUIT_BOOST)
 	return current + VALLEY_GAIN / (1 + maxf(0, current - base) / VALLEY_SOFTNESS)
 
+func _rival_profile() -> Dictionary:
+	var profile: Dictionary = RIVALS.get(rival_id, RIVALS.playful)
+	return profile.merged(VALLEY_RIVALS.get(rival_id, {}), true) if valley else profile
+
 func _steer_factor(current: float, base: float) -> float:
 	return current / base if valley else 1.0
 
@@ -437,7 +448,7 @@ func _advance_recovery(delta: float, previous: float, rival_previous: float) -> 
 					golden_collected += 1
 				recovery_fruit.clear()
 		return
-	if solo or recovery_cooldown > 0 or absf(distance - rival_distance) < RECOVERY_GAP or maxf(distance, rival_distance) >= length - RECOVERY_FINISH_MARGIN:
+	if solo or recovery_cooldown > 0 or absf(distance - rival_distance) < (VALLEY_RECOVERY_GAP if valley else RECOVERY_GAP) or maxf(distance, rival_distance) >= length - RECOVERY_FINISH_MARGIN:
 		return
 	var rival := rival_distance < distance
 	recovery_fruit = {"target": "rival" if rival else "player", "distance": (rival_distance if rival else distance) + RECOVERY_AHEAD, "lateral": clampf(rival_lateral if rival else lateral, -LATERAL_LIMIT, LATERAL_LIMIT), "left": RECOVERY_LIFETIME}

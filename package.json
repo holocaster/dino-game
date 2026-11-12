@@ -10,6 +10,7 @@
     "fal": "node --env-file-if-exists=.env scripts/fal.mjs",
     "test:gait": "python3 scripts/rig_triceratops_test.py && godot --headless --path game --script res://tests/gait_test.gd && godot --headless --path game --script res://tests/bipeds_test.gd",
     "test:rival": "godot --headless --path game --script res://tests/rival_test.gd",
-    "test:collision": "godot --headless --path game --script res://tests/collision_test.gd"
+    "test:collision": "godot --headless --path game --script res://tests/collision_test.gd",
+    "sim:valley": "godot --headless --path game --script res://tests/valley_sim.gd"
   }
 }

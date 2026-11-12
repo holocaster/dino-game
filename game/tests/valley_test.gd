@@ -9,6 +9,7 @@ class RecordedRace extends "res://race/race.gd":
 
 const Race := preload("res://race/race_state.gd")
 const Bots := preload("res://tests/bots.gd")
+const PRACTICAL_MAX_SPEED := 5.1
 
 func _initialize() -> void:
 	Engine.physics_ticks_per_second = 600
@@ -29,7 +30,9 @@ func _run() -> void:
 	_arrow_layout()
 	_arrow_pickup()
 	_level_three()
-	print("Vale state checks passed: catalog, stadium geometry, three Voltas, per-Volta Frutinhas, layout, Fruta dourada margin, Sozinho assist, bots, Retorno decrescente, decay, lateral scaling and Setas.")
+	_camera_bound()
+	_playful_balance()
+	print("Vale state checks passed: catalog, stadium geometry, three Voltas, per-Volta Frutinhas, layout, Fruta dourada margin, Sozinho assist, bots, Retorno decrescente, decay, lateral scaling, Setas, camera bound and Brincalhão balance.")
 	for dino in Race.DINOS:
 		await _scene(dino)
 	remove_meta("race_selection")
@@ -166,15 +169,23 @@ func _golden() -> void:
 		var race := _valley("playful")
 		_racing(race)
 		race.distance = race.lap_length * lap - 4
-		race.rival_distance = race.distance - 8
+		race.rival_distance = race.distance - Race.VALLEY_RECOVERY_GAP - 3
 		race.advance(0.05)
 		assert(race.recovery_fruit.get("target", "") == "rival", "Fruta dourada allowed near the end of Volta %d" % lap)
 	var race := _valley("playful")
 	_racing(race)
 	race.distance = race.length - 11.5
-	race.rival_distance = race.distance - 8
+	race.rival_distance = race.distance - Race.VALLEY_RECOVERY_GAP - 3
 	race.advance(0.05)
 	assert(race.recovery_fruit.is_empty(), "No Fruta dourada in the last 12 u of the Corrida")
+	for circuit in ["forest", "valley"]:
+		race = Race.new()
+		race.configure("triceratops", circuit, "playful")
+		_racing(race)
+		race.distance = 30
+		race.rival_distance = 30 - Race.RECOVERY_GAP - 3
+		race.advance(0.05)
+		assert(race.recovery_fruit.is_empty() == (circuit == "valley"), "Fruta dourada gap: %s keeps %s u" % [circuit, Race.RECOVERY_GAP])
 
 func _bots() -> void:
 	for bot in ["good", "medium", "idle"]:
@@ -357,6 +368,34 @@ func _level_three() -> void:
 		if race.golden_collected == 0 and race.recovery_boost_left == 0 and Race.speed_level(race.speed - race.base_speed) == 3:
 			reached = true
 	assert(reached, "Good bot reaches level 3 without the Fruta dourada")
+
+func _camera_bound() -> void:
+	var race := _valley()
+	var step := 0.25
+	var sharpest := 0.0
+	for i in range(int(race.lap_length / step)):
+		var a := race.sample(i * step).origin
+		var b := race.sample((i + 1) * step).origin
+		var c := race.sample((i + 2) * step).origin
+		sharpest = maxf(sharpest, absf((b - a).angle_to(c - b)) / a.distance_to(b))
+	var turn_rate := rad_to_deg(sharpest * PRACTICAL_MAX_SPEED)
+	assert(turn_rate < 50, "Camera must turn %s deg/s in the Vale curves" % turn_rate)
+
+func _playful_balance() -> void:
+	var wins := {}
+	for bot in ["good", "idle"]:
+		wins[bot] = 0
+		for dino in Race.DINOS:
+			for seed in range(1, 4):
+				var race := _valley("playful", dino)
+				race.rng.seed = seed
+				race.reset()
+				_racing(race)
+				while race.stage != "finished":
+					race.advance(0.05, Callable(Bots, bot).call(race))
+					assert(bot != "good" or race.speed <= PRACTICAL_MAX_SPEED, "Good bot reached %s u/s" % race.speed)
+				wins[bot] += int(race.winner == "player")
+	assert(wins.good > wins.idle, "Good bot beats Brincalhão more often than the idle bot: %s" % wins)
 
 func _scene(dino: String) -> void:
 	set_meta("race_selection", [dino, "valley", "playful"])
