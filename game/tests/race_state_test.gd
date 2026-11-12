@@ -20,6 +20,9 @@ func _initialize() -> void:
 		if race.collected > 0:
 			break
 	assert(race.collected == 1 and is_equal_approx(race.speed, Race.BASE_SPEED + Race.FRUIT_BOOST))
+	assert(Race.speed_level(0) == 0 and Race.speed_level(Race.FRUIT_BOOST) == 0)
+	assert(Race.speed_level(Race.FRUIT_BOOST * 2) == 1 and Race.speed_level(Race.MAX_BOOST) == 2)
+	assert(Race.speed_level(Race.RECOVERY_BOOST) == 3)
 	var count := race.collected
 	for i in range(5):
 		race.advance(0.1)

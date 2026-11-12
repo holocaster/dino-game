@@ -1,5 +1,5 @@
-import { ParkAudio } from './audio.mjs?v=0.17.0';
-import { STICKERS, COLORS, award, unlocked, prizeText, loadRewards, saveRewards } from './rewards.mjs?v=0.20.0';
+import { ParkAudio } from './audio.mjs?v=0.23.0';
+import { STICKERS, COLORS, award, unlocked, prizeText, loadRewards, saveRewards } from './rewards.mjs?v=0.23.0';
 
 const frame = document.querySelector('#game');
 const welcome = document.querySelector('#welcome');
@@ -11,6 +11,7 @@ const soundButton = document.querySelector('#sound');
 const panel = document.querySelector('#race-panel');
 const panelAction = document.querySelector('#panel-action');
 const countdown = document.querySelector('#countdown');
+const park = document.querySelector('.park');
 const controls = [...document.querySelectorAll('[data-direction]')];
 const choices = [...document.querySelectorAll('.choices')];
 let sound = null;
@@ -139,12 +140,17 @@ function restartRace() {
  * @property {number} rivalLateral
  * @property {number} rivalSpeed
  * @property {boolean} rivalDistracted
+ * @property {0|1|2|3} speedLevel nível do rastro do jogador
  */
 
 /** @param {RaceReport} data */
 function renderRace(data) {
   const previous = state;
   state = data;
+  const level = started && data.stage === 'racing' && !data.paused ? data.speedLevel : 0;
+  if (level > Number(park.dataset.speed ?? 0)) sound?.play('whoosh');
+  park.dataset.speed = level;
+  sound?.speed(level);
   if (!started) return;
   document.querySelector('#race-hud').hidden = false;
   document.querySelector('#player-progress').value = data.progress;
@@ -333,7 +339,7 @@ window.addEventListener('message', event => {
     if (!document.hasFocus()) pauseRace();
   }
   if (data?.type === 'park-race' && ['ready', 'countdown', 'racing', 'finished'].includes(data.stage)
-      && [data.progress, data.rivalProgress, data.speed, data.baseSpeed, data.fruit, data.countdown, data.recoveryBoostLeft, data.rivalRecoveryBoostLeft, data.golden].every(Number.isFinite)
+      && [data.progress, data.rivalProgress, data.speed, data.baseSpeed, data.fruit, data.countdown, data.recoveryBoostLeft, data.rivalRecoveryBoostLeft, data.golden, data.speedLevel].every(Number.isFinite)
       && typeof data.rival === 'string' && typeof data.track === 'string' && typeof data.winner === 'string'
       && data.baseSpeed > 0) renderRace(data);
 });

@@ -1,6 +1,6 @@
 # Corrida dos dinos
 
-Corrida infantil em **Godot + GDScript**, sem violência: uma volta contra o amigo verdinho, avanço automático e frutas que dão impulso temporário. Na versão **0.22.1**, você escolhe entre três amigos com personalidades diferentes ou um passeio tranquilo sozinho, e ganha adesivos e cores para o seu dino. Há poças com respingos, pássaros e dinos torcendo com bandeirinhas. Uma fruta dourada ajuda quem ficar para trás. Escolha tricerátopo, T-rex ou velociraptor, na floresta ou na praia.
+Corrida infantil em **Godot + GDScript**, sem violência: uma volta contra o amigo verdinho, avanço automático e frutas que dão impulso temporário. Na versão **0.23.0**, você escolhe entre três amigos com personalidades diferentes ou um passeio tranquilo sozinho, e ganha adesivos e cores para o seu dino. Há poças com respingos, pássaros e dinos torcendo com bandeirinhas. Uma fruta dourada ajuda quem ficar para trás. Quanto mais rápido o dino, mais ele solta poeira, rastro colorido e faíscas. Escolha tricerátopo, T-rex ou velociraptor, na floresta ou na praia.
 
 Execute `npm run dev` e abra [o jogo](http://127.0.0.1:4173). A exportação web está incluída; jogar não exige instalar Godot ou dependências.
 

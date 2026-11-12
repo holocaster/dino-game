@@ -85,6 +85,7 @@ const DINOS := {
 	"raptor": {"speed": 2.13, "steer": 2.7}
 }
 const TRACKS := ["forest", "beach"]
+const SPEED_LEVELS := [0.3, 0.6, 1.0]
 
 func _init() -> void:
 	_build_track()
@@ -93,6 +94,9 @@ func _init() -> void:
 var solo: bool:
 	get:
 		return rival_id == "none"
+
+static func speed_level(bonus: float) -> int:
+	return SPEED_LEVELS.filter(func(threshold): return bonus >= threshold).size()
 
 func can_configure(dino: String, circuit: String, rival: String) -> bool:
 	return DINOS.has(dino) and circuit in TRACKS and (RIVALS.has(rival) or rival == "none") and stage in ["ready", "finished"]

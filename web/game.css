@@ -78,6 +78,11 @@ progress::-moz-progress-bar { background: #df9865; border-radius: 8px; }
 .fruit-score svg { width: 30px; height: 30px; }
 .fruit-score strong { font-size: 25px; }
 .fruit-score span { grid-column: 1 / -1; font-size: 10px; text-align: center; }
+.speed-lines { position: absolute; inset: -20%; pointer-events: none; opacity: 0; transition: opacity .5s; background: repeating-conic-gradient(from 0deg at 50% 50%, #fffdf1d9 0 .5deg, transparent .5deg 6deg); -webkit-mask-image: radial-gradient(ellipse at 50% 50%, transparent 40%, #000 72%); mask-image: radial-gradient(ellipse at 50% 50%, transparent 40%, #000 72%); animation: rush .3s steps(2) infinite; }
+.park[data-speed="2"] .speed-lines { opacity: .3; }
+.park[data-speed="3"] .speed-lines { opacity: .65; }
+@keyframes rush { 50% { transform: rotate(1.5deg); } }
+@media (prefers-reduced-motion: reduce) { .speed-lines { animation: none; } }
 .countdown { position: absolute; left: 50%; top: 40%; transform: translate(-50%, -50%); display: grid; place-items: center; width: 110px; height: 110px; border-radius: 50%; background: #fffdf1ed; color: var(--green); font: 70px Georgia, serif; pointer-events: none; }
 .race-footer { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 18px 10px 0; }
 .invitation { text-align: center; }

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { ParkAudio } from './audio.mjs';
 
 test('poças, pássaros e torcida usam efeitos curtos e suaves', () => {
-  for (const name of ['splash', 'bird', 'cheer']) {
+  for (const name of ['splash', 'bird', 'cheer', 'whoosh']) {
     const calls = [];
     ParkAudio.prototype.play.call({
       tone: (...args) => calls.push(['tone', ...args]),
@@ -31,4 +31,13 @@ test('pausa e silêncio impedem os novos efeitos', () => {
       }, name);
     }
   }
+});
+
+test('vento acompanha o nível de velocidade dentro dos limites', () => {
+  const targets = [];
+  const param = name => ({ setTargetAtTime: value => targets.push([name, value]) });
+  const fake = { context: { currentTime: 0 }, air: { gain: param('gain') }, airFilter: { frequency: param('frequency') } };
+  for (const level of [-1, 0, 2, 3, 9, NaN]) ParkAudio.prototype.speed.call(fake, level);
+  assert.deepEqual(targets.filter(([name]) => name === 'frequency').map(([, value]) => value), [350, 350, 900, 1400, 1400, 350]);
+  assert.ok(targets.filter(([name]) => name === 'gain').every(([, value]) => value > 0 && value <= 0.08));
 });

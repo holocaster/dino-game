@@ -11,8 +11,8 @@ export class ParkAudio {
     this.noise = context.createBuffer(1, context.sampleRate * 4, context.sampleRate);
     const samples = this.noise.getChannelData(0);
     for (let i = 0; i < samples.length; i++) samples[i] = Math.random() * 2 - 1;
-    this.air = this.loop(350, 0.025);
-    this.water = this.loop(1400, 0);
+    [this.air, this.airFilter] = this.loop(350, 0.025);
+    [this.water] = this.loop(1400, 0);
   }
 
   loop(frequency, volume) {
@@ -26,7 +26,7 @@ export class ParkAudio {
     gain.gain.value = volume;
     source.connect(filter).connect(gain).connect(this.master);
     source.start();
-    return gain;
+    return [gain, filter];
   }
 
   setMuted(muted) {
@@ -49,7 +49,15 @@ export class ParkAudio {
   reset() {
     this.stopEffects();
     this.water.gain.setTargetAtTime(0, this.context.currentTime, 0.15);
+    this.speed(0);
     this.nextBird = this.context.currentTime + 2;
+  }
+
+  speed(level) {
+    const index = Math.max(0, Math.min(3, Math.round(level) || 0));
+    const time = this.context.currentTime;
+    this.air.gain.setTargetAtTime([0.025, 0.04, 0.06, 0.08][index], time, 0.3);
+    this.airFilter.frequency.setTargetAtTime([350, 600, 900, 1400][index], time, 0.3);
   }
 
   environment(state) {
@@ -124,6 +132,10 @@ export class ParkAudio {
         this.tone(392, 494, 0.22, 0.055);
         this.tone(494, 587, 0.3, 0.045, 0.18);
         this.rustle(1000, 0.18, 0.045);
+        break;
+      case 'whoosh':
+        this.rustle(1600, 0.35, 0.08);
+        this.tone(300, 900, 0.3, 0.035);
         break;
       case 'step':
         this.rustle(400, 0.14, 0.18);

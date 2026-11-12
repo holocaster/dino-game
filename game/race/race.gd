@@ -13,6 +13,10 @@ var player_contacts: Array[Node3D] = []
 var rival_contacts: Array[Node3D] = []
 var rival_runout := 0.0
 var scenery: Node3D
+var speed_effects: Node3D
+var base_fov := 48.0
+
+const FOV_RUSH := 8.0
 
 const TINT_SHADER := preload("res://dinos/dino_tint.gdshader")
 const RIVAL_COLORS := {"sleepy": Color(0.72, 0.66, 1.0), "playful": Color(0.5, 0.9, 0.55), "speedy": Color(1.0, 0.85, 0.3)}
@@ -65,6 +69,10 @@ func _ready() -> void:
 	scenery = preload("res://race/race_scenery.gd").new()
 	add_child(scenery)
 	scenery.setup(self)
+	speed_effects = preload("res://race/speed_effects.gd").new()
+	add_child(speed_effects)
+	speed_effects.setup(self)
+	speed_effects.paint(0, _trail_color())
 	race.resolve_motion = _resolve_motion
 	race.pickup_contact = _pickup_contact
 	if OS.has_feature("web"):
@@ -121,6 +129,10 @@ func _runner(green: bool) -> Node3D:
 		var sparkle := _sphere(Vector3(cos(angle) * 0.85, 0.8 + sin(angle * 2) * 0.25, sin(angle) * 0.85), Vector3.ONE * 0.055, "ffe095", glow)
 		sparkle.material_override.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	return runner
+
+func _trail_color() -> Color:
+	var tint: Color = PLAYER_COLORS.get(get_tree().get_meta("race_color", "natural"), Color.WHITE)
+	return speed_effects.DINO_COLORS.get(race.dino_id, Color.WHITE) if tint == Color.WHITE else tint
 
 func _tint(runner: Node3D, color: Color) -> void:
 	for mesh in runner.get_node("Model").find_children("*", "MeshInstance3D", true, false):
@@ -251,6 +263,7 @@ func _fit_camera() -> void:
 	var size := get_viewport().get_visible_rect().size
 	if size.x < size.y:
 		camera.fov = 64
+	base_fov = camera.fov
 
 func _decorate_track() -> void:
 	var gate := Node3D.new()
@@ -296,8 +309,10 @@ func reset_race() -> void:
 	camera_yaw = travel_yaw
 	camera_turn_velocity = 0
 	camera_focus = dinosaur.position
+	camera.fov = base_fov
 	_update_camera(1.0)
 	scenery.reset()
+	speed_effects.reset()
 	_report()
 
 func restart() -> void:
@@ -313,6 +328,7 @@ func _web_command(arguments: Array) -> void:
 		if PLAYER_COLORS.has(color):
 			get_tree().set_meta("race_color", color)
 			_tint(dinosaur, PLAYER_COLORS[color])
+			speed_effects.paint(0, _trail_color())
 		return
 	if arguments[0].begins_with("select:"):
 		var selection: PackedStringArray = arguments[0].split(":")
@@ -399,12 +415,15 @@ func _process(delta: float) -> void:
 	if not race.paused:
 		elapsed += delta
 		_update_camera(1.0 - exp(-delta * 5), delta)
+		var rush := clampf((race.speed - race.base_speed) / race.RECOVERY_BOOST, 0, 1) if race.stage == "racing" else 0.0
+		camera.fov = lerpf(camera.fov, base_fov + FOV_RUSH * rush, 1 - exp(-delta * 2.5))
 		_update_audio(previous.distance_to(dinosaur.position), delta, dinosaur.get_node("Model").get_meta("run_cycle_distance", RUN_CYCLE_DISTANCE) / 2)
 	for i in range(fruit_nodes.size()):
 		fruit_nodes[i].visible = race.fruits[i].owner.is_empty()
 		fruit_nodes[i].get_child(0).position.y = 0.42 + sin(elapsed * 3 + i) * 0.06
 	_update_recovery_visuals()
 	scenery.advance(delta, previous, previous_rival_position)
+	speed_effects.advance()
 	if race.collected > collected:
 		_notify({"type": "park-sound", "name": "pickup"})
 	if race.stage == "finished" and stage != "finished":
@@ -415,4 +434,4 @@ func _process(delta: float) -> void:
 		_report()
 
 func _report() -> void:
-	_notify({"type": "park-race", "stage": race.stage, "countdown": ceili(race.countdown), "paused": race.paused, "progress": race.distance / race.length, "rivalProgress": race.rival_distance / race.length, "fruit": race.collected, "speed": race.speed, "baseSpeed": race.base_speed, "boostLeft": race.boost_left, "recoveryBoostLeft": race.recovery_boost_left, "rivalRecoveryBoostLeft": race.rival_recovery_boost_left, "recoveryTarget": race.recovery_fruit.get("target", ""), "dino": race.dino_id, "track": race.track_id, "winner": race.winner, "lateral": race.lateral, "rivalLateral": race.rival_lateral, "rivalSpeed": race.rival_speed, "rival": race.rival_id, "golden": race.golden_collected, "rivalDistracted": race.rival_distracted_left > 0})
+	_notify({"type": "park-race", "stage": race.stage, "countdown": ceili(race.countdown), "paused": race.paused, "progress": race.distance / race.length, "rivalProgress": race.rival_distance / race.length, "fruit": race.collected, "speed": race.speed, "baseSpeed": race.base_speed, "boostLeft": race.boost_left, "recoveryBoostLeft": race.recovery_boost_left, "rivalRecoveryBoostLeft": race.rival_recovery_boost_left, "recoveryTarget": race.recovery_fruit.get("target", ""), "dino": race.dino_id, "track": race.track_id, "winner": race.winner, "lateral": race.lateral, "rivalLateral": race.rival_lateral, "rivalSpeed": race.rival_speed, "rival": race.rival_id, "golden": race.golden_collected, "rivalDistracted": race.rival_distracted_left > 0, "speedLevel": race.speed_level(race.speed - race.base_speed)})

@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.23.0 — 2026-11-12
+
+- Velocidade visível em três níveis, pelo bônus sobre a velocidade base (`SPEED_LEVELS` 0,3 / 0,6 / 1,0 em `race_state.gd`): nível 1 (2 frutas) solta poeira nos pés; nível 2 (4 frutas) deixa um rastro na cor do dino ou na cor escolhida; nível 3 (fruta dourada) solta faíscas. Vale para o jogador e para o amigo, congela na pausa e limpa no reinício. Partículas `CPUParticles3D` sem sombra, em `game/race/speed_effects.gd`.
+- A câmera abre até 8° conforme o bônus e volta ao normal no reinício.
+- Página: linhas de vento na borda do jogo nos níveis 2 e 3 (paradas com `prefers-reduced-motion`), vento mais agudo a cada nível e um "whoosh" quando o nível sobe. A mensagem `park-race` ganhou `speedLevel`.
+- Novo `speed_effects_test.gd`; testes de nível em `race_state_test.gd`, do vento e do "whoosh" em `audio.test.mjs`, e das cores do rastro no teste de catálogo. Pack reexportado (14.765.196 bytes).
+- Corrigido: os imports de `game.js` tinham versões de cache fixas (`audio.mjs?v=0.17.0`, `rewards.mjs?v=0.20.0`). O navegador combinava o `game.js` novo com o `audio.mjs` antigo, `sound.speed()` falhava a cada mensagem e a contagem e o painel final deixavam de aparecer. Os imports seguem agora a versão do pacote, e um teste exige que todo `?v=` da página e do shell seja igual à versão do `package.json`.
+
 ## 0.22.1 — 2026-11-12
 
 - Validação da seleção centralizada em `RaceState.can_configure()`, usada por `configure` e pela ponte web (`select:`); nova constante `TRACKS`.
