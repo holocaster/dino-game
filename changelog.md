@@ -1,5 +1,29 @@
 # Changelog
 
+## 0.25.0 — 2026-11-12
+
+- Nova pista **Vale**, terceiro cartão em "Onde vamos brincar?": estádio com duas retas de 45 u e curvas de raio 12 u (volta de ~165 u), campo aberto com árvores longe da pista, sem novos modelos. A corrida tem três voltas; progresso, chegada, vencedor e margem final da fruta dourada valem para a corrida inteira. As frutinhas repetem o mesmo sorteio a cada volta e cada corredor pode pegá-las de novo em cada volta. Floresta e Praia continuam com uma volta.
+- Retorno decrescente, só no Vale (ADR 0001): cada impulso soma `VALLEY_GAIN / (1 + bônus / VALLEY_SOFTNESS)` (0,22 e 0,6), sempre positivo e sem teto; o nível 3 chega com 8 impulsos seguidos, sem fruta dourada. Quando o impulso acaba, a velocidade volta à base a 0,28 u/s² (`VALLEY_DECAY`, contra 0,64 na Floresta e na Praia), e a direção do jogador, do rival e da ajuda do modo Sozinho cresce com a velocidade. Floresta e Praia mantêm o limite `MAX_BOOST`.
+- Setas de impulso: uma por reta, do lado oposto ao par de frutinhas daquele trecho. Dão o mesmo impulso de uma frutinha, contam na sequência, valem para os dois corredores em todas as voltas e não contam como fruta. Desenhadas no chão com primitivas, com o som `pickup`.
+- Rivais do Vale calibrados por simulação (`npm run sim:valley`, 3 dinos x 30 sorteios por célula) com `VALLEY_RIVALS`: Dorminhoco `miss` 0,3; Brincalhão velocidade 2,3 e `miss` 0,6; Rapidinho velocidade 2,5 e `miss` 0,65. `RIVALS` não mudou. Fruta dourada no Vale a partir de 30 u de diferença (`VALLEY_RECOVERY_GAP`; Floresta e Praia seguem com 5 u). Vitória do jogador por robô:
+
+  | Amigo | Robô | Floresta/Praia | Vale | Volta mediana (s) | Corrida mediana (s) | Douradas por corrida (F/P, Vale) | Nível 3 no Vale | Velocidade máx. |
+  |---|---|---|---|---|---|---|---|---|
+  | Dorminhoco | bom | 96% | 99% | 50,9 | 148,1 | 1,2 / 8,6 | 100% | 5,05 |
+  | Dorminhoco | médio | 83% | 90% | 61,1 | 184,1 | 0,7 / 2,5 | 31% | 4,13 |
+  | Dorminhoco | parado | 52% | 48% | 65,9 | 197,0 | 0,3 / 1,0 | 2% | 4,27 |
+  | Brincalhão | bom | 92% | 97% | 52,1 | 156,7 | 0,9 / 5,0 | 100% | 5,05 |
+  | Brincalhão | médio | 57% | 51% | 61,4 | 184,7 | 0,2 / 0,9 | 36% | 4,27 |
+  | Brincalhão | parado | 13% | 7% | 64,5 | 191,6 | 0,5 / 2,7 | 4% | 4,27 |
+  | Rapidinho | bom | 82% | 81% | 52,2 | 155,2 | 0,3 / 2,5 | 100% | 5,05 |
+  | Rapidinho | médio | 10% | 9% | 57,8 | 175,3 | 0,6 / 3,3 | 73% | 4,27 |
+  | Rapidinho | parado | 2% | 0% | 57,8 | 175,7 | 1,0 / 7,0 | 14% | 4,27 |
+
+- A linha de base medida hoje na Floresta/Praia difere da tabela de referência (93/66/53, 91/51/13, 70/19/2) em mais de 10 pontos em Dorminhoco médio e Rapidinho bom; o Vale foi calibrado contra a linha medida. Corrida mediana de 148-157 s jogando bem, 175-185 s no médio e 176-197 s parado. Velocidade máxima observada 5,05 u/s (constante `PRACTICAL_MAX_SPEED` 5,1 no teste); a câmera precisa girar no máximo 24,6°/s nas curvas, abaixo do limite de 50°/s. Problemas aceitos: até ~8 frutas douradas por corrida quando um corredor fica muito para trás (~3,5/min contra ~2,1/min na Floresta/Praia), e o robô parado chega ao nível 3 em 2-14% das corridas.
+- Página: no Vale o rodapé mostra "Volta N/3", o título do placar vira "TRÊS VOLTAS", a entrada na última volta mostra "Última volta!" com um som curto novo (`last-lap`) e a chegada diz "Três voltas completas!". As barras de progresso cobrem a corrida inteira. A mensagem `park-race` ganhou `lap` e `laps`.
+- Novo adesivo "Explorador do vale" (total de 9). A dica de "Cesta cheia" passa a ser "Pegue 10 frutinhas numa corrida"; a regra continua 10 frutinhas.
+- Novos testes: `baseline_test.gd` fixa o comportamento da Floresta e da Praia (72 corridas por dino, pista, rival e robô, gravadas antes de qualquer mudança); `valley_test.gd` cobre geometria, voltas, frutinhas por volta, setas, retorno decrescente, queda lenta, direção, nível 3, fruta dourada, modo Sozinho, limite da câmera e a cena; `bots.gd` reúne os robôs bom/médio/parado. Adesivo do vale, dica da cesta e som da última volta em `rewards.test.mjs` e `audio.test.mjs`. Pack reexportado (14.771.164 bytes, 5.840 a mais que os 14.765.324 da 0.24.0).
+
 ## 0.24.0 — 2026-11-12
 
 - Contador de sequência: cada fruta comum pega enquanto o bônus da anterior está ativo (4 s) soma em `streak`, que zera quando o bônus acaba. A fruta dourada fica fora da conta. A mensagem `park-race` ganhou `streak`.
