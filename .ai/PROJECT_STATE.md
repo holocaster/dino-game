@@ -4,10 +4,10 @@ context: docs/CONTEXT.md
 brief: docs/briefs/0001-pista-longa.md
 spec: docs/specs/0001-pista-longa.md
 tickets_index: tickets/0001-pista-longa/index.md
-active_ticket: null
+active_ticket: "02"
 base_sha: null
 head_sha: null
 review: null
 review_round: 0
 blockers: []
-next_action: planner amendment to ticket 02 (stronger baseline fingerprint), then implement 02
+next_action: spawn sdd-implementer for ticket 02
