@@ -4,10 +4,10 @@ context: docs/CONTEXT.md
 brief: docs/briefs/0001-pista-longa.md
 spec: docs/specs/0001-pista-longa.md
 tickets_index: tickets/0001-pista-longa/index.md
-active_ticket: "05"
+active_ticket: ["05", "06"]
 base_sha: null
 head_sha: null
 review: null
 review_round: 0
 blockers: []
-next_action: spawn sdd-implementer for ticket 05
+next_action: spawn sdd-implementer for Batch 05-06
