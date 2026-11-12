@@ -31,7 +31,10 @@ const RECOVERY_LIFETIME := 5.0
 const RECOVERY_COOLDOWN := 10.0
 const RECOVERY_FINISH_MARGIN := 12.0
 const VALLEY_LAPS := 3
-const VALLEY_SECTIONS := 6
+const VALLEY_SECTIONS := 10
+const VALLEY_GAIN := 0.22
+const VALLEY_SOFTNESS := 0.6
+const VALLEY_DECAY := 0.2
 const VALLEY_CENTER := Vector2(24, -5)
 const VALLEY_RADIUS := 12.0
 const VALLEY_STRAIGHT := 45.0
@@ -78,6 +81,8 @@ var collected := 0
 var streak := 0
 var winner := ""
 var fruits: Array[Dictionary] = []
+var arrows: Array[Dictionary] = []
+var arrows_taken := 0
 var rng := RandomNumberGenerator.new()
 var resolve_motion: Callable
 var pickup_contact: Callable
@@ -91,7 +96,13 @@ var dino_id := "triceratops"
 var track_id := "forest"
 var base_speed := BASE_SPEED
 var rival_base_speed := RIVAL_SPEED
-var steer_speed := STEER_SPEED
+var _steer_speed := STEER_SPEED
+var steer_speed: float:
+	get:
+		return _steer_speed * _steer_factor(speed, base_speed)
+var valley: bool:
+	get:
+		return track_id == "valley"
 
 const DINOS := {
 	"triceratops": {"speed": 2.2, "steer": 2.4},
@@ -125,7 +136,7 @@ func configure(dino: String, circuit: String, rival: String = "playful") -> bool
 	rival_base_speed = profile.speed
 	rival_reaction = profile.reaction
 	base_speed = DINOS[dino].speed
-	steer_speed = DINOS[dino].steer
+	_steer_speed = DINOS[dino].steer
 	_build_track()
 	reset()
 	return true
@@ -134,7 +145,7 @@ func _build_track() -> void:
 	track.clear_points()
 	track.bake_interval = 0.08
 	laps = 1
-	if track_id == "valley":
+	if valley:
 		_build_stadium()
 		return
 	for i in range(5):
@@ -195,15 +206,24 @@ func reset() -> void:
 	rival_distracted_left = 0
 	rival_distraction_check = DISTRACTION_EVERY
 	collected = 0
+	arrows_taken = 0
 	streak = 0
 	golden_collected = 0
 	winner = ""
 	fruits.clear()
+	arrows.clear()
 	var slots: Array[Vector2] = []
-	var sections := VALLEY_SECTIONS if laps > 1 else 4
+	var sections := VALLEY_SECTIONS if valley else 4
 	var window := (lap_length - 8 - lap_length / 22) / sections
 	for section in range(sections):
 		var start := lap_length / 22 + section * window + rng.randf() * (window - 12)
+		if valley and section % (sections / 2) == 0:
+			var side := 1.0 if rng.randf() < 0.5 else -1.0
+			var offset := rng.randf_range(1.0, 1.55)
+			slots.append(Vector2(start + 2, side * offset))
+			slots.append(Vector2(start + 6, side * offset))
+			arrows.append({"distance": start + 2, "lateral": -side * offset})
+			continue
 		for step in range(2):
 			var offset := rng.randf_range(1.0, 1.55)
 			for side in [-1, 1]:
@@ -232,7 +252,7 @@ func _choose_rival_fruit() -> void:
 		if not fruit.owner.is_empty() or fruit.get("rival_taken", false) or fruit.get("rival_skip", false) or ahead <= 0.55:
 			continue
 		var arrival := ahead / rival_speed
-		var crossing := maxf(0, absf(fruit.lateral - rival_lateral) - 0.65) / RIVAL_STEER_SPEED
+		var crossing := maxf(0, absf(fruit.lateral - rival_lateral) - 0.65) / (RIVAL_STEER_SPEED * _rival_steer_factor())
 		if arrival > 3.0 or arrival < crossing + rival_reaction:
 			continue
 		var player_arrival: float = (fruit.distance - player_local) / speed
@@ -253,8 +273,9 @@ func _steer_rival(delta: float) -> void:
 		rival_distraction_check = DISTRACTION_EVERY
 		if rng.randf() < RIVALS.get(rival_id, RIVALS.playful).distraction:
 			rival_distracted_left = DISTRACTION_TIME
+	var factor := _rival_steer_factor()
 	if rival_distracted_left > 0:
-		rival_lateral_velocity = move_toward(rival_lateral_velocity, 0, RIVAL_STEER_ACCELERATION * delta)
+		rival_lateral_velocity = move_toward(rival_lateral_velocity, 0, RIVAL_STEER_ACCELERATION * factor * delta)
 		rival_lateral = clampf(rival_lateral + rival_lateral_velocity * delta, -LATERAL_LIMIT, LATERAL_LIMIT)
 		return
 	var rival_local := _lap_local(rival_distance, rival_distance)
@@ -276,8 +297,8 @@ func _steer_rival(delta: float) -> void:
 			side = 1.0 if lateral <= 0 else -1.0
 		goal = maxf(goal, lateral + 1.25) if side > 0 else minf(goal, lateral - 1.25)
 	goal = clampf(goal, -LATERAL_LIMIT, LATERAL_LIMIT)
-	var desired_velocity := clampf((goal - rival_lateral) * 2.5, -RIVAL_STEER_SPEED, RIVAL_STEER_SPEED)
-	rival_lateral_velocity = move_toward(rival_lateral_velocity, desired_velocity, RIVAL_STEER_ACCELERATION * delta)
+	var desired_velocity := clampf((goal - rival_lateral) * 2.5, -RIVAL_STEER_SPEED * factor, RIVAL_STEER_SPEED * factor)
+	rival_lateral_velocity = move_toward(rival_lateral_velocity, desired_velocity, RIVAL_STEER_ACCELERATION * factor * delta)
 	rival_lateral = clampf(rival_lateral + rival_lateral_velocity * delta, -LATERAL_LIMIT, LATERAL_LIMIT)
 
 func advance(delta: float, steering: float = 0) -> void:
@@ -298,11 +319,12 @@ func advance(delta: float, steering: float = 0) -> void:
 	rival_recovery_boost_left = maxf(0, rival_recovery_boost_left - delta)
 	recovery_cooldown = maxf(0, recovery_cooldown - delta)
 	rival_distracted_left = maxf(0, rival_distracted_left - delta)
+	var decay := VALLEY_DECAY if valley else FRUIT_BOOST * 4
 	if boost_left == 0:
 		streak = 0
-		speed = move_toward(_speed, base_speed, FRUIT_BOOST * 4 * delta)
+		speed = move_toward(_speed, base_speed, decay * delta)
 	if rival_boost_left == 0:
-		rival_speed = move_toward(_rival_speed, rival_base_speed, FRUIT_BOOST * 4 * delta)
+		rival_speed = move_toward(_rival_speed, rival_base_speed, decay * delta)
 	for fruit in fruits:
 		if fruit.get("respawn", 0.0) > 0:
 			fruit.respawn = maxf(0, fruit.respawn - delta)
@@ -349,18 +371,41 @@ func advance(delta: float, steering: float = 0) -> void:
 			fruit.player_taken = true
 			fruit.respawn = FRUIT_RESPAWN
 			collected += 1
-			streak += 1
-			speed = minf(base_speed + MAX_BOOST, _speed + FRUIT_BOOST)
-			boost_left = BOOST_DURATION
+			_impulse(false)
 		elif rival_hit:
 			fruit.owner = "rival"
 			fruit.rival_taken = true
 			fruit.respawn = FRUIT_RESPAWN
-			rival_speed = minf(rival_base_speed + MAX_BOOST, _rival_speed + FRUIT_BOOST)
-			rival_boost_left = BOOST_DURATION
+			_impulse(true)
+	for arrow in arrows:
+		if local_previous < arrow.distance and local >= arrow.distance and absf(lateral - arrow.lateral) < 0.8 and previous < length:
+			arrows_taken += 1
+			_impulse(false)
+		if rival_local_previous < arrow.distance and rival_local >= arrow.distance and absf(rival_lateral - arrow.lateral) < 0.8 and rival_previous < length:
+			_impulse(true)
 	_advance_recovery(delta, previous, rival_previous)
 	if distance >= length:
 		stage = "finished"
+
+func _impulse(rival: bool) -> void:
+	if rival:
+		rival_speed = _boosted(_rival_speed, rival_base_speed)
+		rival_boost_left = BOOST_DURATION
+	else:
+		streak += 1
+		speed = _boosted(_speed, base_speed)
+		boost_left = BOOST_DURATION
+
+func _boosted(current: float, base: float) -> float:
+	if not valley:
+		return minf(base + MAX_BOOST, current + FRUIT_BOOST)
+	return current + VALLEY_GAIN / (1 + maxf(0, current - base) / VALLEY_SOFTNESS)
+
+func _steer_factor(current: float, base: float) -> float:
+	return current / base if valley else 1.0
+
+func _rival_steer_factor() -> float:
+	return _steer_factor(rival_speed, rival_base_speed)
 
 func _new_lap(taken: String) -> void:
 	for fruit in fruits:

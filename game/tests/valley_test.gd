@@ -23,7 +23,13 @@ func _run() -> void:
 	_layout()
 	_golden()
 	_bots()
-	print("Vale state checks passed: catalog, stadium geometry, three Voltas, per-Volta Frutinhas, layout, Fruta dourada margin, Sozinho assist and bots.")
+	_retorno()
+	_decay()
+	_lateral()
+	_arrow_layout()
+	_arrow_pickup()
+	_level_three()
+	print("Vale state checks passed: catalog, stadium geometry, three Voltas, per-Volta Frutinhas, layout, Fruta dourada margin, Sozinho assist, bots, Retorno decrescente, decay, lateral scaling and Setas.")
 	for dino in Race.DINOS:
 		await _scene(dino)
 	remove_meta("race_selection")
@@ -133,6 +139,9 @@ func _lap_reset() -> void:
 	assert(race.lap == 2)
 	assert(not fruit.player_taken and not other.player_taken and other.rival_taken, "Player flags reset on a new Volta, Rival flags kept")
 	assert(other.owner.is_empty(), "Frutinha hidden by both returns for the Corredor on a new Volta")
+	race.lateral = 0
+	race.rival_lateral = -signf(fruit.lateral) * Race.LATERAL_LIMIT
+	race.rival_lateral_velocity = 0
 	for step in range(40):
 		race.advance(0.1)
 	race.distance = race.lap_length + fruit.distance - 0.6
@@ -148,7 +157,7 @@ func _layout() -> void:
 		var race := _valley("playful")
 		race.rng.seed = seed
 		race.reset()
-		assert(race.fruits.size() >= 20 and race.fruits.size() % 5 == 0)
+		assert(race.fruits.size() >= 20)
 		for fruit in race.fruits:
 			assert(fruit.distance >= race.lap_length / 22 and fruit.distance <= race.lap_length - 8, "Frutinha at %s" % fruit.distance)
 
@@ -181,6 +190,174 @@ func _bots() -> void:
 		if bot == "good":
 			assert(race.collected > 30, "Good bot collects Frutinhas on every Volta: %d" % race.collected)
 
+func _impulse_at(race: Race, arrow: Dictionary) -> float:
+	var before: float = race.speed
+	race.distance = arrow.distance - 0.05
+	race.lateral = arrow.lateral
+	race.rival_distance = 0
+	race.advance(0.1)
+	return race.speed - before
+
+func _retorno() -> void:
+	var race := _valley("playful")
+	_racing(race)
+	race.rival_think_time = INF
+	var arrow: Dictionary = race.arrows[0]
+	var gains: Array[float] = []
+	var level_three := 0
+	for i in range(30):
+		gains.append(_impulse_at(race, arrow))
+		assert(race.streak == i + 1 and race.collected == 0 and race.boost_left == Race.BOOST_DURATION)
+		if level_three == 0 and Race.speed_level(race.speed - race.base_speed) == 3:
+			level_three = i + 1
+	assert(gains[0] >= Race.FRUIT_BOOST, "First Impulso %s" % gains[0])
+	for i in range(1, gains.size()):
+		assert(gains[i] > 0 and gains[i] < gains[i - 1], "Retorno decrescente gains %s" % [gains])
+	assert(race.speed - race.base_speed > Race.MAX_BOOST * 2, "No fixed cap in the Vale")
+	assert(level_three >= 6 and level_three <= 10, "Level 3 after %d Impulsos" % level_three)
+	var fruit_race := _valley("playful")
+	_racing(fruit_race)
+	fruit_race.rival_think_time = INF
+	var fruit: Dictionary = fruit_race.fruits[0]
+	fruit_race.distance = fruit.distance - 0.6
+	fruit_race.lateral = fruit.lateral
+	fruit_race.advance(0.1)
+	var seta_race := _valley("playful")
+	_racing(seta_race)
+	assert(fruit_race.collected == 1 and is_equal_approx(fruit_race.speed - fruit_race.base_speed, _impulse_at(seta_race, seta_race.arrows[0])), "Frutinha and Seta give the same Impulso")
+	assert(fruit_race.boost_left == seta_race.boost_left and fruit_race.streak == seta_race.streak)
+
+func _decay() -> void:
+	var left := {}
+	for circuit in ["forest", "valley"]:
+		var race := Race.new()
+		race.configure("triceratops", circuit, "playful")
+		_racing(race)
+		race.fruits.clear()
+		race.arrows.clear()
+		race.rival_think_time = INF
+		race.speed = race.base_speed + Race.MAX_BOOST
+		race.boost_left = 0.05
+		race.streak = 4
+		race.advance(0.1)
+		assert(race.streak == 0, "Sequência resets when the Impulso ends")
+		race.advance(0.9)
+		left[circuit] = race.speed - race.base_speed
+	assert(left.valley > left.forest + 0.3 and left.valley < Race.MAX_BOOST, "Vale decays slowly: %s" % left)
+
+func _lateral() -> void:
+	for circuit in ["forest", "valley"]:
+		var scale := 2.0 if circuit == "valley" else 1.0
+		var race := Race.new()
+		race.configure("triceratops", circuit, "playful")
+		_racing(race)
+		race.rival_think_time = INF
+		race.speed = race.base_speed * 2
+		race.boost_left = 10
+		assert(is_equal_approx(race.steer_speed, Race.DINOS.triceratops.steer * scale))
+		race.lateral = 0
+		race.advance(0.05, 1)
+		assert(is_equal_approx(race.lateral, Race.DINOS.triceratops.steer * scale * 0.05), "%s player steering %s" % [circuit, race.lateral])
+		var target := 0
+		for i in range(race.fruits.size()):
+			if absf(race.fruits[i].lateral) > 0.9 and race.fruits[i].distance > 8:
+				target = i
+				break
+		var fruit: Dictionary = race.fruits[target]
+		race.rival_distance = fruit.distance - 6
+		race.distance = fruit.distance + 10
+		race.rival_lateral = -signf(fruit.lateral) * Race.LATERAL_LIMIT
+		race.rival_lateral_velocity = 0
+		race.rival_target_fruit = target
+		race.rival_speed = race.rival_base_speed * 2
+		race.rival_boost_left = 10
+		race.recovery_cooldown = 100
+		race.advance(0.05)
+		assert(is_equal_approx(absf(race.rival_lateral_velocity), Race.RIVAL_STEER_ACCELERATION * scale * 0.05), "%s Rival acceleration %s" % [circuit, race.rival_lateral_velocity])
+		var fastest := 0.0
+		for step in range(20):
+			race.advance(0.05)
+			fastest = maxf(fastest, absf(race.rival_lateral_velocity))
+		assert(fastest > Race.RIVAL_STEER_SPEED * 1.5 if circuit == "valley" else fastest <= Race.RIVAL_STEER_SPEED + 0.0001, "%s Rival steer speed %s" % [circuit, fastest])
+		var solo := Race.new()
+		solo.configure("triceratops", circuit, "none")
+		_racing(solo)
+		var near: Dictionary = solo.fruits.filter(func(item): return absf(item.lateral) > 0.9)[0]
+		solo.speed = solo.base_speed * 2
+		solo.boost_left = 10
+		solo.distance = near.distance - 2
+		solo.lateral = near.lateral - signf(near.lateral) * 1.5
+		var before := solo.lateral
+		solo.advance(0.05)
+		assert(is_equal_approx(absf(solo.lateral - before), Race.DINOS.triceratops.steer * scale * Race.ASSIST_STRENGTH * 0.05), "%s assist %s" % [circuit, solo.lateral - before])
+
+func _arrow_layout() -> void:
+	for circuit in ["forest", "beach"]:
+		var race := Race.new()
+		race.configure("triceratops", circuit)
+		assert(race.arrows.is_empty())
+	var sides := {}
+	for seed in range(1, 21):
+		var race := _valley("playful")
+		race.rng.seed = seed
+		race.reset()
+		assert(race.arrows.size() == 2, "One Seta per straight")
+		var straights := []
+		for arrow in race.arrows:
+			assert(arrow.distance >= race.lap_length / 22 and arrow.distance <= race.lap_length - 8, "Seta at %s" % arrow.distance)
+			for offset in [-3.0, 0.0, 6.0]:
+				assert(race.sample(arrow.distance).x.dot(race.sample(arrow.distance + offset).x) > 0.9999, "Seta must sit on a straight")
+			var direction: Vector2 = race.sample(arrow.distance).x
+			assert(not straights.any(func(other): return other.dot(direction) > 0), "Setas on different straights")
+			straights.append(direction)
+			var side := -signf(arrow.lateral)
+			var level := race.fruits.filter(func(fruit): return is_equal_approx(fruit.distance, arrow.distance))
+			assert(level.size() == 1 and signf(level[0].lateral) == side, "Seta opposite the first one-sided Frutinha")
+			var stretch := race.fruits.filter(func(fruit): return fruit.distance >= arrow.distance - 3 and fruit.distance <= arrow.distance + 5)
+			assert(stretch.size() >= 2 and stretch.all(func(fruit): return signf(fruit.lateral) == side), "Choice stretch Frutinhas are one-sided")
+			sides["%d %s" % [straights.size(), side]] = true
+	assert(sides.size() == 4, "Each straight draws its side per Corrida: %s" % sides)
+
+func _arrow_pickup() -> void:
+	var race := _valley("playful")
+	_racing(race)
+	race.rival_think_time = INF
+	for lap in range(3):
+		for arrow in race.arrows:
+			var speed: float = race.speed
+			var rival_speed: float = race.rival_speed
+			var streak: int = race.streak
+			race.distance = race.lap_length * lap + arrow.distance - 0.05
+			race.rival_distance = race.distance
+			race.lateral = -arrow.lateral
+			race.rival_lateral = arrow.lateral
+			race.rival_lateral_velocity = 0
+			race.resolve_motion = func(_previous, _rival_previous, _delta): race.lateral = arrow.lateral
+			race.advance(0.1)
+			assert(race.speed > speed and race.rival_speed > rival_speed, "Both Corredores take the Seta on Volta %d" % (lap + 1))
+			assert(race.boost_left == Race.BOOST_DURATION and race.rival_boost_left == Race.BOOST_DURATION and race.streak == streak + 1)
+			assert(race.collected == 0, "Seta is not a Frutinha")
+	assert(race.arrows_taken == 6)
+	race.resolve_motion = Callable()
+	var arrow: Dictionary = race.arrows[0]
+	var speed: float = race.speed
+	race.distance = arrow.distance - 0.05
+	race.lateral = 0
+	race.advance(0.1)
+	assert(race.speed <= speed and race.arrows_taken == 6, "Seta needs the Corredor over it")
+
+func _level_three() -> void:
+	var race := _valley("playful")
+	race.rng.seed = 7
+	race.reset()
+	_racing(race)
+	var reached := false
+	while race.stage != "finished":
+		race.advance(0.05, Bots.good(race))
+		if race.golden_collected == 0 and race.recovery_boost_left == 0 and Race.speed_level(race.speed - race.base_speed) == 3:
+			reached = true
+	assert(reached, "Good bot reaches level 3 without the Fruta dourada")
+
 func _scene(dino: String) -> void:
 	set_meta("race_selection", [dino, "valley", "playful"])
 	var game := RecordedRace.new()
@@ -202,6 +379,10 @@ func _scene(dino: String) -> void:
 			for margin in [Vector2(-8, -8), Vector2(8, 8)]:
 				var q: Vector2 = p + margin
 				assert(terrain.has_point(Vector3(q.x, terrain.get_center().y, q.y)), "Terrain under the track and its surroundings at %s" % q)
+	assert(game.arrow_nodes.size() == 2)
+	for index in range(2):
+		var pose: Transform2D = game.race.sample(game.race.arrows[index].distance, game.race.arrows[index].lateral)
+		assert(Vector2(game.arrow_nodes[index].position.x, game.arrow_nodes[index].position.z).distance_to(pose.origin) < 0.01)
 	game.restart()
 	var previous: float = game.race.distance
 	for step in range(4000):
@@ -226,6 +407,18 @@ func _scene(dino: String) -> void:
 		if event.get("name", "") == "splash" and not splashes.has(event.lap):
 			splashes.append(event.lap)
 	assert(splashes == [1, 2, 3], "Puddles splash on every Volta: %s" % [splashes])
+	game.restart()
+	var events: int = game.events.size()
+	var goal: float = game.race.arrows[0].lateral
+	for step in range(200):
+		game.right_pressed = goal > game.race.lateral + 0.1
+		game.left_pressed = goal < game.race.lateral - 0.1
+		game._process(0.1)
+		await physics_frame
+		if game.race.arrows_taken > 0:
+			break
+	assert(game.race.arrows_taken == 1 and game.race.collected == 0, "Player crosses the first Seta")
+	assert(game.events.slice(events).any(func(event): return event.get("name", "") == "pickup"), "Seta Impulso plays the pickup sound")
 	game.queue_free()
 	await process_frame
 	print("Vale scene passed: ", dino)

@@ -5,6 +5,7 @@ const RUN_SPEED := RUN_CYCLE_DISTANCE / 0.8
 
 var race := preload("res://race/race_state.gd").new()
 var fruit_nodes: Array[Node3D] = []
+var arrow_nodes: Array[Node3D] = []
 var recovery_node: Area3D
 var left_pressed := false
 var right_pressed := false
@@ -60,6 +61,8 @@ func _ready() -> void:
 		friend.collision_mask = 0
 	for index in range(race.fruits.size()):
 		fruit_nodes.append(_create_fruit("e88a63"))
+	for arrow in race.arrows:
+		arrow_nodes.append(_create_arrow())
 	recovery_node = _create_fruit("ffd34e")
 	var golden_material: StandardMaterial3D = recovery_node.get_child(0).material_override
 	golden_material.emission_enabled = true
@@ -96,6 +99,15 @@ func _create_fruit(color: String) -> Area3D:
 	shape.shape.radius = 0.32
 	shape.position.y = 0.42
 	holder.add_child(shape)
+	return holder
+
+func _create_arrow() -> Node3D:
+	var holder := Node3D.new()
+	add_child(holder)
+	for tip in [-0.35, 0.25]:
+		for side in [-1, 1]:
+			var arm := _box(Vector3(0.14, 0.03, 0.6), Vector3(side * 0.2, 0.04, tip + 0.2), "f6b93b", holder)
+			arm.rotation.y = side * PI / 4
 	return holder
 
 func _runner(green: bool) -> Node3D:
@@ -301,6 +313,10 @@ func reset_race() -> void:
 		var pose: Transform2D = race.sample(race.fruits[index].distance, race.fruits[index].lateral)
 		fruit_nodes[index].position = forest.point(pose.origin.x, pose.origin.y)
 		fruit_nodes[index].visible = true
+	for index in range(arrow_nodes.size()):
+		var pose: Transform2D = race.sample(race.arrows[index].distance, race.arrows[index].lateral)
+		arrow_nodes[index].position = forest.point(pose.origin.x, pose.origin.y)
+		arrow_nodes[index].rotation.y = atan2(-pose.x.x, -pose.x.y)
 	_update_recovery_visuals()
 	_position_runner(dinosaur, dinosaur_animation, 0, race.lateral, 0)
 	_position_runner(friend, friend_animation, 0, race.rival_lateral, 0)
@@ -400,6 +416,7 @@ func _process(delta: float) -> void:
 	var previous_rival_position := friend.position
 	var previous_rival_yaw: float = friend.rotation.y + friend.get_node("Model").rotation.y
 	var collected: int = race.collected
+	var arrows_taken: int = race.arrows_taken
 	var stage: String = race.stage
 	race.advance(delta, float(right_pressed) - float(left_pressed))
 	var moving: bool = race.stage == "racing" and not race.paused
@@ -423,7 +440,7 @@ func _process(delta: float) -> void:
 	_update_recovery_visuals()
 	scenery.advance(delta, previous, previous_rival_position)
 	speed_effects.advance()
-	if race.collected > collected:
+	if race.collected > collected or race.arrows_taken > arrows_taken:
 		_notify({"type": "park-sound", "name": "pickup"})
 	if race.stage == "finished" and stage != "finished":
 		_notify({"type": "park-sound", "name": "happy"})
