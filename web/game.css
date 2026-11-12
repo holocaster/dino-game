@@ -160,7 +160,9 @@ progress::-moz-progress-bar { background: #df9865; border-radius: 8px; }
   .steer { grid-row: 2; align-self: end; width: 72px; height: 72px; border-radius: 22px; }
   .steer[data-direction="left"] { grid-column: 1; }
   .steer[data-direction="right"] { grid-column: 3; }
-  .invitation { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .invitation { grid-area: 2 / 1; align-self: start; width: 72px; }
+  .invitation p, .invitation > span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .lap-count { margin: 0; font-size: 11px; letter-spacing: 1px; }
   .welcome { padding: 8px; }
   .welcome-card { padding: 8px 16px; }
   #welcome .welcome-card p:not(.load-status), .welcome-leaf { display: none; }

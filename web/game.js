@@ -207,7 +207,7 @@ function renderRace(data) {
   panel.hidden = !data.paused && !finished;
   if (!panel.hidden) {
     document.querySelector('#panel-title').textContent = finished
-      ? (solo ? 'Volta tranquila completa!' : data.winner === 'player' ? 'Você chegou primeiro!' : data.winner === 'both' ? 'Chegaram juntinhos!' : 'Seu amigo chegou primeiro!')
+      ? (solo ? (data.laps > 1 ? 'Passeio de três voltas completo!' : 'Volta tranquila completa!') : data.winner === 'player' ? 'Você chegou primeiro!' : data.winner === 'both' ? 'Chegaram juntinhos!' : 'Seu amigo chegou primeiro!')
       : 'Uma pequena pausa';
     document.querySelector('#panel-message').textContent = finished
       ? [solo ? `Você pegou ${data.fruit} frutinhas.` : 'Que corrida gostosa!', prize, 'Vamos brincar de novo?'].filter(Boolean).join(' ')
