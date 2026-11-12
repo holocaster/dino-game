@@ -4,8 +4,9 @@
 
 **Blocked by:** 01 (Pin Floresta/Praia behaviour with a characterization test and shared bots).
 
-**Spec:** `docs/specs/0001-pista-longa.md` - Requirements R1, R2, R3, R4, R5, R11 (three Voltas part), R12 (finish margin), R15, R18; Implementation Decisions (Race state: Track catalog, Lap vs race length, Lap-local positions, Per-lap reset; Race scene and scenery; Web page: track card); Testing Decisions (Vale rule test). **ADRs:** `docs/adrs/0001-retorno-decrescente-so-no-vale.md`.
+**Spec:** `docs/specs/0001-pista-longa.md` - Requirements R1, R2, R3, R4, R5, R11 (three Voltas part), R12 (finish margin), R15, R18; Implementation Decisions (Race state: Track catalog, Lap vs race length, Lap-local positions, Per-lap reset; Race scene and scenery; Web page: track card); Testing Decisions (Characterization test, Vale rule test). **ADRs:** `docs/adrs/0001-retorno-decrescente-so-no-vale.md`.
 
+- [ ] First step, committed before any production change: `game/tests/baseline_test.gd` fingerprint is extended with the Rival's final progress (`rival_distance`, `%.4f`) for every run, with all `EXPECTED` values re-recorded from unchanged production code (only the test file changes in that commit; the existing fields of every entry stay identical), and the test asserts `runs == EXPECTED.size()`.
 - [ ] `TRACKS` is `forest, beach, valley`; `configure(dino, "valley", rival)` succeeds for every Dino and Rival including `none`, and `select:<dino>:valley:<rival>` is accepted by the bridge.
 - [ ] The Vale curve is a closed stadium: two straights and two curves, `lap_length` between 150 and 180 u, centre-line minimum curve radius at least 10 u.
 - [ ] Race state exposes `lap_length`, `laps` (1 on Floresta/Praia, 3 on Vale) and `lap` (player's Volta, 1..laps); `length == lap_length * laps`; `sample()` wraps by `lap_length`.
@@ -17,5 +18,5 @@
 - [ ] The `park-race` report includes `lap` and `laps` on every Pista.
 - [ ] Web: third card "Vale" (`value="valley"`) with a CSS-only preview in "Onde vamos brincar?"; `catalog.test.mjs` passes.
 - [ ] New Godot Vale test (added to `test:race`) covers: geometry bounds, closed loop, `lap` progression 1->2->3, finish at `length`, per-Volta Frutinha reset, Fruta dourada not spawning in the last 12 u of the Corrida but allowed near the end of Voltas 1-2, Sozinho finishing three Voltas with the assist collecting Frutinhas, and a scene run (all Dinos) checking track clear of trunks/blocked cells, terrain under the track, character on screen, finish reached, and `lap`/`laps` in the report.
-- [ ] The characterization test from ticket 01 passes unchanged; all existing Godot and Node tests pass.
+- [ ] The characterization test, as extended in the first step, passes unchanged at the end of the ticket; all existing Godot and Node tests pass.
 - [ ] Browser validation is done by the orchestrator (Playwright) after implementation; do not require a browser. No version bump (ticket 06).
