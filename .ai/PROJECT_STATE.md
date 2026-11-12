@@ -4,10 +4,10 @@ context: docs/CONTEXT.md
 brief: docs/briefs/0001-pista-longa.md
 spec: docs/specs/0001-pista-longa.md
 tickets_index: tickets/0001-pista-longa/index.md
-active_ticket: ["05", "06"]
-base_sha: f9bd4f71118a4f73e4e9d55ac3270d513a3ad908
-head_sha: abb4664d233f6f7759644c24969929224305f00d
+active_ticket: null
+base_sha: null
+head_sha: null
 review: null
-review_round: 1
+review_round: 0
 blockers: []
-next_action: spawn sdd-reviewer for Batch 05-06 (round 2 range)
+next_action: all tickets done; orchestrator browser validation of 0.25.0, then report to user
