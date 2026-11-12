@@ -87,6 +87,7 @@ func _run() -> void:
 		assert(scenery.elapsed == 0 and scenery.puddles.all(func(item): return not item.player_splashed and not item.rival_splashed))
 		assert(scenery.splashes.all(func(item): return not item.node.visible))
 		assert(scenery.spectators.all(func(item): return not item.cheered and item.node.position == item.base))
+		assert(game.events.filter(func(event): return event.type == "park-race").all(func(event): return event.lap == 1 and event.laps == 1))
 		game.queue_free()
 		await process_frame
 	remove_meta("race_selection")

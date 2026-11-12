@@ -150,10 +150,11 @@ func _track_boundaries() -> void:
 	boundary.collision_layer = 2
 	boundary.collision_mask = 0
 	add_child(boundary)
+	var segments := maxi(96, ceili(race.lap_length))
 	for side in [-1, 1]:
-		for index in range(96):
-			var a: Vector2 = race.sample(race.length * index / 96, side * race.TRACK_WIDTH).origin
-			var b: Vector2 = race.sample(race.length * (index + 1) / 96, side * race.TRACK_WIDTH).origin
+		for index in range(segments):
+			var a: Vector2 = race.sample(race.lap_length * index / segments, side * race.TRACK_WIDTH).origin
+			var b: Vector2 = race.sample(race.lap_length * (index + 1) / segments, side * race.TRACK_WIDTH).origin
 			var center := (a + b) * 0.5
 			var shape := CollisionShape3D.new()
 			shape.shape = BoxShape3D.new()
@@ -187,10 +188,7 @@ func _move_runner(runner: CharacterBody3D, progress: float, offset: float, delta
 func _track_coordinates(runner: Node3D, previous: float) -> Vector2:
 	var p := Vector2(runner.position.x, runner.position.z)
 	var progress: float = race.track.get_closest_offset(p)
-	if progress < previous - race.length / 2:
-		progress += race.length
-	elif progress > previous + race.length / 2:
-		progress -= race.length
+	progress += roundf((previous - progress) / race.lap_length) * race.lap_length
 	var pose: Transform2D = race.sample(progress)
 	return Vector2(progress, (p - pose.origin).dot(Vector2(-pose.x.y, pose.x.x)))
 
@@ -280,13 +278,14 @@ func _decorate_track() -> void:
 			var z := start.origin.y + row * 0.3
 			_box(Vector3(0.46, 0.025, 0.3), forest.point(x, z) + Vector3.UP * 0.025, "fff4d4" if (row + column) % 2 else "7c9462")
 	for i in range(40):
-		var pose: Transform2D = race.sample(race.length * i / 40, 6.2 if i % 2 else -6.2)
+		var pose: Transform2D = race.sample(race.lap_length * i / 40, 6.2 if i % 2 else -6.2)
 		var p := pose.origin
 		if p.distance_to(forest.POND) > 3.5 and not forest.trees.any(func(tree): return tree.position.distance_to(p) < 2.5):
 			forest.tree(p, 1.5 + float(i % 3) * 0.15, i)
-	for i in range(50):
+	var markers := maxi(50, ceili(race.lap_length / 2))
+	for i in range(markers):
 		for side in [-1, 1]:
-			var pose: Transform2D = race.sample(race.length * i / 50, side * race.TRACK_WIDTH)
+			var pose: Transform2D = race.sample(race.lap_length * i / markers, side * race.TRACK_WIDTH)
 			var p: Vector3 = forest.point(pose.origin.x, pose.origin.y)
 			_sphere(p + Vector3.UP * 0.06, Vector3(0.16, 0.08, 0.16), "fff0ba")
 
@@ -434,4 +433,4 @@ func _process(delta: float) -> void:
 		_report()
 
 func _report() -> void:
-	_notify({"type": "park-race", "stage": race.stage, "countdown": ceili(race.countdown), "paused": race.paused, "progress": race.distance / race.length, "rivalProgress": race.rival_distance / race.length, "fruit": race.collected, "speed": race.speed, "baseSpeed": race.base_speed, "boostLeft": race.boost_left, "recoveryBoostLeft": race.recovery_boost_left, "rivalRecoveryBoostLeft": race.rival_recovery_boost_left, "recoveryTarget": race.recovery_fruit.get("target", ""), "dino": race.dino_id, "track": race.track_id, "winner": race.winner, "lateral": race.lateral, "rivalLateral": race.rival_lateral, "rivalSpeed": race.rival_speed, "rival": race.rival_id, "golden": race.golden_collected, "rivalDistracted": race.rival_distracted_left > 0, "speedLevel": race.speed_level(race.speed - race.base_speed), "streak": race.streak})
+	_notify({"type": "park-race", "stage": race.stage, "countdown": ceili(race.countdown), "paused": race.paused, "progress": race.distance / race.length, "rivalProgress": race.rival_distance / race.length, "fruit": race.collected, "speed": race.speed, "baseSpeed": race.base_speed, "boostLeft": race.boost_left, "recoveryBoostLeft": race.recovery_boost_left, "rivalRecoveryBoostLeft": race.rival_recovery_boost_left, "recoveryTarget": race.recovery_fruit.get("target", ""), "dino": race.dino_id, "track": race.track_id, "winner": race.winner, "lateral": race.lateral, "rivalLateral": race.rival_lateral, "rivalSpeed": race.rival_speed, "rival": race.rival_id, "golden": race.golden_collected, "rivalDistracted": race.rival_distracted_left > 0, "speedLevel": race.speed_level(race.speed - race.base_speed), "streak": race.streak, "lap": race.lap, "laps": race.laps})

@@ -1,6 +1,8 @@
 extends Node3D
 
 const TREE_SHADER := preload("res://world/tree.gdshader")
+const VALLEY_CENTER: Vector2 = preload("res://race/race_state.gd").VALLEY_CENTER
+const VALLEY_FIELD := Vector2(36, 56)
 const POND := Vector2(-7.2, 0.1)
 const AREAS := [Vector3(0, 1.0, 4.0), Vector3(-6.2, 0, 3.3), Vector3(0, -6.8, 3.2), Vector3(-11, -8, 4.2), Vector3(6, -12, 4.8), Vector3(0, -20, 3.7)]
 const GRID := Rect2i(-80, -104, 145, 145)
@@ -15,6 +17,9 @@ var race_track: Curve2D
 var theme := "forest"
 
 func height_at(x: float, z: float) -> float:
+	if theme == "valley":
+		var field := ((Vector2(x, z) - VALLEY_CENTER) / VALLEY_FIELD).length()
+		return 0.12 + sin(x * 0.23) * cos(z * 0.19) * 0.1 - smoothstep(0.9, 1.1, field) * 0.6
 	if theme == "beach":
 		var coast := ((Vector2(x, z) - Vector2(-1, -5)) / Vector2(21, 17.5)).length()
 		return 0.16 + sin(x * 0.3) * cos(z * 0.3) * 0.08 - smoothstep(0.88, 1.08, coast) * 0.8
@@ -64,6 +69,9 @@ func _ready() -> void:
 		trails.append(_make_loop([Vector2(-4.4, -4), Vector2(-8, -5), Vector2(-11, -8), Vector2(-10, -12), Vector2(-6, -16), Vector2(-2, -19), Vector2(0, -20), Vector2(4, -18), Vector2(7, -14), Vector2(6, -11), Vector2(3, -9), Vector2(1.3, -6.1), Vector2(-1.2, -6.3)]))
 	if theme == "beach":
 		_beach()
+		return
+	if theme == "valley":
+		_valley()
 		return
 
 	if not race_track:
@@ -286,6 +294,35 @@ func _beach() -> void:
 		var angle := i * TAU / 40
 		var p := Vector2(-1, -5) + Vector2(cos(angle) * 20, sin(angle) * 16.7)
 		blob(Vector3(p.x, -0.31, p.y), Vector3(0.65, 0.025, 0.18), "daf2e2")
+
+func _valley() -> void:
+	var backdrop := PlaneMesh.new()
+	backdrop.size = Vector2.ONE * 240
+	place(backdrop, Vector3(VALLEY_CENTER.x, -0.45, VALLEY_CENTER.y), "86b84c")
+	var surface := SurfaceTool.new()
+	surface.begin(Mesh.PRIMITIVE_TRIANGLES)
+	for x in range(-40, 40):
+		for z in range(-60, 60):
+			for offset in [Vector2(0, 0), Vector2(1, 0), Vector2(0, 1), Vector2(1, 0), Vector2(1, 1), Vector2(0, 1)]:
+				var p := VALLEY_CENTER + Vector2(x + offset.x, z + offset.y)
+				var color := Color("9cc45a").lerp(Color("86b84c"), (sin(p.x * 0.7) * cos(p.y * 0.5) + 1) * 0.5)
+				color = color.lerp(Color("e8c483"), 1 - smoothstep(2.3, 3.3, distance_to_trail(p)))
+				surface.set_color(color.srgb_to_linear())
+				surface.add_vertex(point(p.x, p.y))
+	surface.generate_normals()
+	var terrain := MeshInstance3D.new()
+	terrain.name = "Terrain"
+	terrain.mesh = surface.commit()
+	terrain.material_override = StandardMaterial3D.new()
+	terrain.material_override.vertex_color_use_as_albedo = true
+	terrain.material_override.roughness = 1
+	add_child(terrain)
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 7301
+	for i in range(70):
+		var p := VALLEY_CENTER + Vector2(rng.randf_range(-32, 32), rng.randf_range(-50, 50))
+		if distance_to_trail(p) > 7 and not trees.any(func(item): return item.position.distance_to(p) < 4.0):
+			tree(p, rng.randf_range(1.4, 2.0), i)
 
 func reveal_character(camera: Vector3, character: Vector3, delta: float, subject_radius: float = 0.65) -> void:
 	var start := Vector2(camera.x, camera.z)

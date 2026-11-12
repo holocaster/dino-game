@@ -21,8 +21,9 @@ static func idle(_race, _delta: float = 0.05) -> float:
 static func _steer(race, targets: Array, delta: float) -> float:
 	var goal: float = race.lateral
 	var best := INF
+	var progress: float = race.distance - (race.lap - 1) * race.lap_length
 	for target in targets:
-		var ahead: float = target.distance - race.distance
+		var ahead: float = target.distance - progress
 		var score := ahead + absf(target.lateral - race.lateral)
 		if ahead >= 0 and not target.get("player_taken", false) and score < best:
 			best = score

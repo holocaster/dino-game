@@ -30,9 +30,22 @@ const RECOVERY_DURATION := 4.0
 const RECOVERY_LIFETIME := 5.0
 const RECOVERY_COOLDOWN := 10.0
 const RECOVERY_FINISH_MARGIN := 12.0
+const VALLEY_LAPS := 3
+const VALLEY_SECTIONS := 6
+const VALLEY_CENTER := Vector2(24, -5)
+const VALLEY_RADIUS := 12.0
+const VALLEY_STRAIGHT := 45.0
 
 var track := Curve2D.new()
 var length := 0.0
+var lap_length := 0.0
+var laps := 1
+var lap: int:
+	get:
+		return _lap_index(distance) + 1
+var rival_lap: int:
+	get:
+		return _lap_index(rival_distance) + 1
 var stage := "ready"
 var countdown := 3.0
 var paused := false
@@ -85,7 +98,7 @@ const DINOS := {
 	"trex": {"speed": 2.27, "steer": 2.2},
 	"raptor": {"speed": 2.13, "steer": 2.7}
 }
-const TRACKS := ["forest", "beach"]
+const TRACKS := ["forest", "beach", "valley"]
 const SPEED_LEVELS := [0.3, 0.6, 1.0]
 
 func _init() -> void:
@@ -120,13 +133,45 @@ func configure(dino: String, circuit: String, rival: String = "playful") -> bool
 func _build_track() -> void:
 	track.clear_points()
 	track.bake_interval = 0.08
+	laps = 1
+	if track_id == "valley":
+		_build_stadium()
+		return
 	for i in range(5):
 		var angle := i * PI / 2
 		var radii := Vector2(13, 14) if track_id == "forest" else Vector2(15, 11)
 		var p := Vector2(-1, -5) + Vector2(cos(angle), -sin(angle)) * radii
 		var tangent := Vector2(-sin(angle), -cos(angle)) * radii * 0.55228475
 		track.add_point(p, -tangent, tangent)
-	length = track.get_baked_length()
+	lap_length = track.get_baked_length()
+	length = lap_length
+
+func _build_stadium() -> void:
+	var half := VALLEY_STRAIGHT / 2
+	var handle := VALLEY_RADIUS * 0.55228475
+	var right := VALLEY_CENTER.x + VALLEY_RADIUS
+	var left := VALLEY_CENTER.x - VALLEY_RADIUS
+	var points := [
+		[Vector2(right, VALLEY_CENTER.y), Vector2.ZERO, Vector2.ZERO],
+		[Vector2(right, VALLEY_CENTER.y - half), Vector2.ZERO, Vector2(0, -handle)],
+		[VALLEY_CENTER + Vector2(0, -half - VALLEY_RADIUS), Vector2(handle, 0), Vector2(-handle, 0)],
+		[Vector2(left, VALLEY_CENTER.y - half), Vector2(0, -handle), Vector2.ZERO],
+		[Vector2(left, VALLEY_CENTER.y + half), Vector2.ZERO, Vector2(0, handle)],
+		[VALLEY_CENTER + Vector2(0, half + VALLEY_RADIUS), Vector2(-handle, 0), Vector2(handle, 0)],
+		[Vector2(right, VALLEY_CENTER.y + half), Vector2(0, handle), Vector2.ZERO],
+		[Vector2(right, VALLEY_CENTER.y), Vector2.ZERO, Vector2.ZERO]
+	]
+	for point in points:
+		track.add_point(point[0], point[1], point[2])
+	laps = VALLEY_LAPS
+	lap_length = track.get_baked_length()
+	length = lap_length * laps
+
+func _lap_index(progress: float) -> int:
+	return mini(floori(progress / lap_length), laps - 1)
+
+func _lap_local(progress: float, reference: float) -> float:
+	return progress - _lap_index(reference) * lap_length
 
 func reset() -> void:
 	stage = "ready"
@@ -155,9 +200,10 @@ func reset() -> void:
 	winner = ""
 	fruits.clear()
 	var slots: Array[Vector2] = []
-	var window := (length - 8 - length / 22) / 4
-	for section in range(4):
-		var start := length / 22 + section * window + rng.randf() * (window - 12)
+	var sections := VALLEY_SECTIONS if laps > 1 else 4
+	var window := (lap_length - 8 - lap_length / 22) / sections
+	for section in range(sections):
+		var start := lap_length / 22 + section * window + rng.randf() * (window - 12)
 		for step in range(2):
 			var offset := rng.randf_range(1.0, 1.55)
 			for side in [-1, 1]:
@@ -171,23 +217,25 @@ func start() -> void:
 		stage = "countdown"
 
 func sample(progress: float, offset: float = 0) -> Transform2D:
-	var pose := track.sample_baked_with_rotation(fposmod(progress, length), true)
+	var pose := track.sample_baked_with_rotation(fposmod(progress, lap_length), true)
 	pose.origin += Vector2(-pose.x.y, pose.x.x) * offset
 	return pose
 
 func _choose_rival_fruit() -> void:
 	rival_target_fruit = -1
 	var best_score := INF
+	var rival_local := _lap_local(rival_distance, rival_distance)
+	var player_local := _lap_local(distance, distance)
 	for i in range(fruits.size()):
 		var fruit: Dictionary = fruits[i]
-		var ahead: float = fruit.distance - rival_distance
+		var ahead: float = fruit.distance - rival_local
 		if not fruit.owner.is_empty() or fruit.get("rival_taken", false) or fruit.get("rival_skip", false) or ahead <= 0.55:
 			continue
 		var arrival := ahead / rival_speed
 		var crossing := maxf(0, absf(fruit.lateral - rival_lateral) - 0.65) / RIVAL_STEER_SPEED
 		if arrival > 3.0 or arrival < crossing + rival_reaction:
 			continue
-		var player_arrival: float = (fruit.distance - distance) / speed
+		var player_arrival: float = (fruit.distance - player_local) / speed
 		if player_arrival >= 0 and absf(lateral - fruit.lateral) < 0.8 and player_arrival + rival_reaction < arrival:
 			continue
 		var score := arrival + crossing * 0.4
@@ -209,13 +257,14 @@ func _steer_rival(delta: float) -> void:
 		rival_lateral_velocity = move_toward(rival_lateral_velocity, 0, RIVAL_STEER_ACCELERATION * delta)
 		rival_lateral = clampf(rival_lateral + rival_lateral_velocity * delta, -LATERAL_LIMIT, LATERAL_LIMIT)
 		return
+	var rival_local := _lap_local(rival_distance, rival_distance)
 	rival_think_time = maxf(0, rival_think_time - delta)
 	if rival_think_time <= 0:
 		rival_think_time = rival_reaction
-		if rival_target_fruit < 0 or not fruits[rival_target_fruit].owner.is_empty() or fruits[rival_target_fruit].distance < rival_distance - 0.55:
+		if rival_target_fruit < 0 or not fruits[rival_target_fruit].owner.is_empty() or fruits[rival_target_fruit].distance < rival_local - 0.55:
 			_choose_rival_fruit()
 	var goal := rival_lateral
-	if rival_target_fruit >= 0 and fruits[rival_target_fruit].owner.is_empty() and fruits[rival_target_fruit].distance >= rival_distance - 0.55:
+	if rival_target_fruit >= 0 and fruits[rival_target_fruit].owner.is_empty() and fruits[rival_target_fruit].distance >= rival_local - 0.55:
 		goal = fruits[rival_target_fruit].lateral
 	if not recovery_fruit.is_empty() and recovery_fruit.target == "rival" and recovery_fruit.distance > rival_distance + 0.55:
 		goal = recovery_fruit.lateral
@@ -276,18 +325,26 @@ func advance(delta: float, steering: float = 0) -> void:
 		var rival_time := (length - rival_previous) / rival_speed if rival_distance >= length else INF
 		if minf(player_time, rival_time) <= delta:
 			winner = "both" if is_equal_approx(player_time, rival_time) else ("player" if player_time < rival_time else "rival")
+	if _lap_index(distance) > _lap_index(previous):
+		_new_lap("player_taken")
+	if _lap_index(rival_distance) > _lap_index(rival_previous):
+		_new_lap("rival_taken")
+	var local := _lap_local(distance, distance)
+	var local_previous := _lap_local(previous, distance)
+	var rival_local := _lap_local(rival_distance, rival_distance)
+	var rival_local_previous := _lap_local(rival_previous, rival_distance)
 	for index in range(fruits.size()):
 		var fruit: Dictionary = fruits[index]
 		if not fruit.owner.is_empty():
 			continue
-		var player_hit: bool = previous < fruit.distance + 0.55 and distance >= fruit.distance - 0.55 and absf(lateral - fruit.lateral) < 0.8
-		var rival_hit: bool = rival_previous < fruit.distance + 0.55 and rival_distance >= fruit.distance - 0.55 and absf(rival_lateral - fruit.lateral) < 0.8
+		var player_hit: bool = local_previous < fruit.distance + 0.55 and local >= fruit.distance - 0.55 and absf(lateral - fruit.lateral) < 0.8
+		var rival_hit: bool = rival_local_previous < fruit.distance + 0.55 and rival_local >= fruit.distance - 0.55 and absf(rival_lateral - fruit.lateral) < 0.8
 		if pickup_contact.is_valid():
 			player_hit = pickup_contact.call(index, false)
 			rival_hit = pickup_contact.call(index, true)
 		player_hit = player_hit and not fruit.get("player_taken", false) and previous < length
 		rival_hit = rival_hit and not fruit.get("rival_taken", false) and rival_previous < length
-		if player_hit and (not rival_hit or (fruit.distance - previous) / speed <= (fruit.distance - rival_previous) / rival_speed):
+		if player_hit and (not rival_hit or (fruit.distance - local_previous) / speed <= (fruit.distance - rival_local_previous) / rival_speed):
 			fruit.owner = "player"
 			fruit.player_taken = true
 			fruit.respawn = FRUIT_RESPAWN
@@ -304,6 +361,12 @@ func advance(delta: float, steering: float = 0) -> void:
 	_advance_recovery(delta, previous, rival_previous)
 	if distance >= length:
 		stage = "finished"
+
+func _new_lap(taken: String) -> void:
+	for fruit in fruits:
+		fruit[taken] = false
+		if fruit.respawn == 0:
+			fruit.owner = ""
 
 func _advance_recovery(delta: float, previous: float, rival_previous: float) -> void:
 	if not winner.is_empty():
@@ -338,8 +401,9 @@ func _advance_recovery(delta: float, previous: float, rival_previous: float) -> 
 func _assist(delta: float) -> float:
 	var best := INF
 	var goal := lateral
+	var local := _lap_local(distance, distance)
 	for fruit in fruits:
-		var ahead: float = fruit.distance - distance
+		var ahead: float = fruit.distance - local
 		var offset: float = fruit.lateral - lateral
 		if fruit.owner.is_empty() and not fruit.get("player_taken", false) and ahead > 0 and ahead <= ASSIST_RANGE and absf(offset) < ASSIST_REACH and ahead + absf(offset) < best:
 			best = ahead + absf(offset)

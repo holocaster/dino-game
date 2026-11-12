@@ -8,11 +8,12 @@ var puddles: Array[Dictionary] = []
 var splashes: Array[Dictionary] = []
 var birds: Array[Dictionary] = []
 var spectators: Array[Dictionary] = []
+var runner_laps := [1, 1]
 
 func setup(race_game: Node3D) -> void:
 	game = race_game
 	for index in range(4):
-		var progress: float = 7 + game.race.length * index / 4
+		var progress: float = 7 + game.race.lap_length * index / 4
 		var offset := -0.9 if index % 2 == 0 else 0.9
 		var pose: Transform2D = game.race.sample(progress, offset)
 		var surface := SurfaceTool.new()
@@ -57,11 +58,11 @@ func _create_bird(index: int) -> void:
 		wing.name = "LeftWing" if side < 0 else "RightWing"
 		bird.add_child(wing)
 		game._sphere(Vector3(side * 0.22, 0, 0.025), Vector3(0.28, 0.035, 0.12), color, wing)
-	var pose: Transform2D = game.race.sample(8 + game.race.length * (index / 2) / 4)
+	var pose: Transform2D = game.race.sample(8 + game.race.lap_length * (index / 2) / 4)
 	birds.append({"node": bird, "anchor": pose.origin, "phase": index * 1.7, "sung": false})
 
 func _create_spectator(index: int) -> void:
-	var progress: float = 8 + game.race.length * (index / 2) / 3
+	var progress: float = 8 + game.race.lap_length * (index / 2) / 3
 	var side := -1 if index % 2 == 0 else 1
 	var pose: Transform2D
 	for attempt in range(12):
@@ -91,6 +92,7 @@ func _create_spectator(index: int) -> void:
 
 func reset() -> void:
 	elapsed = 0
+	runner_laps = [1, 1]
 	for puddle in puddles:
 		puddle.player_splashed = false
 		puddle.rival_splashed = false
@@ -113,10 +115,15 @@ func advance(delta: float, previous: Vector3, rival_previous: Vector3) -> void:
 		for index in range(2):
 			var runner: Node3D = game.dinosaur if index == 0 else game.friend
 			var before := previous if index == 0 else rival_previous
+			var key := "player_splashed" if index == 0 else "rival_splashed"
+			var runner_lap: int = game.race.lap if index == 0 else game.race.rival_lap
+			if runner_lap != runner_laps[index]:
+				runner_laps[index] = runner_lap
+				for puddle in puddles:
+					puddle[key] = false
 			if before.distance_squared_to(runner.position) < 0.000001:
 				continue
 			for puddle in puddles:
-				var key := "player_splashed" if index == 0 else "rival_splashed"
 				if not puddle[key] and _crossed_puddle(puddle.pose, before, runner.position):
 					puddle[key] = true
 					splashes[index].age = 0.0
