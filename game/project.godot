@@ -2,7 +2,7 @@ config_version=5
 
 [application]
 config/name="Parque dos dinos"
-config/version="0.23.0"
+config/version="0.24.0"
 run/main_scene="res://race/race.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 

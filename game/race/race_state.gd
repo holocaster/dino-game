@@ -62,6 +62,7 @@ var rival_distraction_check := DISTRACTION_EVERY
 var golden_collected := 0
 var rival_lateral_velocity := 0.0
 var collected := 0
+var streak := 0
 var winner := ""
 var fruits: Array[Dictionary] = []
 var rng := RandomNumberGenerator.new()
@@ -149,6 +150,7 @@ func reset() -> void:
 	rival_distracted_left = 0
 	rival_distraction_check = DISTRACTION_EVERY
 	collected = 0
+	streak = 0
 	golden_collected = 0
 	winner = ""
 	fruits.clear()
@@ -248,6 +250,7 @@ func advance(delta: float, steering: float = 0) -> void:
 	recovery_cooldown = maxf(0, recovery_cooldown - delta)
 	rival_distracted_left = maxf(0, rival_distracted_left - delta)
 	if boost_left == 0:
+		streak = 0
 		speed = move_toward(_speed, base_speed, FRUIT_BOOST * 4 * delta)
 	if rival_boost_left == 0:
 		rival_speed = move_toward(_rival_speed, rival_base_speed, FRUIT_BOOST * 4 * delta)
@@ -289,6 +292,7 @@ func advance(delta: float, steering: float = 0) -> void:
 			fruit.player_taken = true
 			fruit.respawn = FRUIT_RESPAWN
 			collected += 1
+			streak += 1
 			speed = minf(base_speed + MAX_BOOST, _speed + FRUIT_BOOST)
 			boost_left = BOOST_DURATION
 		elif rival_hit:

@@ -65,5 +65,25 @@ func _initialize() -> void:
 	race.rival_distance = race.length - 0.1
 	race.advance(0.1)
 	assert(race.winner == "rival")
-	print("Race state checks passed: closed loop, countdown, automatic movement, unique pickup, boost, pause, lateral bounds, finish, both winners and reset.")
+	race.reset()
+	race.start()
+	race.advance(3)
+	for fruit in race.fruits:
+		fruit.distance = race.length * 2
+	for expected in [1, 2, 3]:
+		race.fruits[expected].distance = race.distance + 0.3
+		race.fruits[expected].lateral = race.lateral
+		race.advance(0.1)
+		assert(race.streak == expected, "Fruits within the boost window extend the streak")
+		race.advance(Race.BOOST_DURATION - 0.5)
+	assert(race.streak == 3)
+	race.advance(0.6)
+	assert(race.streak == 0, "Streak ends with the boost")
+	race.fruits[4].distance = race.distance + 0.3
+	race.fruits[4].lateral = race.lateral
+	race.advance(0.1)
+	assert(race.streak == 1)
+	race.reset()
+	assert(race.streak == 0)
+	print("Race state checks passed: closed loop, countdown, automatic movement, unique pickup, boost, streak, pause, lateral bounds, finish, both winners and reset.")
 	quit()

@@ -6,8 +6,8 @@
   <meta name="theme-color" content="#eef3df">
   <title>Corrida dos dinos</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="game.css?v=0.23.0">
-  <script type="module" src="game.js?v=0.23.0"></script>
+  <link rel="stylesheet" href="game.css?v=0.24.0">
+  <script type="module" src="game.js?v=0.24.0"></script>
 </head>
 <body>
   <svg class="symbols" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -34,13 +34,14 @@
       </div>
     </header>
     <section class="park" aria-label="Corrida amigável de dinossauros">
-      <iframe id="game" title="Corrida: use as setas esquerda e direita para pegar frutas" src="godot/index.html?v=0.23.0" tabindex="-1"></iframe>
+      <iframe id="game" title="Corrida: use as setas esquerda e direita para pegar frutas" src="godot/index.html?v=0.24.0" tabindex="-1"></iframe>
       <div class="speed-lines" aria-hidden="true"></div>
       <div id="race-hud" class="race-hud" hidden>
         <div class="lap"><span>UMA VOLTA</span><label>Você <progress id="player-progress" max="1" value="0"></progress></label><label id="friend-lap">Amigo <progress id="friend-progress" max="1" value="0"></progress></label></div>
         <div class="fruit-score"><svg aria-hidden="true"><use href="#fruit"/></svg><strong id="fruit-count">0</strong><span id="speed">Ritmo +0%</span></div>
       </div>
       <div id="countdown" class="countdown" aria-hidden="true" hidden>3</div>
+      <div id="streak" class="streak" aria-hidden="true" hidden></div>
       <div id="welcome" class="welcome">
         <div class="welcome-card">
           <p class="eyebrow">PRONTOS, AMIGUINHOS?</p>

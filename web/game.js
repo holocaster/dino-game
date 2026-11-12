@@ -1,5 +1,5 @@
-import { ParkAudio } from './audio.mjs?v=0.23.0';
-import { STICKERS, COLORS, award, unlocked, prizeText, loadRewards, saveRewards } from './rewards.mjs?v=0.23.0';
+import { ParkAudio } from './audio.mjs?v=0.24.0';
+import { STICKERS, COLORS, award, unlocked, prizeText, loadRewards, saveRewards } from './rewards.mjs?v=0.24.0';
 
 const frame = document.querySelector('#game');
 const welcome = document.querySelector('#welcome');
@@ -12,6 +12,8 @@ const panel = document.querySelector('#race-panel');
 const panelAction = document.querySelector('#panel-action');
 const countdown = document.querySelector('#countdown');
 const park = document.querySelector('.park');
+const streakBadge = document.querySelector('#streak');
+let streakTimer = 0;
 const controls = [...document.querySelectorAll('[data-direction]')];
 const choices = [...document.querySelectorAll('.choices')];
 let sound = null;
@@ -141,9 +143,24 @@ function restartRace() {
  * @property {number} rivalSpeed
  * @property {boolean} rivalDistracted
  * @property {0|1|2|3} speedLevel nível do rastro do jogador
+ * @property {number} streak frutas comuns seguidas dentro do bônus
  */
 
 /** @param {RaceReport} data */
+function streakText(count) {
+  return count >= 4 ? 'Super rápido!' : `${count} seguidas!`;
+}
+
+function showStreak(count) {
+  streakBadge.textContent = streakText(count);
+  streakBadge.hidden = false;
+  streakBadge.classList.remove('pop');
+  void streakBadge.offsetWidth;
+  streakBadge.classList.add('pop');
+  clearTimeout(streakTimer);
+  streakTimer = setTimeout(() => { streakBadge.hidden = true; }, 1500);
+}
+
 function renderRace(data) {
   const previous = state;
   state = data;
@@ -159,6 +176,8 @@ function renderRace(data) {
   document.querySelector('#fruit-count').textContent = data.fruit;
   document.querySelector('#speed').textContent = data.recoveryBoostLeft > 0 ? 'Impulso dourado!' : `Ritmo +${Math.max(0, Math.round((data.speed / data.baseSpeed - 1) * 100))}%`;
   countdown.hidden = data.stage !== 'countdown' || data.paused;
+  if (data.stage !== 'racing' || data.paused) streakBadge.hidden = true;
+  else if (data.streak >= 2 && data.streak > (previous?.streak ?? 0)) showStreak(data.streak);
   countdown.textContent = data.countdown;
   pause.disabled = data.stage === 'finished';
   pause.setAttribute('aria-label', data.paused ? 'Continuar corrida' : 'Pausar corrida');
@@ -197,6 +216,7 @@ function renderRace(data) {
       : data.rivalRecoveryBoostLeft > 0 ? 'Seu amigo ganhou um impulso dourado!'
       : data.recoveryTarget === 'player' ? 'Uma fruta dourada para você alcançar o amigo!'
       : data.recoveryTarget === 'rival' ? 'Uma fruta dourada para seu amigo alcançar você!'
+      : data.fruit > (previous?.fruit ?? 0) && data.streak >= 2 ? `${streakText(data.streak)} Continue pegando frutinhas.`
       : data.fruit > (previous?.fruit ?? 0) ? 'Uma frutinha! Seu dino ficou mais rápido.'
       : 'Vamos! Pegue as frutinhas pelo caminho.';
   }
@@ -236,6 +256,7 @@ document.querySelector('#choose-again').addEventListener('click', () => {
   welcome.hidden = false;
   countdown.hidden = true;
   document.querySelector('#race-hud').hidden = true;
+  streakBadge.hidden = true;
   restart.disabled = true;
   pause.disabled = true;
   for (const button of controls) button.disabled = true;
@@ -339,7 +360,7 @@ window.addEventListener('message', event => {
     if (!document.hasFocus()) pauseRace();
   }
   if (data?.type === 'park-race' && ['ready', 'countdown', 'racing', 'finished'].includes(data.stage)
-      && [data.progress, data.rivalProgress, data.speed, data.baseSpeed, data.fruit, data.countdown, data.recoveryBoostLeft, data.rivalRecoveryBoostLeft, data.golden, data.speedLevel].every(Number.isFinite)
+      && [data.progress, data.rivalProgress, data.speed, data.baseSpeed, data.fruit, data.countdown, data.recoveryBoostLeft, data.rivalRecoveryBoostLeft, data.golden, data.speedLevel, data.streak].every(Number.isFinite)
       && typeof data.rival === 'string' && typeof data.track === 'string' && typeof data.winner === 'string'
       && data.baseSpeed > 0) renderRace(data);
 });

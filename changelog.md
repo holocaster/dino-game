@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.24.0 — 2026-11-12
+
+- Contador de sequência: cada fruta comum pega enquanto o bônus da anterior está ativo (4 s) soma em `streak`, que zera quando o bônus acaba. A fruta dourada fica fora da conta. A mensagem `park-race` ganhou `streak`.
+- Página: selo "2 seguidas!", "3 seguidas!" ou "Super rápido!" (4 ou mais) com animação de entrada por 1,5 s, escondido na pausa, na chegada e ao voltar ao menu (sem animação com `prefers-reduced-motion`). A mensagem de status repete o selo.
+- Teste da sequência em `race_state_test.gd`. Pack reexportado (14.765.324 bytes).
+
 ## 0.23.0 — 2026-11-12
 
 - Velocidade visível em três níveis, pelo bônus sobre a velocidade base (`SPEED_LEVELS` 0,3 / 0,6 / 1,0 em `race_state.gd`): nível 1 (2 frutas) solta poeira nos pés; nível 2 (4 frutas) deixa um rastro na cor do dino ou na cor escolhida; nível 3 (fruta dourada) solta faíscas. Vale para o jogador e para o amigo, congela na pausa e limpa no reinício. Partículas `CPUParticles3D` sem sombra, em `game/race/speed_effects.gd`.
