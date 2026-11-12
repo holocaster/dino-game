@@ -6,10 +6,10 @@
 
 **Spec:** `docs/specs/0001-pista-longa.md` - Requirements R10, R11 (assist), R12, R14, R18; Implementation Decisions (Rival overrides, Fruta dourada); Testing Decisions (Vale balance simulation, Vale rule test camera bound). **ADRs:** `docs/adrs/0001-retorno-decrescente-so-no-vale.md`.
 
-- [ ] An on-demand Godot simulation script (npm script `sim:valley`, not part of `npm test` or `test:race`) uses the shared bots and prints, per personality x bot: Floresta/Praia baseline win rate, Vale win rate, median Volta time, Fruta dourada appearances per Corrida, and the maximum speed observed (3 Dinos x 30 seeded layouts per cell).
-- [ ] Vale-only per-personality overrides (separate constant, `RIVALS` unchanged) bring every Vale cell within 10 percentage points of the measured baseline, with good > medium > idle. If the baseline itself differs from the reference table (93/66/53, 91/51/13, 70/19/2) by more than 10 points in any cell, report it instead of tuning to the reference.
-- [ ] If the simulation shows the Fruta dourada too frequent in the Vale, a Vale-only trigger gap above 5 u is set; Floresta/Praia stay at 5 u. Calibrated numbers (gain, decay, Rival overrides, gap) may be retuned here within the R6-R9 and R13 constraints, keeping ticket 03's tests green.
-- [ ] The highest observed speed is stored as a practical maximum constant; the Vale test asserts centre-line max curvature x that speed < 50 deg/s, and that the good bot never exceeds it in its fixed-seed runs.
-- [ ] The Vale test adds a fast fixed-seed sanity check of balance ordering for Brincalhão (good bot beats Brincalhão in more runs than idle bot does).
-- [ ] The simulation table (baseline and Vale), median Volta/Corrida times and final constants are written into the ticket's handoff for the changelog in ticket 06.
-- [ ] Characterization test and all existing tests pass; no browser required; no version bump (ticket 06).
+- [x] An on-demand Godot simulation script (npm script `sim:valley`, not part of `npm test` or `test:race`) uses the shared bots and prints, per personality x bot: Floresta/Praia baseline win rate, Vale win rate, median Volta time, Fruta dourada appearances per Corrida, and the maximum speed observed (3 Dinos x 30 seeded layouts per cell).
+- [x] Vale-only per-personality overrides (separate constant, `RIVALS` unchanged) bring every Vale cell within 10 percentage points of the measured baseline, with good > medium > idle. If the baseline itself differs from the reference table (93/66/53, 91/51/13, 70/19/2) by more than 10 points in any cell, report it instead of tuning to the reference.
+- [x] If the simulation shows the Fruta dourada too frequent in the Vale, a Vale-only trigger gap above 5 u is set; Floresta/Praia stay at 5 u. Calibrated numbers (gain, decay, Rival overrides, gap) may be retuned here within the R6-R9 and R13 constraints, keeping ticket 03's tests green.
+- [x] The highest observed speed is stored as a practical maximum constant; the Vale test asserts centre-line max curvature x that speed < 50 deg/s, and that the good bot never exceeds it in its fixed-seed runs.
+- [x] The Vale test adds a fast fixed-seed sanity check of balance ordering for Brincalhão (good bot beats Brincalhão in more runs than idle bot does).
+- [x] The simulation table (baseline and Vale), median Volta/Corrida times and final constants are written into the ticket's handoff for the changelog in ticket 06.
+- [x] Characterization test and all existing tests pass; no browser required; no version bump (ticket 06).

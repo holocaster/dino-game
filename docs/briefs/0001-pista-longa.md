@@ -44,3 +44,8 @@ Q1 3 voltas de ~150-180 u · Q2 cartão "Vale" com os geradores atuais · Q3 ret
 
 - Calibração (ticket 04): o nível 3 deve ser conquista de quem escolhe caminho; o bot parado não deve chegar a ele na maioria das corridas. Corrida típica dentro de 2-3 min.
 - Números exatos (soma por impulso, decaimento, comprimento das retas, raio das curvas, distância de recuperação) a calibrar por simulação no planejamento ou na implementação.
+
+## Known issues (accepted)
+
+- Fruta dourada aparece até ~8 vezes por Corrida no Vale quando um Corredor fica muito atrás (~3,5/min contra ~2,1/min em Floresta/Praia). Aceito como mecânica de alcance; sem cooldown próprio do Vale.
+- Corrida mediana de 175-197 s para quem joga médio ou fica parado, um pouco acima de 3 min; priorizado o nível 3 como conquista.
