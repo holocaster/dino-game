@@ -24,17 +24,17 @@ func _initialize() -> void:
 	assert(race.collected == 20, "Standing on respawning fruit must not grant repeated boosts")
 	race.pickup_contact = func(_index, rival): return rival
 	race.advance(0.05)
-	assert(race.fruits.all(func(fruit): return fruit.owner == "friend" and fruit.player_taken and fruit.friend_taken))
+	assert(race.fruits.all(func(fruit): return fruit.owner == "rival" and fruit.player_taken and fruit.rival_taken))
 	assert(is_equal_approx(race.rival_speed, race.rival_base_speed + Race.MAX_BOOST))
 	race.pickup_contact = func(_index, _rival): return false
 	for step in range(120):
 		race.advance(0.05)
 	assert(is_equal_approx(race.speed, race.base_speed))
 	assert(is_equal_approx(race.rival_speed, race.rival_base_speed))
-	assert(race.fruits.all(func(fruit): return fruit.owner == "friend"))
+	assert(race.fruits.all(func(fruit): return fruit.owner == "rival"))
 	race.reset()
 	assert(race.boost_left == 0 and race.rival_boost_left == 0)
-	assert(race.fruits.all(func(fruit): return not fruit.player_taken and not fruit.friend_taken and fruit.respawn == 0))
+	assert(race.fruits.all(func(fruit): return not fruit.player_taken and not fruit.rival_taken and fruit.respawn == 0))
 	for dino in Race.DINOS:
 		for circuit in ["forest", "beach"]:
 			assert(race.configure(dino, circuit))
@@ -62,8 +62,8 @@ func _initialize() -> void:
 		for fruit in race.fruits:
 			fruit.lateral = 0.0
 			if fruit.distance < race.rival_distance:
-				fruit.owner = "friend"
-				fruit.friend_taken = true
+				fruit.owner = "rival"
+				fruit.rival_taken = true
 				fruit.respawn = Race.FRUIT_RESPAWN
 		var smallest_gap := 8.0
 		for step in range(1100):

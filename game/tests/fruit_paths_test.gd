@@ -58,7 +58,7 @@ func _run() -> void:
 				assert(race.stage == "finished" and race.collected == 12, "%s/%s side %s must collect two branch fruits and the central fruit in each section; got %s" % [species, circuit, side, race.collected])
 				assert(race.fruits.all(func(fruit): return not fruit.player_taken or fruit.lateral * side >= 0))
 				race.reset()
-				assert(race.fruits.all(func(fruit): return fruit.owner.is_empty() and not fruit.player_taken and not fruit.friend_taken and fruit.respawn == 0))
+				assert(race.fruits.all(func(fruit): return fruit.owner.is_empty() and not fruit.player_taken and not fruit.rival_taken and fruit.respawn == 0))
 	for circuit in ["forest", "beach"]:
 		for side in [-1, 1]:
 			set_meta("race_selection", ["triceratops", circuit])

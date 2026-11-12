@@ -38,7 +38,7 @@ func _initialize() -> void:
 	for i in range(700):
 		race.advance(0.1)
 	assert(race.stage == "finished" and race.distance == race.length)
-	assert(race.winner in ["player", "friend", "both"])
+	assert(race.winner in ["player", "rival", "both"])
 	var finish := race.distance
 	race.advance(10, 1)
 	assert(race.distance == finish)
@@ -61,6 +61,6 @@ func _initialize() -> void:
 	race.distance = race.length - 0.2
 	race.rival_distance = race.length - 0.1
 	race.advance(0.1)
-	assert(race.winner == "friend")
+	assert(race.winner == "rival")
 	print("Race state checks passed: closed loop, countdown, automatic movement, unique pickup, boost, pause, lateral bounds, finish, both winners and reset.")
 	quit()

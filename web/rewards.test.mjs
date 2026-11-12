@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { STICKERS, COLORS, award, unlocked, prizeText, loadRewards, saveRewards } from './rewards.mjs';
 
-const lap = { track: 'forest', fruit: 4, golden: 0, rival: 'playful', winner: 'friend' };
+const lap = { track: 'forest', fruit: 4, golden: 0, rival: 'playful', winner: 'rival' };
 
 test('adesivos saem uma vez, conforme a volta', () => {
   assert.deepEqual(award([], lap), ['first-lap', 'forest']);

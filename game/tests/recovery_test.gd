@@ -22,7 +22,7 @@ func _run() -> void:
 		return
 	for dino in Race.DINOS:
 		for circuit in ["forest", "beach"]:
-			for target in ["player", "friend"]:
+			for target in ["player", "rival"]:
 				var race := racing(dino, circuit, target)
 				race.advance(0.01)
 				assert(race.recovery_fruit.target == target)
@@ -73,7 +73,7 @@ func _run() -> void:
 	for step in range(100):
 		race.advance(0.05)
 	assert(not race.recovery_fruit.is_empty(), "Another fruit must wait ten seconds after the previous appearance")
-	race.winner = "friend"
+	race.winner = "rival"
 	race.advance(0.01)
 	assert(race.recovery_fruit.is_empty() and race.recovery_boost_left == 0)
 	race.resolve_motion = Callable()
@@ -112,7 +112,7 @@ func _run() -> void:
 func _gain_checks() -> bool:
 	for dino in Race.DINOS:
 		for circuit in ["forest", "beach"]:
-			for target in ["player", "friend"]:
+			for target in ["player", "rival"]:
 				var race := racing(dino, circuit, target)
 				if target == "player":
 					race.rival_speed = race.rival_base_speed + Race.MAX_BOOST

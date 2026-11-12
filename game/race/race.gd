@@ -316,7 +316,7 @@ func _web_command(arguments: Array) -> void:
 		return
 	if arguments[0].begins_with("select:"):
 		var selection: PackedStringArray = arguments[0].split(":")
-		if selection.size() != 4 or not race.DINOS.has(selection[1]) or selection[2] not in ["forest", "beach"] or not (race.RIVALS.has(selection[3]) or selection[3] == "none") or race.stage not in ["ready", "finished"]:
+		if selection.size() != 4 or not race.can_configure(selection[1], selection[2], selection[3]):
 			return
 		var previous: Array = get_tree().get_meta("race_selection", ["triceratops", "forest"])
 		get_tree().set_meta("race_selection", [selection[1], selection[2], selection[3]])

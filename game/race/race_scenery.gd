@@ -31,7 +31,7 @@ func setup(race_game: Node3D) -> void:
 			var p: Vector2 = pose.origin + pose.x * (reflection * 0.3 - 0.15)
 			var shine: MeshInstance3D = game._sphere(game.forest.point(p.x, p.y) + Vector3.UP * 0.04, Vector3(0.25, 0.008, 0.04), "c8eef0", self)
 			shine.rotation.y = atan2(-pose.x.x, -pose.x.y)
-		puddles.append({"distance": progress, "pose": pose, "player_splashed": false, "friend_splashed": false})
+		puddles.append({"distance": progress, "pose": pose, "player_splashed": false, "rival_splashed": false})
 	for runner in range(2):
 		var splash := Node3D.new()
 		add_child(splash)
@@ -93,7 +93,7 @@ func reset() -> void:
 	elapsed = 0
 	for puddle in puddles:
 		puddle.player_splashed = false
-		puddle.friend_splashed = false
+		puddle.rival_splashed = false
 	for splash in splashes:
 		splash.age = SPLASH_DURATION
 		splash.node.visible = false
@@ -116,7 +116,7 @@ func advance(delta: float, previous: Vector3, rival_previous: Vector3) -> void:
 			if before.distance_squared_to(runner.position) < 0.000001:
 				continue
 			for puddle in puddles:
-				var key := "player_splashed" if index == 0 else "friend_splashed"
+				var key := "player_splashed" if index == 0 else "rival_splashed"
 				if not puddle[key] and _crossed_puddle(puddle.pose, before, runner.position):
 					puddle[key] = true
 					splashes[index].age = 0.0

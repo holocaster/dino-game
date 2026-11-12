@@ -114,6 +114,34 @@ function restartRace() {
   frame.focus();
 }
 
+/**
+ * Mensagem enviada por `_report()` em game/race/race.gd. `award()` usa track, fruit, golden, rival e winner.
+ * @typedef {object} RaceReport
+ * @property {'park-race'} type
+ * @property {'ready'|'countdown'|'racing'|'finished'} stage
+ * @property {number} countdown
+ * @property {boolean} paused
+ * @property {number} progress de 0 a 1
+ * @property {number} rivalProgress de 0 a 1
+ * @property {number} fruit
+ * @property {number} golden frutas douradas pegas pelo jogador
+ * @property {number} speed
+ * @property {number} baseSpeed
+ * @property {number} boostLeft
+ * @property {number} recoveryBoostLeft
+ * @property {number} rivalRecoveryBoostLeft
+ * @property {''|'player'|'rival'} recoveryTarget
+ * @property {string} dino
+ * @property {'forest'|'beach'} track
+ * @property {'sleepy'|'playful'|'speedy'|'none'} rival personalidade do outro corredor
+ * @property {''|'player'|'rival'|'both'} winner
+ * @property {number} lateral
+ * @property {number} rivalLateral
+ * @property {number} rivalSpeed
+ * @property {boolean} rivalDistracted
+ */
+
+/** @param {RaceReport} data */
 function renderRace(data) {
   const previous = state;
   state = data;
@@ -162,7 +190,7 @@ function renderRace(data) {
       : data.recoveryBoostLeft > 0 ? 'Impulso dourado! Vamos alcançar o amigo!'
       : data.rivalRecoveryBoostLeft > 0 ? 'Seu amigo ganhou um impulso dourado!'
       : data.recoveryTarget === 'player' ? 'Uma fruta dourada para você alcançar o amigo!'
-      : data.recoveryTarget === 'friend' ? 'Uma fruta dourada para seu amigo alcançar você!'
+      : data.recoveryTarget === 'rival' ? 'Uma fruta dourada para seu amigo alcançar você!'
       : data.fruit > (previous?.fruit ?? 0) ? 'Uma frutinha! Seu dino ficou mais rápido.'
       : 'Vamos! Pegue as frutinhas pelo caminho.';
   }

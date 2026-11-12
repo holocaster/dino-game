@@ -50,7 +50,7 @@ func _run() -> void:
 		for step in range(15):
 			game._process(0.05)
 			await physics_frame
-		assert(puddle.player_splashed and not puddle.friend_splashed)
+		assert(puddle.player_splashed and not puddle.rival_splashed)
 		assert(scenery.splashes[0].node.visible)
 		assert(game.race.speed == speed and game.race.collected == 0)
 		assert(game.events.filter(func(event): return event.get("name", "") == "splash").size() == 1)
@@ -73,7 +73,7 @@ func _run() -> void:
 		for step in range(18):
 			game._process(0.05)
 			await physics_frame
-		assert(puddle.friend_splashed)
+		assert(puddle.rival_splashed)
 		assert(game.events.filter(func(event): return event.get("name", "") == "splash").size() == 2)
 		for step in range(20):
 			game._process(0.05)
@@ -84,7 +84,7 @@ func _run() -> void:
 		game._process(0.1)
 		assert(scenery.spectators.all(func(item): return item.node.position.y >= item.base.y))
 		game.reset_race()
-		assert(scenery.elapsed == 0 and scenery.puddles.all(func(item): return not item.player_splashed and not item.friend_splashed))
+		assert(scenery.elapsed == 0 and scenery.puddles.all(func(item): return not item.player_splashed and not item.rival_splashed))
 		assert(scenery.splashes.all(func(item): return not item.node.visible))
 		assert(scenery.spectators.all(func(item): return not item.cheered and item.node.position == item.base))
 		game.queue_free()

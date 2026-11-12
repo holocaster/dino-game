@@ -74,7 +74,7 @@ func _run() -> void:
 	for step in range(5):
 		game._process(0.05)
 		await physics_frame
-	assert(game.race.fruits[0].owner in ["player", "friend"])
+	assert(game.race.fruits[0].owner in ["player", "rival"])
 	assert(is_equal_approx(game.race.speed - game.race.BASE_SPEED + game.race.rival_speed - game.race.RIVAL_SPEED, game.race.FRUIT_BOOST))
 	assert(not game.fruit_nodes[0].visible)
 	game.restart()
@@ -96,8 +96,8 @@ func _run() -> void:
 	for step in range(35):
 		game._process(0.05)
 		await physics_frame
-	assert(game.race.fruits[0].player_taken and game.race.fruits[0].friend_taken, "Respawn must let the trailing body collect the same fruit")
-	assert(game.race.fruits[0].owner == "friend" and not game.fruit_nodes[0].visible)
+	assert(game.race.fruits[0].player_taken and game.race.fruits[0].rival_taken, "Respawn must let the trailing body collect the same fruit")
+	assert(game.race.fruits[0].owner == "rival" and not game.fruit_nodes[0].visible)
 	game.restart()
 	game.race.advance(3)
 	game.race.distance = game.race.length - 4
@@ -158,7 +158,7 @@ func _run() -> void:
 		assert(not overlaps_runner(game, game.dinosaur))
 		if game.race.stage == "finished":
 			break
-	assert(game.race.stage == "finished" and game.race.winner == "friend")
+	assert(game.race.stage == "finished" and game.race.winner == "rival")
 	game.queue_free()
 	print("Collision checks passed: native bodies, unscaled shapes, sustained contact, sliding, track edges, solid trunk, high-speed sweep, physical fruit, trailing runner respawn, single boost, blocked progress/finish/pickup, terrain, pause and reset. Minimum runner gap: ", minimum_gap)
 	quit()

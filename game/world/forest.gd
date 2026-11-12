@@ -66,13 +66,14 @@ func _ready() -> void:
 		_beach()
 		return
 
-	navigation.region = GRID
-	navigation.cell_size = Vector2.ONE * 0.25
-	navigation.diagonal_mode = AStarGrid2D.DIAGONAL_MODE_ONLY_IF_NO_OBSTACLES
-	navigation.update()
-	for x in range(GRID.position.x, GRID.end.x):
-		for z in range(GRID.position.y, GRID.end.y):
-			navigation.set_point_solid(Vector2i(x, z), blocked(Vector2(x, z) * 0.25))
+	if not race_track:
+		navigation.region = GRID
+		navigation.cell_size = Vector2.ONE * 0.25
+		navigation.diagonal_mode = AStarGrid2D.DIAGONAL_MODE_ONLY_IF_NO_OBSTACLES
+		navigation.update()
+		for x in range(GRID.position.x, GRID.end.x):
+			for z in range(GRID.position.y, GRID.end.y):
+				navigation.set_point_solid(Vector2i(x, z), blocked(Vector2(x, z) * 0.25))
 	var backdrop := PlaneMesh.new()
 	backdrop.size = Vector2.ONE * 200
 	place(backdrop, Vector3(0, -0.45, 0), "7caa42")

@@ -84,6 +84,7 @@ const DINOS := {
 	"trex": {"speed": 2.27, "steer": 2.2},
 	"raptor": {"speed": 2.13, "steer": 2.7}
 }
+const TRACKS := ["forest", "beach"]
 
 func _init() -> void:
 	_build_track()
@@ -93,8 +94,11 @@ var solo: bool:
 	get:
 		return rival_id == "none"
 
+func can_configure(dino: String, circuit: String, rival: String) -> bool:
+	return DINOS.has(dino) and circuit in TRACKS and (RIVALS.has(rival) or rival == "none") and stage in ["ready", "finished"]
+
 func configure(dino: String, circuit: String, rival: String = "playful") -> bool:
-	if not DINOS.has(dino) or circuit not in ["forest", "beach"] or not (RIVALS.has(rival) or rival == "none") or stage not in ["ready", "finished"]:
+	if not can_configure(dino, circuit, rival):
 		return false
 	dino_id = dino
 	track_id = circuit
@@ -154,7 +158,7 @@ func reset() -> void:
 				slots.append(Vector2(start + step * 4, side * offset))
 		slots.append(Vector2(start + 8, 0))
 	for slot in slots:
-		fruits.append({"distance": float(slot.x), "lateral": float(slot.y), "owner": "", "respawn": 0.0, "player_taken": false, "friend_taken": false, "rival_skip": rng.randf() < RIVALS.get(rival_id, RIVALS.playful).miss})
+		fruits.append({"distance": float(slot.x), "lateral": float(slot.y), "owner": "", "respawn": 0.0, "player_taken": false, "rival_taken": false, "rival_skip": rng.randf() < RIVALS.get(rival_id, RIVALS.playful).miss})
 
 func start() -> void:
 	if stage == "ready":
@@ -171,7 +175,7 @@ func _choose_rival_fruit() -> void:
 	for i in range(fruits.size()):
 		var fruit: Dictionary = fruits[i]
 		var ahead: float = fruit.distance - rival_distance
-		if not fruit.owner.is_empty() or fruit.get("friend_taken", false) or fruit.get("rival_skip", false) or ahead <= 0.55:
+		if not fruit.owner.is_empty() or fruit.get("rival_taken", false) or fruit.get("rival_skip", false) or ahead <= 0.55:
 			continue
 		var arrival := ahead / rival_speed
 		var crossing := maxf(0, absf(fruit.lateral - rival_lateral) - 0.65) / RIVAL_STEER_SPEED
@@ -207,7 +211,7 @@ func _steer_rival(delta: float) -> void:
 	var goal := rival_lateral
 	if rival_target_fruit >= 0 and fruits[rival_target_fruit].owner.is_empty() and fruits[rival_target_fruit].distance >= rival_distance - 0.55:
 		goal = fruits[rival_target_fruit].lateral
-	if not recovery_fruit.is_empty() and recovery_fruit.target == "friend" and recovery_fruit.distance > rival_distance + 0.55:
+	if not recovery_fruit.is_empty() and recovery_fruit.target == "rival" and recovery_fruit.distance > rival_distance + 0.55:
 		goal = recovery_fruit.lateral
 	var gap := distance - rival_distance
 	var predicted_gap := gap + (speed - rival_speed) * 0.5
@@ -246,7 +250,7 @@ func advance(delta: float, steering: float = 0) -> void:
 	for fruit in fruits:
 		if fruit.get("respawn", 0.0) > 0:
 			fruit.respawn = maxf(0, fruit.respawn - delta)
-			if fruit.respawn == 0 and not (fruit.get("player_taken", false) and fruit.get("friend_taken", false)):
+			if fruit.respawn == 0 and not (fruit.get("player_taken", false) and fruit.get("rival_taken", false)):
 				fruit.owner = ""
 	var previous := distance
 	var rival_previous := rival_distance
@@ -264,7 +268,7 @@ func advance(delta: float, steering: float = 0) -> void:
 		var player_time := (length - previous) / speed if distance >= length else INF
 		var rival_time := (length - rival_previous) / rival_speed if rival_distance >= length else INF
 		if minf(player_time, rival_time) <= delta:
-			winner = "both" if is_equal_approx(player_time, rival_time) else ("player" if player_time < rival_time else "friend")
+			winner = "both" if is_equal_approx(player_time, rival_time) else ("player" if player_time < rival_time else "rival")
 	for index in range(fruits.size()):
 		var fruit: Dictionary = fruits[index]
 		if not fruit.owner.is_empty():
@@ -275,7 +279,7 @@ func advance(delta: float, steering: float = 0) -> void:
 			player_hit = pickup_contact.call(index, false)
 			rival_hit = pickup_contact.call(index, true)
 		player_hit = player_hit and not fruit.get("player_taken", false) and previous < length
-		rival_hit = rival_hit and not fruit.get("friend_taken", false) and rival_previous < length
+		rival_hit = rival_hit and not fruit.get("rival_taken", false) and rival_previous < length
 		if player_hit and (not rival_hit or (fruit.distance - previous) / speed <= (fruit.distance - rival_previous) / rival_speed):
 			fruit.owner = "player"
 			fruit.player_taken = true
@@ -284,8 +288,8 @@ func advance(delta: float, steering: float = 0) -> void:
 			speed = minf(base_speed + MAX_BOOST, _speed + FRUIT_BOOST)
 			boost_left = BOOST_DURATION
 		elif rival_hit:
-			fruit.owner = "friend"
-			fruit.friend_taken = true
+			fruit.owner = "rival"
+			fruit.rival_taken = true
 			fruit.respawn = FRUIT_RESPAWN
 			rival_speed = minf(rival_base_speed + MAX_BOOST, _rival_speed + FRUIT_BOOST)
 			rival_boost_left = BOOST_DURATION
@@ -299,7 +303,7 @@ func _advance_recovery(delta: float, previous: float, rival_previous: float) -> 
 		return
 	if not recovery_fruit.is_empty():
 		recovery_fruit.left = maxf(0, recovery_fruit.left - delta)
-		var rival: bool = recovery_fruit.target == "friend"
+		var rival: bool = recovery_fruit.target == "rival"
 		var progress := rival_distance if rival else distance
 		var before := rival_previous if rival else previous
 		if recovery_fruit.left == 0 or progress > recovery_fruit.distance + 0.55:
@@ -320,7 +324,7 @@ func _advance_recovery(delta: float, previous: float, rival_previous: float) -> 
 	if solo or recovery_cooldown > 0 or absf(distance - rival_distance) < RECOVERY_GAP or maxf(distance, rival_distance) >= length - RECOVERY_FINISH_MARGIN:
 		return
 	var rival := rival_distance < distance
-	recovery_fruit = {"target": "friend" if rival else "player", "distance": (rival_distance if rival else distance) + RECOVERY_AHEAD, "lateral": clampf(rival_lateral if rival else lateral, -LATERAL_LIMIT, LATERAL_LIMIT), "left": RECOVERY_LIFETIME}
+	recovery_fruit = {"target": "rival" if rival else "player", "distance": (rival_distance if rival else distance) + RECOVERY_AHEAD, "lateral": clampf(rival_lateral if rival else lateral, -LATERAL_LIMIT, LATERAL_LIMIT), "left": RECOVERY_LIFETIME}
 	recovery_cooldown = RECOVERY_COOLDOWN
 
 func _assist(delta: float) -> float:

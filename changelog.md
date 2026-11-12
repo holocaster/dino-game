@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.22.1 — 2026-11-12
+
+- Validação da seleção centralizada em `RaceState.can_configure()`, usada por `configure` e pela ponte web (`select:`); nova constante `TRACKS`.
+- Novo `web/catalog.test.mjs`: confere que os ids de dino, pista e amigo da página, as cores de `rewards.mjs` e as cores dos amigos batem com os catálogos do Godot. Antes, uma cor ou opção nova sem par era ignorada em silêncio.
+- O outro corredor passa a se chamar "rival" em todo o estado da corrida: `owner`, `winner` e `recoveryTarget` usam `"rival"` (eram `"friend"`), e `friend_taken`/`friend_splashed` viraram `rival_taken`/`rival_splashed`. `rival_id` continua sendo a personalidade. O nó `friend`, compartilhado com o passeio, foi mantido. A página exibe "Amigo" como antes.
+- A corrida da floresta não monta mais a grade A\* de 21 mil células do passeio, que ela não usa.
+- Formato da mensagem `park-race` documentado com o typedef `RaceReport` em `web/game.js`.
+- `handoff.md` removido. Pack reexportado (14.760.696 bytes).
+
 ## 0.22.0 — 2026-11-12
 
 - Página responsiva: a área do jogo ocupa a altura da tela (`100svh`, até 760 px) em vez de 65% fixos, sem rolagem da página em nenhum tamanho testado (320x568 a 1920x1080, retrato e paisagem).

@@ -31,13 +31,13 @@ func _initialize() -> void:
 func _run() -> void:
 	var race := isolated_race([[4.0, -1.3, ""]])
 	advance_smoothly(race, 45)
-	assert(race.fruits[0].owner == "friend", "Rival ignores a reachable fruit on the other side of the track")
+	assert(race.fruits[0].owner == "rival", "Rival ignores a reachable fruit on the other side of the track")
 	assert(race.rival_lateral < 0)
 	assert(is_equal_approx(race.rival_speed, Race.RIVAL_SPEED + Race.FRUIT_BOOST))
 	race = isolated_race([[-1.0, 0.9, ""], [0.7, -1.3, ""], [3.0, 0.9, "player"], [5.5, 1.3, ""]])
 	advance_smoothly(race, 50)
 	assert(race.fruits[0].owner.is_empty() and race.fruits[1].owner.is_empty())
-	assert(race.fruits[2].owner == "player" and race.fruits[3].owner == "friend")
+	assert(race.fruits[2].owner == "player" and race.fruits[3].owner == "rival")
 	race = isolated_race([[5.0, -1.3, ""], [8.0, 1.3, ""]])
 	advance_smoothly(race, 8)
 	assert(race.rival_target_fruit == 0)
@@ -77,7 +77,7 @@ func _run() -> void:
 		maximum_lateral = maxf(maximum_lateral, race.rival_lateral)
 		if race.stage == "finished":
 			break
-	var pickups := race.fruits.filter(func(fruit): return fruit.get("friend_taken", false)).size()
+	var pickups := race.fruits.filter(func(fruit): return fruit.get("rival_taken", false)).size()
 	assert(pickups >= 4 and maximum_lateral - minimum_lateral > 1.0)
 	assert(race.rival_speed >= race.rival_base_speed and race.rival_speed <= race.rival_base_speed + Race.MAX_BOOST)
 	assert(race.stage == "finished")
