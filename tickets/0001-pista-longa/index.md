@@ -5,7 +5,7 @@ Spec: `docs/specs/0001-pista-longa.md` · ADR: `docs/adrs/0001-retorno-decrescen
 | # | Title | Blocked by | Status |
 |---|-------|-----------|--------|
 | 01 | Pin Floresta/Praia behaviour with a characterization test and shared bots | none | done |
-| 02 | Vale playable over three Voltas | 01 | ready |
+| 02 | Vale playable over three Voltas | 01 | done |
 | 03 | Retorno decrescente and Setas de impulso in the Vale | 02 | ready |
 | 04 | Calibrate Vale Rivals by simulation and bound the camera | 01, 03 | ready |
 | 05 | Volta HUD, "Última volta!" and the Vale Adesivo on the page | 02 | ready |

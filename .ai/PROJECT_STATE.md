@@ -4,10 +4,10 @@ context: docs/CONTEXT.md
 brief: docs/briefs/0001-pista-longa.md
 spec: docs/specs/0001-pista-longa.md
 tickets_index: tickets/0001-pista-longa/index.md
-active_ticket: "02"
-base_sha: e4ec7d8ac39579a57e6a3cdfaeb43c294a38ad72
-head_sha: c3f14713a74a3707885efe170f2c8e9a4a9df47c
+active_ticket: "03"
+base_sha: null
+head_sha: null
 review: null
 review_round: 0
 blockers: []
-next_action: spawn sdd-reviewer for ticket 02
+next_action: spawn sdd-implementer for ticket 03
