@@ -155,6 +155,9 @@ export class ParkAudio {
         this.rustle(850, 0.20, 0.20);
         this.tone(180, 130, 0.15, 0.055);
         break;
+      case 'last-lap':
+        [523, 659, 784].forEach((frequency, i) => this.tone(frequency, frequency * 1.06, 0.16, 0.08, i * 0.11));
+        break;
       case 'happy':
         this.tone(659, 659, 0.45, 0.10);
         this.tone(784, 784, 0.55, 0.08, 0.18);

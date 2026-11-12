@@ -37,7 +37,7 @@
       <iframe id="game" title="Corrida: use as setas esquerda e direita para pegar frutas" src="godot/index.html?v=0.24.0" tabindex="-1"></iframe>
       <div class="speed-lines" aria-hidden="true"></div>
       <div id="race-hud" class="race-hud" hidden>
-        <div class="lap"><span>UMA VOLTA</span><label>Você <progress id="player-progress" max="1" value="0"></progress></label><label id="friend-lap">Amigo <progress id="friend-progress" max="1" value="0"></progress></label></div>
+        <div class="lap"><span id="lap-title">UMA VOLTA</span><label>Você <progress id="player-progress" max="1" value="0"></progress></label><label id="friend-lap">Amigo <progress id="friend-progress" max="1" value="0"></progress></label></div>
         <div class="fruit-score"><svg aria-hidden="true"><use href="#fruit"/></svg><strong id="fruit-count">0</strong><span id="speed">Ritmo +0%</span></div>
       </div>
       <div id="countdown" class="countdown" aria-hidden="true" hidden>3</div>
@@ -71,7 +71,7 @@
                 <label class="choice rival-none"><input type="radio" name="rival" value="none"><svg aria-hidden="true"><use href="#leaf"/></svg><strong>Sozinho</strong><span>Passeio tranquilo</span></label>
               </fieldset>
               <details class="rewards">
-                <summary>Adesivos e cores <span id="sticker-count">0/8</span></summary>
+                <summary>Adesivos e cores <span id="sticker-count">0/9</span></summary>
                 <ul id="sticker-list" class="sticker-list"></ul>
                 <fieldset class="choices color-choices" id="color-choices" disabled>
                   <legend>Cor do seu dino</legend>
@@ -95,7 +95,7 @@
     </section>
     <footer class="race-footer">
       <button class="steer" type="button" data-direction="left" aria-label="Mover para a esquerda. Segure para continuar." disabled><svg aria-hidden="true"><use href="#left-icon"/></svg></button>
-      <div class="invitation"><p id="message" role="status" aria-live="polite">Uma corrida para brincar juntos.</p><span>Segure as setas para mudar de lado e pegar frutas.</span></div>
+      <div class="invitation"><strong id="lap-count" class="lap-count" hidden></strong><p id="message" role="status" aria-live="polite">Uma corrida para brincar juntos.</p><span>Segure as setas para mudar de lado e pegar frutas.</span></div>
       <button class="steer" type="button" data-direction="right" aria-label="Mover para a direita. Segure para continuar." disabled><svg aria-hidden="true"><use href="#right-icon"/></svg></button>
     </footer>
   </main>

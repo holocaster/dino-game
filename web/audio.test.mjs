@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { ParkAudio } from './audio.mjs';
 
 test('poças, pássaros e torcida usam efeitos curtos e suaves', () => {
-  for (const name of ['splash', 'bird', 'cheer', 'whoosh']) {
+  for (const name of ['splash', 'bird', 'cheer', 'whoosh', 'last-lap']) {
     const calls = [];
     ParkAudio.prototype.play.call({
       tone: (...args) => calls.push(['tone', ...args]),
@@ -23,7 +23,7 @@ test('poças, pássaros e torcida usam efeitos curtos e suaves', () => {
 
 test('pausa e silêncio impedem os novos efeitos', () => {
   for (const state of [{ paused: true }, { muted: true }]) {
-    for (const name of ['splash', 'bird', 'cheer']) {
+    for (const name of ['splash', 'bird', 'cheer', 'last-lap']) {
       ParkAudio.prototype.play.call({
         ...state,
         tone: () => assert.fail('Som emitido durante pausa ou silêncio'),

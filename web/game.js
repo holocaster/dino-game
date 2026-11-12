@@ -13,6 +13,8 @@ const panelAction = document.querySelector('#panel-action');
 const countdown = document.querySelector('#countdown');
 const park = document.querySelector('.park');
 const streakBadge = document.querySelector('#streak');
+const lapCount = document.querySelector('#lap-count');
+let lastLapShown = false;
 let streakTimer = 0;
 const controls = [...document.querySelectorAll('[data-direction]')];
 const choices = [...document.querySelectorAll('.choices')];
@@ -135,7 +137,7 @@ function restartRace() {
  * @property {number} rivalRecoveryBoostLeft
  * @property {''|'player'|'rival'} recoveryTarget
  * @property {string} dino
- * @property {'forest'|'beach'} track
+ * @property {'forest'|'beach'|'valley'} track
  * @property {'sleepy'|'playful'|'speedy'|'none'} rival personalidade do outro corredor
  * @property {''|'player'|'rival'|'both'} winner
  * @property {number} lateral
@@ -144,6 +146,8 @@ function restartRace() {
  * @property {boolean} rivalDistracted
  * @property {0|1|2|3} speedLevel nível do rastro do jogador
  * @property {number} streak frutas comuns seguidas dentro do bônus
+ * @property {number} lap volta atual do jogador, de 1 a laps
+ * @property {number} laps 1 na floresta e na praia, 3 no vale
  */
 
 /** @param {RaceReport} data */
@@ -170,6 +174,15 @@ function renderRace(data) {
   sound?.speed(level);
   if (!started) return;
   document.querySelector('#race-hud').hidden = false;
+  document.querySelector('#lap-title').textContent = data.laps > 1 ? 'TRÊS VOLTAS' : 'UMA VOLTA';
+  lapCount.hidden = !(data.laps > 1);
+  lapCount.textContent = `Volta ${data.lap}/${data.laps}`;
+  if (data.lap < data.laps) lastLapShown = false;
+  const lastLap = data.stage === 'racing' && data.laps > 1 && data.lap === data.laps && !lastLapShown;
+  if (lastLap) {
+    lastLapShown = true;
+    sound?.play('last-lap');
+  }
   document.querySelector('#player-progress').value = data.progress;
   document.querySelector('#friend-progress').value = data.rivalProgress;
   document.querySelector('#friend-lap').hidden = data.rival === 'none';
@@ -207,10 +220,11 @@ function renderRace(data) {
   }
   for (const button of controls) button.disabled = data.paused || data.stage !== 'racing';
   sound?.setPaused(data.paused);
-  if (!previous || previous.stage !== data.stage || previous.paused !== data.paused || previous.countdown !== data.countdown || previous.fruit !== data.fruit || previous.recoveryTarget !== data.recoveryTarget || (previous.recoveryBoostLeft > 0) !== (data.recoveryBoostLeft > 0) || (previous.rivalRecoveryBoostLeft > 0) !== (data.rivalRecoveryBoostLeft > 0) || previous.rivalDistracted !== data.rivalDistracted) {
+  if (!previous || previous.stage !== data.stage || previous.paused !== data.paused || previous.countdown !== data.countdown || previous.fruit !== data.fruit || previous.recoveryTarget !== data.recoveryTarget || (previous.recoveryBoostLeft > 0) !== (data.recoveryBoostLeft > 0) || (previous.rivalRecoveryBoostLeft > 0) !== (data.rivalRecoveryBoostLeft > 0) || previous.rivalDistracted !== data.rivalDistracted || lastLap) {
     message.textContent = data.paused ? 'Corrida pausada.'
       : data.stage === 'countdown' ? `Prepare-se... ${data.countdown}!`
-      : finished ? (solo ? 'Uma volta completa! Que passeio gostoso.' : 'Uma volta completa! Os dois dinos merecem comemorar.')
+      : finished ? `${data.laps > 1 ? 'Três voltas completas!' : 'Uma volta completa!'} ${solo ? 'Que passeio gostoso.' : 'Os dois dinos merecem comemorar.'}`
+      : lastLap ? 'Última volta!'
       : data.rivalDistracted ? 'Seu amigo parou para olhar um passarinho!'
       : data.recoveryBoostLeft > 0 ? 'Impulso dourado! Vamos alcançar o amigo!'
       : data.rivalRecoveryBoostLeft > 0 ? 'Seu amigo ganhou um impulso dourado!'
@@ -256,6 +270,7 @@ document.querySelector('#choose-again').addEventListener('click', () => {
   welcome.hidden = false;
   countdown.hidden = true;
   document.querySelector('#race-hud').hidden = true;
+  lapCount.hidden = true;
   streakBadge.hidden = true;
   restart.disabled = true;
   pause.disabled = true;
@@ -360,7 +375,7 @@ window.addEventListener('message', event => {
     if (!document.hasFocus()) pauseRace();
   }
   if (data?.type === 'park-race' && ['ready', 'countdown', 'racing', 'finished'].includes(data.stage)
-      && [data.progress, data.rivalProgress, data.speed, data.baseSpeed, data.fruit, data.countdown, data.recoveryBoostLeft, data.rivalRecoveryBoostLeft, data.golden, data.speedLevel, data.streak].every(Number.isFinite)
+      && [data.progress, data.rivalProgress, data.speed, data.baseSpeed, data.fruit, data.countdown, data.recoveryBoostLeft, data.rivalRecoveryBoostLeft, data.golden, data.speedLevel, data.streak, data.lap, data.laps].every(Number.isFinite)
       && typeof data.rival === 'string' && typeof data.track === 'string' && typeof data.winner === 'string'
       && data.baseSpeed > 0) renderRace(data);
 });

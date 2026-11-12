@@ -11,6 +11,15 @@ test('adesivos saem uma vez, conforme a volta', () => {
   assert.deepEqual(award(['first-lap', 'forest'], { ...lap, rival: 'none', winner: 'player' }), ['calm']);
   assert.deepEqual(award(STICKERS.map(s => s.id), { ...lap, winner: 'both' }), []);
   assert.ok(!award([], { ...lap, rival: 'speedy', winner: 'both' }).includes('speedy'));
+  assert.deepEqual(award(['first-lap', 'forest'], { ...lap, track: 'valley', fruit: 10 }), ['valley', 'basket']);
+});
+
+test('vale tem adesivo próprio e a cesta conta a corrida inteira', () => {
+  assert.equal(STICKERS.length, 9);
+  assert.deepEqual(STICKERS.slice(1, 4).map(s => s.id), ['forest', 'beach', 'valley']);
+  const valley = STICKERS.find(s => s.id === 'valley');
+  assert.deepEqual([valley.name, valley.hint], ['Explorador do vale', 'Corra no vale']);
+  assert.equal(STICKERS.find(s => s.id === 'basket').hint, 'Pegue 10 frutinhas numa corrida');
 });
 
 test('cores liberam com a quantidade de adesivos', () => {
