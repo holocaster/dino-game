@@ -2,7 +2,7 @@
 
 Colisões físicas e coleta por áreas adicionadas em 0.13.0: [implementação e validação](collision-validation.md). As medições abaixo registram a entrega original da IA.
 
-Implementado em 2026-11-10: o amigo deixa de alternar entre duas posições fixas e passa a escolher frutas e conduzir sua trajetória. [Prévia em tela vertical](../prototypes/previews/rival-fruit-mobile.png).
+Implementado em 2026-11-10: o amigo deixa de alternar entre duas posições fixas e passa a escolher frutas e conduzir sua trajetória. [Prévia em tela vertical](previews/rival-fruit-mobile.png).
 
 ## Comportamento
 
@@ -16,7 +16,7 @@ A velocidade inicial continua 2,35 e cada fruta concede o mesmo aumento de 0,16 
 
 ## Arquivos
 
-- `prototypes/godot-project/race_state.gd`: seleção de alvo, tempo de reação, aproximação lateral com aceleração, desvio, pausa e reinício dos novos estados.
+- `game/race_state.gd`: seleção de alvo, tempo de reação, aproximação lateral com aceleração, desvio, pausa e reinício dos novos estados.
 - `race.gd`: orientação do amigo e sincronização das passadas durante deslocamentos diagonais; estado publicado inclui posição lateral e velocidade do rival para conferência.
 - `tests/rival_test.gd`: casos de decisão e integração com a cena.
 - `package.json`: `npm run test:rival`; os testes do rival também integram `npm run test:race` e `npm run test:godot`.

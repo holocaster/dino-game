@@ -6,7 +6,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "art/fal/triceratops-source.glb"
-OUTPUT = ROOT / "prototypes/godot-project/assets/triceratops.glb"
+OUTPUT = ROOT / "game/assets/triceratops.glb"
 CYCLE = 0.8
 STANCE = 0.65
 STRIDE = 0.44

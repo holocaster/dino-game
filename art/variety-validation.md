@@ -2,7 +2,7 @@
 
 Atualização em 0.14.1: T-rex e velociraptor agora usam malhas texturizadas geradas pela fal.ai e esqueletos próprios. [Validação dos novos modelos](bipeds-validation.md). A descrição dos modelos procedurais abaixo registra a entrega original.
 
-Entrega de 2026-11-11, autorizada como prioridade antes das oito expansões propostas na sessão anterior. O usuário escolheu tricerátopo, T-rex e velociraptor, com floresta e praia. [Seleção](../prototypes/previews/variety-selection-desktop.png) · [Celular](../prototypes/previews/variety-selection-mobile.png) · [T-rex na praia](../prototypes/previews/variety-trex-beach.png) · [Velociraptor](../prototypes/previews/variety-raptor-beach-mobile.png).
+Entrega de 2026-11-11, autorizada como prioridade antes das oito expansões propostas na sessão anterior. O usuário escolheu tricerátopo, T-rex e velociraptor, com floresta e praia. [Seleção](previews/variety-selection-desktop.png) · [Celular](previews/variety-selection-mobile.png) · [T-rex na praia](previews/variety-trex-beach.png) · [Velociraptor](previews/variety-raptor-beach-mobile.png).
 
 ## Dinossauros e pistas
 

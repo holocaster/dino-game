@@ -1,6 +1,6 @@
 # Colisões suaves — 0.13.0
 
-Implementadas em 2026-11-10: contato entre os corredores, obstáculos sólidos e coleta física de frutas. [Contato em tela larga](../prototypes/previews/collision-contact-desktop.png) · [Tela vertical](../prototypes/previews/collision-contact-mobile.png) · [Rival coletando frutas](../prototypes/previews/collision-race-mobile.png).
+Implementadas em 2026-11-10: contato entre os corredores, obstáculos sólidos e coleta física de frutas. [Contato em tela larga](previews/collision-contact-desktop.png) · [Tela vertical](previews/collision-contact-mobile.png) · [Rival coletando frutas](previews/collision-race-mobile.png).
 
 ## Implementação
 
@@ -16,7 +16,7 @@ O rival percorre um pequeno trecho depois de terminar, liberando a linha de cheg
 
 ## Arquivos
 
-- `prototypes/godot-project/race.gd`: corpos, formas, deslizamento, bordas, áreas de coleta, consultas, projeção, passos de física, animações e liberação da chegada.
+- `game/race.gd`: corpos, formas, deslizamento, bordas, áreas de coleta, consultas, projeção, passos de física, animações e liberação da chegada.
 - `race_state.gd`: resolução física antes das regras de progresso/coleta e verificação de chegada pela posição alcançada.
 - `forest.gd`: colisores dos troncos e pedras da corrida. A cena anterior de passeio mantém seu comportamento.
 - `tests/collision_test.gd`: contato sustentado, obstáculos, coleta, bloqueios, pausa, reinício e chegada.

@@ -12,7 +12,7 @@ Pedido de 2026-11-10: reduzir a aparência robótica das passadas na corrida. [C
 
 - `scripts/rig_triceratops.py`: curva de avanço com continuidade de velocidade e aceleração nas transições, levantamento arredondado e apoio linear preservado. A mudança beneficia também a caminhada do passeio anterior.
 - Novo clip `run`: passada de 0,52, apoio em 60% do ciclo de 0,8 segundo, alternância de pares diagonais, flexão das patas, oscilação vertical de 2,4 cm, balanço discreto do corpo e movimento da cabeça/cauda. Os pés giram durante o avanço e ficam planos no apoio.
-- `prototypes/godot-project/race.gd`: utiliza o clip de corrida nos dois personagens, compensando a escala do amigo; sincroniza a reprodução com a distância efetiva em cada quadro.
+- `game/race.gd`: utiliza o clip de corrida nos dois personagens, compensando a escala do amigo; sincroniza a reprodução com a distância efetiva em cada quadro.
 - `park.gd`: a função de áudio aceita o comprimento de passo; a corrida usa um som por apoio de par diagonal, mantendo o valor anterior no passeio.
 - GLB regenerado com os mesmos 16 ossos, malha e textura. Sem chamadas a serviços de geração ou dependências adicionais.
 

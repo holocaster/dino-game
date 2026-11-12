@@ -1,5 +1,5 @@
 .playwright-mcp/
-prototypes/godot-project/.godot/
+game/.godot/
 .env
 .env.*
 !.env.example

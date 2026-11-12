@@ -18,7 +18,7 @@
   "preview_url": "https://v3b.fal.media/files/b/0ab1e366/Pu1H0pap4IqzmEoJRgosb_preview.png",
   "source_file": "art/fal/triceratops-source.glb",
   "reference": "art/concepts/triceratops-bind-pose.png",
-  "rigged_file": "prototypes/godot-project/assets/triceratops.glb",
+  "rigged_file": "game/assets/triceratops.glb",
   "rig_builder": "scripts/rig_triceratops.py",
   "rejected_attempt": {
     "endpoint_id": "tripo3d/h3.1/text-to-3d",

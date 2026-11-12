@@ -47,14 +47,14 @@ Pedidos futuros: completar personalidades do rival (item 6), implementar recompe
 
 ## Mapa técnico para retomar
 
-- `prototypes/godot-project/race_state.gd`: regras, atributos, distribuição das frutas, bônus, respawn, IA, progresso e vencedor. `advance()` chama a resolução física antes de confirmar coleta/chegada. Frutas comuns usam `distance`, `lateral`, `owner`, `respawn`, `player_taken` e `friend_taken`. A dourada usa `recovery_fruit` separado; propriedades `speed`/`rival_speed` expõem o maior bônus ativo, preservando as velocidades comuns em `_speed`/`_rival_speed`.
+- `game/race/race_state.gd`: regras, atributos, distribuição das frutas, bônus, respawn, IA, progresso e vencedor. `advance()` chama a resolução física antes de confirmar coleta/chegada. Frutas comuns usam `distance`, `lateral`, `owner`, `respawn`, `player_taken` e `friend_taken`. A dourada usa `recovery_fruit` separado; propriedades `speed`/`rival_speed` expõem o maior bônus ativo, preservando as velocidades comuns em `_speed`/`_rival_speed`.
 - `race.gd`: cena, corpos, áreas das frutas, consultas físicas, câmera, animações, áudio e ponte web. A cena cria as frutas em `_ready()`; `fruit_nodes[index]` corresponde a `race.fruits[index]`. A dourada reutiliza um único `recovery_node`, separado das 20 frutas comuns. `_pickup_contact(-1, rival)` consulta esse corpo; visibilidade e camada de colisão acompanham o estado. Reinício desativa o nó e limpa os efeitos.
 - `race_scenery.gd`: decoração e efeitos do item 5, chamada por `race.gd`. Poças são malhas seguindo `forest.point()`; respingos usam segmentos entre as posições físicas anteriores e atuais. Não há colisores novos. Aves e torcida usam tempo próprio; animações da torcida são manuais para respeitar pausa. `reset()` limpa efeitos e gatilhos de som.
 - `forest.gd`: relevo, pista, árvores e colisores. Posicionamento usa `forest.point()`; limite lateral lógico é ±1,65. Corpos físicos e formas mantêm escala unitária; o tamanho visual fica no nó `Model`.
 - Perfis de rival: `RIVALS` em `race_state.gd` (velocidade, reação, `miss` gravado em `fruit.rival_skip` no `reset()`, chance de distração a cada `DISTRACTION_EVERY`). Modo tranquilo: `rival_id == "none"` (`solo`), `_assist()`; `race.gd` oculta o rival e usa um caminho próprio em `_resolve_motion`. Comandos da ponte: `select:<dino>:<pista>:<rival>` e `color:<id>`; a seleção e a cor ficam em metadados da árvore (`race_selection`, `race_color`). Cores via `_tint()` e `dino_tint.gdshader`.
-- `prototypes/rewards.mjs`: adesivos, cores, mensagem de prêmio e persistência validada.
-- `prototypes/index.html`, `game.js`, `game.css`: seleção, controles, HUD e mensagens. A ponte valida origem/janela e usa `textContent` para textos.
-- `prototypes/audio.mjs`: áudio existente, `ParkAudio`.
+- `web/rewards.mjs`: adesivos, cores, mensagem de prêmio e persistência validada.
+- `web/index.html`, `game.js`, `game.css`: seleção, controles, HUD e mensagens. A ponte valida origem/janela e usa `textContent` para textos.
+- `web/audio.mjs`: áudio existente, `ParkAudio`.
 - `runner_model.gd`: instancia os três GLBs. A distância por ciclo dos bípedes é 0,80; a do tricerátopo é `0.52 / 0.6`. Animação e sons acompanham essas distâncias.
 - `scripts/rig_triceratops.py` e `scripts/rig_bipeds.py`: reconstrução offline dos rigs. Originais, prompts e parâmetros em `art/fal/`. Importação dos bípedes em 80 amostras/s, com otimizador do AnimationPlayer desativado para preservar os apoios.
 
@@ -62,7 +62,7 @@ A câmera mantém limites de giro de 50 graus/s e aceleração de 80 graus/s². 
 
 ## Execução, testes e exportação
 
-`npm run dev` serve `http://127.0.0.1:4173/`. Conferir se já existe servidor nessa porta. Jogar usa a exportação em `prototypes/godot/`, sem instalar Godot.
+`npm run dev` serve `http://127.0.0.1:4173/`. Conferir se já existe servidor nessa porta. Jogar usa a exportação em `web/godot/`, sem instalar Godot.
 
 Ajuste 0.17.1: `recovery_test.gd` passou com o novo limite de quatro unidades, nos dois corredores e nas seis combinações. O próprio pack exportado também foi verificado: não gera a fruta com diferença de 3,99 e gera com exatamente 4 unidades. Exportação atualizada; a bateria completa não foi repetida nesse ajuste, e por isso a falha do `balance_test` só apareceu na 0.18.0.
 
@@ -79,17 +79,17 @@ npm run test:gait
 npm run test:godot
 ```
 
-`test:godot` reúne 20 scripts Godot e dois testes Python; `npm test` tem 15 testes Node. Testes de cena física aguardam `physics_frame`; testes isolados do estado não dependem da cena.
+`test:godot` reúne 20 scripts Godot e dois testes Python; `npm test` tem 13 testes Node. Testes de cena física aguardam `physics_frame`; testes isolados do estado não dependem da cena.
 
 O Godot desta sessão ficou em `/tmp/dino-tools/godot`, com `XDG_CONFIG_HOME=/tmp/dino-godot-config`, `XDG_DATA_HOME=/tmp/dino-godot-data` e `XDG_CACHE_HOME=/tmp/dino-godot-cache`. São caminhos temporários: podem desaparecer entre sessões. Para scripts npm, adicionar `/tmp/dino-tools` ao PATH se o binário ainda existir.
 
 Sem templates Web instalados, foi usado:
 
 ```sh
-godot --headless --path prototypes/godot-project --export-pack Web ../godot/index.pck
+godot --headless --path game --export-pack Web ../web/godot/index.pck
 ```
 
-Reutilizar o JS/WASM Godot 4.7.2 existente. Ao exportar, sincronizar versão em `package.json`, `project.godot`, página principal, shell e página gerada; atualizar referências de cache e o tamanho real do pack em `prototypes/godot/index.html`, preservando a configuração do engine. Pack atual: **14.759.224 bytes**. Não servir a raiz do projeto, que contém `.env`; o servidor existente serve apenas `prototypes`.
+Reutilizar o JS/WASM Godot 4.7.2 existente. Ao exportar, sincronizar versão em `package.json`, `project.godot`, página principal, shell e página gerada; atualizar referências de cache e o tamanho real do pack em `web/godot/index.html`, preservando a configuração do engine. Pack atual: **14.760.568 bytes**. Não servir a raiz do projeto, que contém `.env`; o servidor existente serve apenas `web`.
 
 ## Situação dos oito itens originais
 

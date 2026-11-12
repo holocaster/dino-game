@@ -2,7 +2,7 @@
 
 Em 2026-11-11, o usuário pediu melhorar o acabamento dos dois personagens e autorizou gerá-los pela fal.ai. As formas procedurais da 0.14.0 foram substituídas por malhas orgânicas com textura, seguindo o estilo infantil do tricerátopo.
 
-[Quatro momentos da passada](previews/bipeds-run-poses.png) · [T-rex na floresta](../prototypes/previews/textured-trex-forest-desktop.png) · [Velociraptor na praia](../prototypes/previews/textured-raptor-beach-mobile.png).
+[Quatro momentos da passada](previews/bipeds-run-poses.png) · [T-rex na floresta](previews/textured-trex-forest-desktop.png) · [Velociraptor na praia](previews/textured-raptor-beach-mobile.png).
 
 ## Arte e reprodução
 
@@ -16,7 +16,7 @@ Gerados por `tripo3d/h3.1/text-to-3d`, com textura detalhada, sem materiais PBR 
 - `art/fal/trex-generation.json` e `raptor-generation.json`: prompts, parâmetros, sementes, identificadores e URLs das gerações.
 - `art/fal/trex-source.glb` e `raptor-source.glb`: malhas originais, com texturas incorporadas; as prévias retornadas pela fal também estão nessa pasta.
 - `scripts/rig_bipeds.py`: normaliza altura em 1,45 unidade e frente em −Z, preserva UVs/texturas e constrói os dois esqueletos e as animações. Reutiliza a trajetória suave e a solução de pernas de `rig_triceratops.py`.
-- `prototypes/godot-project/assets/trex.glb` e `raptor.glb`: modelos articulados usados pelo jogo.
+- `game/assets/trex.glb` e `raptor.glb`: modelos articulados usados pelo jogo.
 - `runner_model.gd`: instancia os três GLBs. O construtor procedural anterior foi removido.
 
 Reprodução offline: `python3 scripts/rig_bipeds.py`, reimportar os assets no Godot e executar `npm run test:gait` e `npm run test:race`. Novas gerações na fal consomem créditos; jogar e reconstruir os rigs a partir dos arquivos locais não fazem chamadas à fal.

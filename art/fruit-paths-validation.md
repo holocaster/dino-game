@@ -1,6 +1,6 @@
 # Caminhos de frutas — 0.15.0
 
-Item 3 das próximas melhorias, implementado em 2026-11-11. [Floresta em tela larga](../prototypes/previews/fruit-paths-desktop.png) · [Praia em tela vertical](../prototypes/previews/fruit-paths-mobile.png).
+Item 3 das próximas melhorias, implementado em 2026-11-11. [Floresta em tela larga](previews/fruit-paths-desktop.png) · [Praia em tela vertical](previews/fruit-paths-mobile.png).
 
 ## Comportamento
 
@@ -15,7 +15,7 @@ Permanecem respawn compartilhado, uma coleta por dino por fruta, teto e duraçã
 ## Implementação
 
 - `race_state.gd:reset()`: gera os quatro trechos simétricos e reinicia os registros de coleta e respawn.
-- `prototypes/index.html`: instrução inicial convida a escolher um caminho de frutas.
+- `web/index.html`: instrução inicial convida a escolher um caminho de frutas.
 - `tests/fruit_paths_test.gd`: estrutura das escolhas, igualdade de oportunidades, retorno ao centro e navegação pelas duas alternativas.
 - `tests/collision_test.gd`: o cenário de coleta única isola sua fruta, pois agora há duas alternativas na mesma posição de progresso.
 - `npm run test:race`: inclui o novo teste. Exportação e cache em 0.15.0.

@@ -1,6 +1,6 @@
 # Poças, pássaros e torcida — 0.17.0
 
-Pedido do usuário implementado em 2026-11-11. [Floresta](../prototypes/previews/scenery-forest-desktop.png) · [Respingos](../prototypes/previews/scenery-splash-desktop.png) · [Praia em tela vertical](../prototypes/previews/scenery-beach-mobile.png).
+Pedido do usuário implementado em 2026-11-11. [Floresta](previews/scenery-forest-desktop.png) · [Respingos](previews/scenery-splash-desktop.png) · [Praia em tela vertical](previews/scenery-beach-mobile.png).
 
 ## Comportamento
 

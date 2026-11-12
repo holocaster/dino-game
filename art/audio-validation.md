@@ -10,7 +10,7 @@ Godot envia eventos de deslocamento e interação à página. Os passos usam dis
 
 - `npm test`: 9 testes aprovados.
 - `npm run test:godot`: 6 scripts aprovados, incluindo `tests/audio_test.gd`: repouso, passos, descobertas, pegar fruta, quatro mordidas, recompensa, proximidade do ambiente e interrupção por reinício.
-- `prototypes/audio.test.mjs`: renderização real com OfflineAudioContext no Chromium. Todos os seis efeitos, água e pássaros acrescentaram sinal ao ambiente; fontes concluídas foram liberadas. Amostras finitas, pico máximo observado próximo de 0,024, sem saturação. Silêncio e pausa zeraram a saída depois da transição; reinício cancelou efeitos e reativação restaurou o sinal.
+- `web/audio.test.mjs`: renderização real com OfflineAudioContext no Chromium. Todos os seis efeitos, água e pássaros acrescentaram sinal ao ambiente; fontes concluídas foram liberadas. Amostras finitas, pico máximo observado próximo de 0,024, sem saturação. Silêncio e pausa zeraram a saída depois da transição; reinício cancelou efeitos e reativação restaurou o sinal.
 - Na exportação web: nenhum AudioContext antes de iniciar; silêncio antes do início preservado; alimentação emitiu 1 evento de pegar, 4 mordidas e 1 recompensa; reinício manteve um único contexto e a opção de silêncio.
 - Eventos de visibilidade simulados suspenderam e retomaram o contexto real, preservando o silêncio. Ausência de AudioContext simulada não bloqueou o jogo; restaurar a API e tocar no alto-falante recuperou o áudio.
 - Interface conferida em 320, 390 e 1180 pixels, sem transbordamento horizontal. [Celular, 320 px](audio-mobile.png) · [Desktop](audio-desktop.png). Console sem erros ou avisos.

@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Corrida dos dinos</title>
+  <style>html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#e8f2ed}canvas{display:block;width:100%;height:100%;outline:none;touch-action:none}#progress{position:fixed;inset:0;display:grid;place-items:center;color:#527463;background:#e8f2ed;font:14px sans-serif}</style>
+  $GODOT_HEAD_INCLUDE
+</head>
+<body>
+  <canvas id="canvas" aria-label="Use as setas esquerda e direita para pegar frutas na corrida" tabindex="0"></canvas>
+  <div id="progress" role="status">Preparando a pista...</div>
+  <script src="$GODOT_URL"></script>
+  <script>
+    const config = $GODOT_CONFIG;
+    const pack = 'index.pck?v=0.21.0';
+    config.fileSizes[pack] = config.fileSizes['index.pck'];
+    const engine = new Engine(config);
+    for (const type of ['keydown', 'keyup']) {
+      window.addEventListener(type, event => {
+        if (typeof window.parkCommand !== 'function') return;
+        if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+        event.preventDefault();
+        event.stopPropagation();
+        const direction = event.key === 'ArrowLeft' ? 'left' : 'right';
+        window.parkCommand(`${direction}-${type === 'keydown' ? 'down' : 'up'}`);
+      }, true);
+    }
+    window.addEventListener('blur', () => {
+      window.parkCommand?.('release');
+      window.parent.postMessage({ type: 'park-blur' }, location.origin);
+    });
+    engine.startGame({ mainPack: pack, args: ['--audio-driver', 'Dummy'], onProgress(current, total) {
+      const message = total > 0 ? `Preparando a pista... ${Math.round(current / total * 100)}%` : 'Preparando a pista...';
+      document.querySelector('#progress').textContent = message;
+    }}).then(() => document.querySelector('#progress').remove()).catch(error => {
+      const message = 'Não foi possível abrir o Godot neste navegador. Verifique o suporte a WebGL 2.';
+      document.querySelector('#progress').textContent = message;
+      window.parent.postMessage({ type: 'park-error', message }, location.origin);
+      console.error(error);
+    });
+  </script>
+</body>
+</html>

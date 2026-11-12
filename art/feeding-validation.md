@@ -1,6 +1,6 @@
 # Alimentação — versão 0.5.0
 
-Implementada em 2026-11-10. [Sequência visual](previews/feeding-sequence.jpg) · [Desktop](../prototypes/previews/feeding-desktop.png) · [Celular](../prototypes/previews/feeding-mobile.png).
+Implementada em 2026-11-10. [Sequência visual](previews/feeding-sequence.jpg) · [Desktop](previews/feeding-desktop.png) · [Celular](previews/feeding-mobile.png).
 
 ## Comportamento
 
@@ -10,7 +10,7 @@ A descoberta e a mensagem de conclusão são emitidas apenas depois de comer. Ao
 
 O amigo reutiliza o tricerátopo com esqueleto, em escala menor. A mastigação usa uma animação própria da cabeça e o consumo visual da fruta; o modelo não tem mandíbula articulada. A câmera enquadra os dois personagens na entrega e na mastigação. A regra de ocultação de árvores foi corrigida para incluir copas que avançam sobre o foco, mesmo quando o centro da árvore está além dele, e preservar uma margem lateral para os dois personagens no formato vertical, além de afastar da imagem as copas muito próximas da câmera.
 
-Fonte: `prototypes/godot-project/feeding.gd`, integração em `park.gd` e mensagens em `prototypes/game.js`. Não há novas dependências, geração paga ou áudio nesta entrega. A área do parque não foi ampliada.
+Fonte: `game/feeding.gd`, integração em `park.gd` e mensagens em `web/game.js`. Não há novas dependências, geração paga ou áudio nesta entrega. A área do parque não foi ampliada.
 
 ## Verificações
 

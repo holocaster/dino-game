@@ -1,6 +1,6 @@
 # Recuperação dourada — 0.16.1
 
-Item 4 implementado em 2026-11-11. [Fruta na pista, em pausa](../prototypes/previews/recovery-fruit-desktop.png) · [Impulso e brilhos](../prototypes/previews/recovery-boost-desktop.png) · [Praia em tela vertical](../prototypes/previews/recovery-mobile.png).
+Item 4 implementado em 2026-11-11. [Fruta na pista, em pausa](previews/recovery-fruit-desktop.png) · [Impulso e brilhos](previews/recovery-boost-desktop.png) · [Praia em tela vertical](previews/recovery-mobile.png).
 
 ## Ajuste de equilíbrio — 0.16.1
 
@@ -16,7 +16,7 @@ O líder permanece a 2,99 nesse cenário. A única regra alterada é `RECOVERY_B
 
 O teste de ganho em `recovery_test.gd` cobre ambos os destinatários nas seis combinações e exige recuperar ao menos 4,4 unidades em 3,95 segundos contra um líder no máximo comum. Falhou com +1,0 e passou com +2,0. As verificações auxiliares também propagam falhas ao código de saída do teste.
 
-Na cena física, a reprodução reduziu a diferença de **7,63 para 2,87 unidades**, recuperando 4,76 unidades com jogador a 4,20 e líder a 2,99. `npm run test:race` e `npm run test:gait` passaram após o ajuste. Chromium/Playwright confirmou na exportação 0.16.1 a coleta dourada com velocidade 4,20 e base 2,20, sem erros de console. [Captura do ajuste, em pausa](../prototypes/previews/recovery-balance-desktop.png).
+Na cena física, a reprodução reduziu a diferença de **7,63 para 2,87 unidades**, recuperando 4,76 unidades com jogador a 4,20 e líder a 2,99. `npm run test:race` e `npm run test:gait` passaram após o ajuste. Chromium/Playwright confirmou na exportação 0.16.1 a coleta dourada com velocidade 4,20 e base 2,20, sem erros de console. [Captura do ajuste, em pausa](previews/recovery-balance-desktop.png).
 
 As capturas abaixo documentam o visual original da 0.16.0; os brilhos e a geometria não foram alterados pelo ajuste.
 
@@ -54,6 +54,6 @@ O sandbox bloqueava a criação de subprocessos do teste Node com `EPERM`, deixa
 
 Chromium/Playwright verificou a exportação real em 1280×900: aparição para o jogador, coleta, velocidade 3,2 com base 2,2, brilho e mensagens. Em 390×844, verificou seleção de velociraptor/praia, largada, pausa e retomada, sem rolagem horizontal. Sem erros de console. As capturas acima foram inspecionadas. Para registrar a fruta antes da coleta, a corrida foi pausada e o painel de pausa foi ocultado apenas durante a captura.
 
-Exportação `prototypes/godot/index.pck`: **14.747.796 bytes**, com cache e versão 0.16.0 sincronizados. Não houve instalação de dependências, geração paga, commit ou push.
+Exportação `web/godot/index.pck`: **14.747.796 bytes**, com cache e versão 0.16.0 sincronizados. Não houve instalação de dependências, geração paga, commit ou push.
 
 Ainda falta avaliar clareza, equilíbrio e desempenho com crianças e aparelhos físicos. A ajuda reduz a diferença; não garante vitória.

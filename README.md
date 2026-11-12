@@ -1,6 +1,6 @@
 # Corrida dos dinos
 
-Corrida infantil em **Godot + GDScript**, sem violência: uma volta contra o amigo verdinho, avanço automático e frutas que dão impulso temporário. Na versão **0.20.0**, você escolhe entre três amigos com personalidades diferentes ou um passeio tranquilo sozinho, e ganha adesivos e cores para o seu dino. Há poças com respingos, pássaros e dinos torcendo com bandeirinhas. Uma fruta dourada ajuda quem ficar para trás. Escolha tricerátopo, T-rex ou velociraptor, na floresta ou na praia.
+Corrida infantil em **Godot + GDScript**, sem violência: uma volta contra o amigo verdinho, avanço automático e frutas que dão impulso temporário. Na versão **0.21.0**, você escolhe entre três amigos com personalidades diferentes ou um passeio tranquilo sozinho, e ganha adesivos e cores para o seu dino. Há poças com respingos, pássaros e dinos torcendo com bandeirinhas. Uma fruta dourada ajuda quem ficar para trás. Escolha tricerátopo, T-rex ou velociraptor, na floresta ou na praia.
 
 Execute `npm run dev` e abra [o jogo](http://127.0.0.1:4173). A exportação web está incluída; jogar não exige instalar Godot ou dependências.
 
@@ -20,17 +20,23 @@ Execute `npm run dev` e abra [o jogo](http://127.0.0.1:4173). A exportação web
 
 ## Desenvolvimento
 
-Fonte: `prototypes/godot-project/project.godot`, cena inicial `race.tscn`. O passeio anterior permanece em `park.tscn`, aberto pelo editor. A [comparação de engines](http://127.0.0.1:4173/comparacao.html) também permanece disponível.
+Projeto Godot em `game/` (cena inicial `race/race.tscn`); página e exportação web em `web/`. Pastas do projeto Godot, por contexto:
+
+- `race/`: regras da corrida (`race_state.gd`), cena, cenário da pista.
+- `park/`: passeio de exploração anterior (`park.tscn`), aberto pelo editor.
+- `world/`: terreno, árvores e temas floresta/praia.
+- `dinos/`: carregamento dos modelos (em `assets/`) e shader de cor.
+- `common/`: base das duas cenas (câmera, malhas simples, sons de passos, ponte com a página).
 
 Use **Godot 4.7.2** no PATH, com os templates Web correspondentes para exportar:
 
 ```sh
 npm test
 npm run test:godot
-godot --headless --path prototypes/godot-project --export-release Web
+godot --headless --path game --export-release Web
 ```
 
-`npm test` executa 15 testes Node. `npm run test:godot` executa 20 scripts Godot e dois testes Python. `npm run test:race` verifica perfis de rival, modo tranquilo, cores, poças, pássaros, torcida, recuperação dourada, caminhos de frutas, equilíbrio, seis combinações de dino/pista, corrida, rival e colisões; `test:collision`, `test:rival` e `test:gait` permitem verificações específicas. Toque emulado não substitui testes em aparelhos físicos ou com crianças.
+`npm test` executa 13 testes Node. `npm run test:godot` executa 20 scripts Godot e dois testes Python. `npm run test:race` verifica perfis de rival, modo tranquilo, cores, poças, pássaros, torcida, recuperação dourada, caminhos de frutas, equilíbrio, seis combinações de dino/pista, corrida, rival e colisões; `test:collision`, `test:rival` e `test:gait` permitem verificações específicas. Toque emulado não substitui testes em aparelhos físicos ou com crianças.
 
 ## Arte
 

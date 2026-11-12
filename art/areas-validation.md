@@ -1,6 +1,6 @@
 # Áreas conectadas — versão 0.6.0
 
-Implementadas em 2026-11-10. [Circuito em vista geral, com árvores ocultas para avaliação](previews/areas-overview.png) · [Clareira](previews/areas-clearing.png) · [Lago](previews/areas-lake.png) · [Bosque](previews/areas-grove.png) · [Celular](../prototypes/previews/areas-mobile.png).
+Implementadas em 2026-11-10. [Circuito em vista geral, com árvores ocultas para avaliação](previews/areas-overview.png) · [Clareira](previews/areas-clearing.png) · [Lago](previews/areas-lake.png) · [Bosque](previews/areas-grove.png) · [Celular](previews/areas-mobile.png).
 
 ## Entrega
 

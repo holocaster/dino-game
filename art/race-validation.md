@@ -6,10 +6,10 @@ Implementada em 2026-11-10: corrida infantil sem violência, com largada em trê
 
 ## Fonte e integração
 
-- `prototypes/godot-project/race_state.gd`: circuito oval fechado, contagem, progresso dos dois corredores, lateral, coleta única, aumento de velocidade, vencedor e reinício.
+- `game/race_state.gd`: circuito oval fechado, contagem, progresso dos dois corredores, lateral, coleta única, aumento de velocidade, vencedor e reinício.
 - `race.gd` e `race.tscn`: personagens e animações existentes, frutas, linha quadriculada, bandeiras, áudio e ponte web. A câmera reaproveita o acompanhamento do passeio, inclui o amigo quando próximo e abre o campo de visão vertical para 64 graus. O giro continua limitado a 50 graus/s e sua aceleração a 80 graus/s².
 - `forest.gd`: utiliza a curva da corrida para pintar a trilha e afastar vegetação. O oval foi deslocado três unidades para preservar a margem do lago em toda a largura da pista. O passeio anterior permanece disponível na cena `park.tscn`.
-- `prototypes/index.html`, `game.js`, `game.css` e `godot-project/shell.html`: largada, progresso, frutas, controles de direção, silêncio, pausa, chegada e repetição. A ponte mantém validação de origem e janela; textos usam `textContent`.
+- `web/index.html`, `game.js`, `game.css` e `godot-project/shell.html`: largada, progresso, frutas, controles de direção, silêncio, pausa, chegada e repetição. A ponte mantém validação de origem e janela; textos usam `textContent`.
 
 A janela interna encaminha as setas mesmo com foco no corpo do iframe. A liberação ocorre na saída de foco; a mensagem assíncrona dessa saída não cancela uma nova tecla já pressionada na página externa. Soltar, cancelar toque, pausar e reiniciar limpam os controles. Perder o foco da janela ou sair da aba pausa a corrida; a continuação exige ação do jogador.
 
@@ -26,7 +26,7 @@ A janela interna encaminha as setas mesmo com foco no corpo do iframe. A libera�
 
 ## Prévias
 
-[Corrida em tela larga](../prototypes/previews/race-desktop.png) · [Tela vertical](../prototypes/previews/race-mobile.png) · [Pausa](../prototypes/previews/race-pause.png) · [Chegada](../prototypes/previews/race-finish.png).
+[Corrida em tela larga](previews/race-desktop.png) · [Tela vertical](previews/race-mobile.png) · [Pausa](previews/race-pause.png) · [Chegada](previews/race-finish.png).
 
 ## Exportação e limites
 

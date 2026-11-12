@@ -2,7 +2,7 @@
 
 Correção de 2026-11-10 a partir do relato e da captura do usuário: a câmera acompanhava a posição, mas mantinha o mesmo lado do mundo; ao retornar, o personagem caminhava de frente para a câmera e o chão adiante ficava difícil de escolher.
 
-[Ida](../prototypes/previews/camera-outbound.png) · [Volta](../prototypes/previews/camera-return.png) · [Toque: ida](../prototypes/previews/camera-mobile-outbound.png) · [Toque: volta](../prototypes/previews/camera-mobile-return.png).
+[Ida](previews/camera-outbound.png) · [Volta](previews/camera-return.png) · [Toque: ida](previews/camera-mobile-outbound.png) · [Toque: volta](previews/camera-mobile-return.png).
 
 ## Causa e correção
 
@@ -32,7 +32,7 @@ O usuário relatou giro rápido demais ao clicar para começar a andar. O teste 
 Agora a câmera acumula velocidade gradualmente, com aceleração limitada a 80°/s², velocidade máxima de 50°/s e aproximação mais lenta ao ângulo desejado. O passo é limitado ao alvo para não ultrapassá-lo, e o reinício zera a velocidade. No mesmo teste, a partida passou a girar 3° nos primeiros 0,25 segundo.
 
 - Os sete scripts de `npm run test:godot` passaram, incluindo o novo limite de partida, velocidade de giro, meia-volta, clique/toque durante rotação, destino fixo no mundo e reinício.
-- Duas alimentações seguidas foram conferidas em renderização nativa: [primeira](../prototypes/previews/camera-slow-feeding-0.png) e [repetição](../prototypes/previews/camera-slow-feeding-1.png).
+- Duas alimentações seguidas foram conferidas em renderização nativa: [primeira](previews/camera-slow-feeding-0.png) e [repetição](previews/camera-slow-feeding-1.png).
 - O teste da alimentação exigia copa totalmente oculta já na margem externa de antecipação da câmera, mesmo durante a transição. Na repetição, a copa sinalizada estava a 4,12 unidades da câmera, com raio de 2,60 e alfa 0,30: ainda fora da região crítica e sem cobrir os personagens. A asserção foi corrigida para a margem crítica de 0,7 unidade; a proteção do par e os testes completos da transição continuam ativos.
 - Chromium, 1100 × 820: ida às flores, retorno para alimentar o amigo e reinício, sem erros de console nem transbordamento horizontal. Exportação 0.9.2 carregada e tamanho do pack conferido no HTML.
 

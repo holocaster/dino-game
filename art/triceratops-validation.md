@@ -8,10 +8,10 @@ Implementado na versão 0.3.0 em 2026-11-10. O personagem principal segue o conc
 
 - [Quatro ângulos no Godot](previews/triceratops-angles.png).
 - [Caminhada](previews/triceratops-walk.gif) e [descanso](previews/triceratops-idle.gif), renderizados no Godot 4.7.2.
-- [GLB com esqueleto](../prototypes/godot-project/assets/triceratops.glb), 11.789 triângulos, 7.105 vértices, 16 ossos, 1.341.680 bytes.
+- [GLB com esqueleto](../game/assets/triceratops.glb), 11.789 triângulos, 7.105 vértices, 16 ossos, 1.341.680 bytes.
 - [Referência em pose neutra](concepts/triceratops-bind-pose.png) e [prompt do ImageGen](concepts/triceratops-bind-pose-prompt.md).
 - [Malha original](fal/triceratops-source.glb) e [parâmetros da geração](fal/triceratops-generation.json).
-- [Captura desktop](../prototypes/previews/triceratops-game-desktop.png) e [celular emulado](../prototypes/previews/triceratops-game-mobile.png).
+- [Captura desktop](previews/triceratops-game-desktop.png) e [celular emulado](previews/triceratops-game-mobile.png).
 
 ## Reprodução
 

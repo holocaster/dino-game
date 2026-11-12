@@ -1,6 +1,6 @@
 # Visibilidade das árvores — versão 0.8.0
 
-Implementada em 2026-11-10. [Lago](../prototypes/previews/trees-lake.png) · [Bosque](../prototypes/previews/trees-grove.png) · [Bosque em tela vertical](../prototypes/previews/trees-mobile.png) · [Alimentação em tela vertical](../prototypes/previews/trees-feeding-mobile.png).
+Implementada em 2026-11-10. [Lago](previews/trees-lake.png) · [Bosque](previews/trees-grove.png) · [Bosque em tela vertical](previews/trees-mobile.png) · [Alimentação em tela vertical](previews/trees-feeding-mobile.png).
 
 ## Mudança
 
@@ -27,7 +27,7 @@ Fontes: `forest.gd:tree()` e `reveal_character()`, `park.gd:_update_camera()` e 
 O teste de pixels precisa de renderização com GPU ou software gráfico; não deve ser executado com `--headless`:
 
 ```sh
-godot --path prototypes/godot-project --rendering-method gl_compatibility --audio-driver Dummy --script res://tests/tree_render_test.gd
+godot --path game --rendering-method gl_compatibility --audio-driver Dummy --script res://tests/tree_render_test.gd
 ```
 
 ## Desempenho e limites

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.21.0 — 2026-11-11
+
+- Estrutura reorganizada por contexto: projeto Godot em `game/` com `race/`, `park/`, `world/`, `dinos/` e `common/`; página em `web/`; capturas de validação em `art/previews/`.
+- A corrida deixa de herdar do passeio: as duas cenas estendem `common/dino_scene.gd`, sem mudança de comportamento.
+- Removidos o protótipo Phaser e a página de comparação de engines.
+
 ## 0.20.0 — 2026-11-11
 
 - Nova escolha "Com quem vamos correr?": Dorminhoco (deixa passar frutas e para para olhar passarinhos), Brincalhão (o rival da 0.19.0) e Rapidinho (mais rápido e sem erros), cada um com sua cor. Calibrados por simulação: o jogador vence 93/66/53%, 91/51/13% e 70/19/2% jogando bem/médio/parado.

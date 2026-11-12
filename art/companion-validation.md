@@ -1,6 +1,6 @@
 # Amigo do prado — versão 0.10.0
 
-Implementado em 2026-11-10. [Cumprimento no navegador](../prototypes/previews/companion-greeting.png) · [Caminhada com toque emulado](../prototypes/previews/companion-mobile.png).
+Implementado em 2026-11-10. [Cumprimento no navegador](previews/companion-greeting.png) · [Caminhada com toque emulado](previews/companion-mobile.png).
 
 ## Interação
 

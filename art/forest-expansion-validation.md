@@ -2,7 +2,7 @@
 
 Implementada em 2026-11-10. Direção confirmada pelo usuário: trilhas suaves até um mirante, com montanhas ao fundo.
 
-[Vale de cogumelos](../prototypes/previews/expansion-mushrooms.png) · [Prado de borboletas](../prototypes/previews/expansion-meadow.png) · [Mirante](../prototypes/previews/expansion-lookout.png) · [Tela vertical](../prototypes/previews/expansion-mobile.png).
+[Vale de cogumelos](previews/expansion-mushrooms.png) · [Prado de borboletas](previews/expansion-meadow.png) · [Mirante](previews/expansion-lookout.png) · [Tela vertical](previews/expansion-mobile.png).
 
 ## Entrega
 
@@ -31,7 +31,7 @@ Mesma grade de 0,25 unidade por célula para a comparação:
 
 A área caminhável cresceu aproximadamente 2,89 vezes. A soma das curvas inclui seus trechos de ligação, sem representar uma medição exclusiva de segmentos compartilhados. A grade foi ampliada para cobrir o circuito, e destinos em células livres são consultados diretamente antes da busca pela célula mais próxima. O terreno acompanha o relevo durante o deslocamento. O mirante fica mais de 1,8 unidade acima do início; o teste limita a variação de altura por eixo a 0,4 unidade por unidade horizontal nas células caminháveis.
 
-Fontes: `forest.gd`, `park.gd`, `park.json` e os atalhos em `prototypes/index.html`/`game.css`. Sem bibliotecas, serviços pagos ou assets externos novos. Pack final de 6.060.448 bytes, exportado com Godot 4.7.2 e identificação 0.9.0.
+Fontes: `forest.gd`, `park.gd`, `park.json` e os atalhos em `web/index.html`/`game.css`. Sem bibliotecas, serviços pagos ou assets externos novos. Pack final de 6.060.448 bytes, exportado com Godot 4.7.2 e identificação 0.9.0.
 
 ## Verificação
 

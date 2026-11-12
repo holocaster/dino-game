@@ -152,7 +152,7 @@ def build(species):
     output = struct.pack("<4sII", b"glTF", 2, 28 + len(encoded) + len(binary))
     output += struct.pack("<I4s", len(encoded), b"JSON") + encoded
     output += struct.pack("<I4s", len(binary), b"BIN\0") + binary
-    (ROOT / f"prototypes/godot-project/assets/{species}.glb").write_bytes(output)
+    (ROOT / f"game/assets/{species}.glb").write_bytes(output)
     print(f"{species}: {len(joints)} bones, run + idle, {len(positions)} vertices, {len(output)} bytes.")
 
 

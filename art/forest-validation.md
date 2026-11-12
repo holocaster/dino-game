@@ -1,6 +1,6 @@
 # Floresta — etapa 3
 
-Implementada em 0.4.0 em 2026-11-10. [Desktop](../prototypes/previews/forest-desktop.png) · [Celular](../prototypes/previews/forest-mobile.png).
+Implementada em 0.4.0 em 2026-11-10. [Desktop](previews/forest-desktop.png) · [Celular](previews/forest-mobile.png).
 
 ## Entrega
 
@@ -8,7 +8,7 @@ Terreno contínuo com ondulações suaves, trilha curva, lago com margem de pedr
 
 O toque consulta a superfície de altura do terreno. Uma grade AStarGrid2D calcula rotas, com margem para o corpo do personagem ao redor do lago e dos troncos. Trechos com linha livre são unidos para evitar zigue-zague. Toques em obstáculos escolhem um ponto caminhável próximo. O personagem segue a altura do solo, e quadros atrasados consomem os trechos da rota em ordem, preservando os obstáculos. As três descobertas, repetição, teclado e reinício foram mantidos.
 
-Fonte do cenário e navegação: `prototypes/godot-project/forest.gd`. Integração e câmera: `park.gd`. As árvores e pedras usam MultiMesh; as folhas rasteiras usam uma malha única. Não há novas dependências ou chamadas externas para jogar.
+Fonte do cenário e navegação: `game/forest.gd`. Integração e câmera: `park.gd`. As árvores e pedras usam MultiMesh; as folhas rasteiras usam uma malha única. Não há novas dependências ou chamadas externas para jogar.
 
 ## Verificações
 

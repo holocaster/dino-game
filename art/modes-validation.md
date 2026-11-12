@@ -18,7 +18,7 @@ Taxas de vitória do jogador em 180 corridas simuladas por linha (3 dinos × 2 p
 
 ## Recompensas
 
-`prototypes/rewards.mjs`: 8 adesivos por volta completa (primeira volta, floresta, praia, 10 frutas, fruta dourada, passeio tranquilo, chegar antes de um amigo, vencer o Rapidinho) e 4 cores liberadas com 0/2/4/6 adesivos. Salvo em `localStorage` (`dino-race-rewards`), validado ao carregar; com armazenamento bloqueado o jogo segue sem salvar. A cor vai para a cena por `color:<id>`, validado contra `PLAYER_COLORS`.
+`web/rewards.mjs`: 8 adesivos por volta completa (primeira volta, floresta, praia, 10 frutas, fruta dourada, passeio tranquilo, chegar antes de um amigo, vencer o Rapidinho) e 4 cores liberadas com 0/2/4/6 adesivos. Salvo em `localStorage` (`dino-race-rewards`), validado ao carregar; com armazenamento bloqueado o jogo segue sem salvar. A cor vai para a cena por `color:<id>`, validado contra `PLAYER_COLORS`.
 
 As cores usam `dino_tint.gdshader`, que mantém a luminância da textura e aplica o tom. O tingimento por `albedo_color` multiplicava a textura laranja e deixava todas as cores marrons; comprovado por captura antes/depois.
 

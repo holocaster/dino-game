@@ -17,7 +17,7 @@
   "model_url": "https://v3b.fal.media/files/b/0ab20848/wKow80TNnR9ENHR7zKE7k_model.glb",
   "preview_url": "https://v3b.fal.media/files/b/0ab20848/nRpp8eyIkvJqwbjRlNsTk_preview.png",
   "source_file": "art/fal/raptor-source.glb",
-  "rigged_file": "prototypes/godot-project/assets/raptor.glb",
+  "rigged_file": "game/assets/raptor.glb",
   "rig_builder": "scripts/rig_bipeds.py",
   "rejected_attempt": {
     "request_id": "01a1ca60-ddcd-7850-aaf5-d370fc6c14b5",
