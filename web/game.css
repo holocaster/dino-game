@@ -7,7 +7,7 @@ button { font: inherit; cursor: pointer; -webkit-tap-highlight-color: transparen
 button:disabled { cursor: default; opacity: .6; }
 button:focus-visible, iframe:focus-visible, .choice:has(input:focus-visible) { outline: 3px solid #335b3c; outline-offset: 4px; }
 svg { width: 24px; height: 24px; }
-main { width: min(1180px, 100%); margin: auto; padding: 25px 32px 18px; }
+main { display: flex; flex-direction: column; width: min(1180px, 100%); height: 100svh; margin: auto; padding: 25px 32px 18px; }
 .heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 20px; }
 .brand { display: flex; align-items: center; gap: 13px; }
 .brand > svg { color: #77945c; width: 43px; height: 43px; }
@@ -17,7 +17,7 @@ h1 { font-family: Georgia, serif; font-size: 27px; font-weight: 500; letter-spac
 #sound[aria-pressed="true"] { color: #8b735c; background: #f0eee2; }
 .round-button { display: grid; place-items: center; width: 48px; height: 48px; border: 1px solid #dbe0c9; border-radius: 50%; background: var(--cream); color: #526e45; }
 .round-button:hover:enabled { background: #e8eedb; }
-.park { position: relative; height: min(65vh, 690px); min-height: 360px; border: 1px solid #d7e1c8; border-radius: 30px; overflow: hidden; background: #e8f2ed; box-shadow: 0 12px 50px #4d633a0a; }
+.park { position: relative; flex: 1; min-height: 0; max-height: 760px; border: 1px solid #d7e1c8; border-radius: 30px; overflow: hidden; background: #e8f2ed; box-shadow: 0 12px 50px #4d633a0a; }
 iframe { width: 100%; height: 100%; border: 0; display: block; }
 .welcome { position: absolute; inset: 0; z-index: 2; display: grid; place-items: center; padding: 15px; background: #edf3e954; backdrop-filter: blur(3px); }
 .welcome-card { width: min(460px, 100%); max-height: 100%; overflow-y: auto; text-align: center; padding: 18px 22px 16px; background: #fffdf1f5; border: 1px solid #fffefb; border-radius: 30px; box-shadow: 0 15px 60px #36533714; }
@@ -58,9 +58,10 @@ iframe { width: 100%; height: 100%; border: 0; display: block; }
 .welcome-leaf svg { width: 29px; height: 29px; }
 .eyebrow { font-size: 9px; letter-spacing: 1.8px; color: #5f724d; }
 h2 { font-family: Georgia, serif; font-size: clamp(30px, 4vw, 42px); font-weight: 500; line-height: 1.06; letter-spacing: -1.5px; margin: 15px 0; }
-.welcome-card > p:not(.eyebrow) { color: #576c4e; font-size: 13px; line-height: 1.6; }
+.welcome-card p:not(.eyebrow) { color: #576c4e; font-size: 13px; line-height: 1.6; }
 .primary { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; min-height: 56px; margin-top: 23px; border: 0; border-radius: 18px; color: var(--cream); background: var(--green); font-weight: 700; font-size: 14px; box-shadow: 0 4px 0 #3d6035; }
 .primary:hover:enabled { background: #486d3c; }
+#play { position: sticky; bottom: 0; }
 .welcome-card .load-status { min-height: 18px; font-size: 10px !important; margin-bottom: 0; }
 .race-hud { position: absolute; inset: 16px 18px auto; display: flex; align-items: start; justify-content: space-between; gap: 12px; pointer-events: none; }
 .lap, .fruit-score { padding: 12px 15px; border-radius: 19px; background: #fffdf1ef; box-shadow: 0 4px 20px #304b3910; }
@@ -94,7 +95,7 @@ progress::-moz-progress-bar { background: #df9865; border-radius: 8px; }
   .brand > svg { width: 27px; height: 27px; }
   .brand p { font-size: 6px; letter-spacing: 1px; }
   h1 { font-size: clamp(17px, 5vw, 22px); }
-  .park { height: 64svh; min-height: 340px; border-radius: 25px; }
+  .park { border-radius: 25px; }
   .welcome-card { width: min(350px, 100%); padding: 12px 14px; }
   .welcome-card h2 { font-size: 29px; }
   .choices { gap: 5px; margin: 12px 0; }
@@ -105,7 +106,7 @@ progress::-moz-progress-bar { background: #df9865; border-radius: 8px; }
   .rival-choices .choice { flex-direction: row; justify-content: flex-start; gap: 6px; padding: 6px; text-align: left; }
   .rival-choices .choice svg { width: 40px; height: 24px; flex-shrink: 0; }
   .rival-choices .choice > span { display: none; }
-  #welcome .welcome-card > p:not(.load-status), #welcome .eyebrow { display: none; }
+  #welcome .welcome-card p:not(.load-status) { display: none; }
   #welcome .choices { margin: 8px 0; }
   #welcome h2 { margin: 4px 0 6px; }
   #welcome .primary { margin-top: 10px; }
@@ -128,10 +129,39 @@ progress::-moz-progress-bar { background: #df9865; border-radius: 8px; }
 @media (max-height: 600px) and (min-width: 651px) {
   main { padding-top: 10px; }
   .heading { margin-bottom: 10px; }
-  .park { min-height: 280px; height: 64vh; }
   .race-footer { padding-top: 10px; }
   .welcome-card { padding: 10px 24px; }
   .welcome-leaf { display: none; }
   .welcome-card h2 { margin: 10px 0; font-size: 32px; }
   .primary { margin-top: 12px; }
+}
+@media (min-width: 651px) {
+  #welcome .welcome-card { width: min(760px, 100%); }
+  .menu-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start; }
+  .menu-columns .rewards { margin-top: 16px; }
+}
+@media (max-height: 500px) and (orientation: landscape) {
+  main { display: grid; grid-template: auto 1fr / auto 1fr auto; gap: 8px 12px; width: 100%; padding: 8px 12px; }
+  .heading { grid-column: 1 / -1; margin: 0; }
+  .brand p, .brand > svg { display: none; }
+  h1 { font-size: 20px; }
+  .round-button { width: 40px; height: 40px; }
+  .park { grid-area: 2 / 2; max-height: none; border-radius: 22px; }
+  .race-footer { display: contents; }
+  .steer { grid-row: 2; align-self: end; width: 72px; height: 72px; border-radius: 22px; }
+  .steer[data-direction="left"] { grid-column: 1; }
+  .steer[data-direction="right"] { grid-column: 3; }
+  .invitation { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .welcome { padding: 8px; }
+  .welcome-card { padding: 8px 16px; }
+  #welcome .welcome-card p:not(.load-status), .welcome-leaf { display: none; }
+  #welcome h2, .welcome-card h2 { font-size: 24px; margin: 4px 0; }
+  .choices, #welcome .choices { margin: 6px 0; }
+  .choice { padding: 5px 4px; }
+  .choice svg { width: 52px; height: 31px; }
+  .rival-choices .choice svg { width: 40px; height: 24px; }
+  .menu-columns .rewards { margin-top: 6px; }
+  .primary, #welcome .primary { min-height: 46px; margin-top: 8px; }
+  .race-hud { inset: 8px 10px auto; }
+  .lap, .fruit-score { padding: 8px 10px; }
 }

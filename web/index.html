@@ -6,8 +6,8 @@
   <meta name="theme-color" content="#eef3df">
   <title>Corrida dos dinos</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="game.css?v=0.21.0">
-  <script type="module" src="game.js?v=0.21.0"></script>
+  <link rel="stylesheet" href="game.css?v=0.22.0">
+  <script type="module" src="game.js?v=0.22.0"></script>
 </head>
 <body>
   <svg class="symbols" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -44,34 +44,40 @@
         <div class="welcome-card">
           <p class="eyebrow">PRONTOS, AMIGUINHOS?</p>
           <h2>Quem vai correr hoje?</h2>
-          <fieldset class="choices" id="dino-choices" disabled>
-            <legend>Escolha seu dino</legend>
-            <label class="choice dino-triceratops"><input type="radio" name="dino" value="triceratops" checked><svg aria-hidden="true"><use href="#triceratops-icon"/></svg><strong>Tricerátopo</strong><span>Equilibrado</span></label>
-            <label class="choice dino-trex"><input type="radio" name="dino" value="trex"><svg aria-hidden="true"><use href="#trex-icon"/></svg><strong>T-rex</strong><span>Mais veloz</span></label>
-            <label class="choice dino-raptor"><input type="radio" name="dino" value="raptor"><svg aria-hidden="true"><use href="#raptor-icon"/></svg><strong>Velociraptor</strong><span>Mais ágil</span></label>
-          </fieldset>
-          <fieldset class="choices track-choices" id="track-choices" disabled>
-            <legend>Onde vamos brincar?</legend>
-            <label class="choice"><input type="radio" name="track" value="forest" checked><span class="track-preview forest-preview" aria-hidden="true"></span><strong>Floresta</strong></label>
-            <label class="choice"><input type="radio" name="track" value="beach"><span class="track-preview beach-preview" aria-hidden="true"></span><strong>Praia</strong></label>
-          </fieldset>
-          <fieldset class="choices rival-choices" id="rival-choices" disabled>
-            <legend>Com quem vamos correr?</legend>
-            <label class="choice rival-sleepy"><input type="radio" name="rival" value="sleepy"><svg aria-hidden="true"><use href="#triceratops-icon"/></svg><strong>Dorminhoco</strong><span>Se distrai</span></label>
-            <label class="choice rival-playful"><input type="radio" name="rival" value="playful" checked><svg aria-hidden="true"><use href="#triceratops-icon"/></svg><strong>Brincalhão</strong><span>Na medida</span></label>
-            <label class="choice rival-speedy"><input type="radio" name="rival" value="speedy"><svg aria-hidden="true"><use href="#triceratops-icon"/></svg><strong>Rapidinho</strong><span>Um desafio</span></label>
-            <label class="choice rival-none"><input type="radio" name="rival" value="none"><svg aria-hidden="true"><use href="#leaf"/></svg><strong>Sozinho</strong><span>Passeio tranquilo</span></label>
-          </fieldset>
-          <details class="rewards">
-            <summary>Adesivos e cores <span id="sticker-count">0/8</span></summary>
-            <ul id="sticker-list" class="sticker-list"></ul>
-            <fieldset class="choices color-choices" id="color-choices" disabled>
-              <legend>Cor do seu dino</legend>
-            </fieldset>
-          </details>
-          <p>Escolha um caminho de frutinhas!<br>Cada volta pode render adesivos.</p>
-          <button id="play" class="primary" type="button" disabled><svg aria-hidden="true"><use href="#play-icon"/></svg><span>Preparando a pista...</span></button>
-          <p id="load-status" class="load-status" role="status">Só um instante.</p>
+          <div class="menu-columns">
+            <div>
+              <fieldset class="choices" id="dino-choices" disabled>
+                <legend>Escolha seu dino</legend>
+                <label class="choice dino-triceratops"><input type="radio" name="dino" value="triceratops" checked><svg aria-hidden="true"><use href="#triceratops-icon"/></svg><strong>Tricerátopo</strong><span>Equilibrado</span></label>
+                <label class="choice dino-trex"><input type="radio" name="dino" value="trex"><svg aria-hidden="true"><use href="#trex-icon"/></svg><strong>T-rex</strong><span>Mais veloz</span></label>
+                <label class="choice dino-raptor"><input type="radio" name="dino" value="raptor"><svg aria-hidden="true"><use href="#raptor-icon"/></svg><strong>Velociraptor</strong><span>Mais ágil</span></label>
+              </fieldset>
+              <fieldset class="choices track-choices" id="track-choices" disabled>
+                <legend>Onde vamos brincar?</legend>
+                <label class="choice"><input type="radio" name="track" value="forest" checked><span class="track-preview forest-preview" aria-hidden="true"></span><strong>Floresta</strong></label>
+                <label class="choice"><input type="radio" name="track" value="beach"><span class="track-preview beach-preview" aria-hidden="true"></span><strong>Praia</strong></label>
+              </fieldset>
+              <p>Escolha um caminho de frutinhas!<br>Cada volta pode render adesivos.</p>
+            </div>
+            <div>
+              <fieldset class="choices rival-choices" id="rival-choices" disabled>
+                <legend>Com quem vamos correr?</legend>
+                <label class="choice rival-sleepy"><input type="radio" name="rival" value="sleepy"><svg aria-hidden="true"><use href="#triceratops-icon"/></svg><strong>Dorminhoco</strong><span>Se distrai</span></label>
+                <label class="choice rival-playful"><input type="radio" name="rival" value="playful" checked><svg aria-hidden="true"><use href="#triceratops-icon"/></svg><strong>Brincalhão</strong><span>Na medida</span></label>
+                <label class="choice rival-speedy"><input type="radio" name="rival" value="speedy"><svg aria-hidden="true"><use href="#triceratops-icon"/></svg><strong>Rapidinho</strong><span>Um desafio</span></label>
+                <label class="choice rival-none"><input type="radio" name="rival" value="none"><svg aria-hidden="true"><use href="#leaf"/></svg><strong>Sozinho</strong><span>Passeio tranquilo</span></label>
+              </fieldset>
+              <details class="rewards">
+                <summary>Adesivos e cores <span id="sticker-count">0/8</span></summary>
+                <ul id="sticker-list" class="sticker-list"></ul>
+                <fieldset class="choices color-choices" id="color-choices" disabled>
+                  <legend>Cor do seu dino</legend>
+                </fieldset>
+              </details>
+              <button id="play" class="primary" type="button" disabled><svg aria-hidden="true"><use href="#play-icon"/></svg><span>Preparando a pista...</span></button>
+              <p id="load-status" class="load-status" role="status">Só um instante.</p>
+            </div>
+          </div>
         </div>
       </div>
       <div id="race-panel" class="welcome" hidden>

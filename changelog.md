@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.22.0 — 2026-11-12
+
+- Página responsiva: a área do jogo ocupa a altura da tela (`100svh`, até 760 px) em vez de 65% fixos, sem rolagem da página em nenhum tamanho testado (320x568 a 1920x1080, retrato e paisagem).
+- Menu inicial em duas colunas a partir de 651 px de largura: dino e pista à esquerda; amigo, adesivos e "Vamos correr" à direita. Antes o botão ficava escondido sob a rolagem do cartão até em 1440x900. Em telas estreitas o botão fica fixo no rodapé do cartão.
+- Celular deitado (altura até 500 px): cabeçalho compacto e setas nas laterais do jogo, ao alcance dos polegares. Antes as setas ficavam abaixo da dobra e a página rolava.
+- Só a página mudou; o pack Godot continua o da 0.21.0.
+
 ## 0.21.0 — 2026-11-11
 
 - Estrutura reorganizada por contexto: projeto Godot em `game/` com `race/`, `park/`, `world/`, `dinos/` e `common/`; página em `web/`; capturas de validação em `art/previews/`.
