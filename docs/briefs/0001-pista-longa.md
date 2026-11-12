@@ -42,4 +42,5 @@ Q1 3 voltas de ~150-180 u · Q2 cartão "Vale" com os geradores atuais · Q3 ret
 
 ## Open questions
 
+- Calibração (ticket 04): o nível 3 deve ser conquista de quem escolhe caminho; o bot parado não deve chegar a ele na maioria das corridas. Corrida típica dentro de 2-3 min.
 - Números exatos (soma por impulso, decaimento, comprimento das retas, raio das curvas, distância de recuperação) a calibrar por simulação no planejamento ou na implementação.
