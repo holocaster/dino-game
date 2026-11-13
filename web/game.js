@@ -1,5 +1,5 @@
-import { ParkAudio } from './audio.mjs?v=0.26.0';
-import { STICKERS, COLORS, award, unlocked, prizeText, loadRewards, saveRewards } from './rewards.mjs?v=0.26.0';
+import { ParkAudio } from './audio.mjs?v=0.27.0';
+import { STICKERS, COLORS, award, unlocked, prizeText, loadRewards, saveRewards } from './rewards.mjs?v=0.27.0';
 
 const frame = document.querySelector('#game');
 const welcome = document.querySelector('#welcome');

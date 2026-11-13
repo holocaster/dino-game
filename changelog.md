@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.27.0 — 2026-11-12
+
+- Fruta dourada mais forte no Vale, para quem está atrás conseguir alcançar: aparece a 15 u de diferença (`VALLEY_RECOVERY_GAP`, antes 30), com impulso de 3,0 (`VALLEY_RECOVERY_BOOST`, antes 2,0) por 6 s (`VALLEY_RECOVERY_DURATION`, antes 4). Vale para os dois corredores; Floresta e Praia não mudaram. Simulação no Vale (3 dinos x 20 sorteios por célula), vitória do jogador antes -> depois: médio x Rapidinho 10% -> 35%, médio x Brincalhão 48% -> 57%, parado x Brincalhão 10% -> 23%, bom x Rapidinho 77% -> 77%. A tabela de calibração da 0.25.0 vale para a regra antiga.
+
 ## 0.26.0 — 2026-11-12
 
 - No Vale, ao cruzar a linha de chegada aparece um aviso grande no meio da tela: "Volta 2/3" e, na última, "Última volta!" em destaque. O rodapé continua mostrando "Volta N/3".

@@ -186,6 +186,12 @@ func _golden() -> void:
 		race.rival_distance = 30 - Race.RECOVERY_GAP - 3
 		race.advance(0.05)
 		assert(race.recovery_fruit.is_empty() == (circuit == "valley"), "Fruta dourada gap: %s keeps %s u" % [circuit, Race.RECOVERY_GAP])
+		race.recovery_fruit = {"target": "player", "distance": race.distance + 0.3, "lateral": race.lateral, "left": 1.0}
+		race.advance(0.2)
+		var boost: float = Race.VALLEY_RECOVERY_BOOST if circuit == "valley" else Race.RECOVERY_BOOST
+		var duration: float = Race.VALLEY_RECOVERY_DURATION if circuit == "valley" else Race.RECOVERY_DURATION
+		assert(race.golden_collected == 1 and is_equal_approx(race.recovery_boost_left, duration) and race.speed >= race.base_speed + boost, "Fruta dourada strength on %s" % circuit)
+	assert(Race.VALLEY_RECOVERY_BOOST > Race.RECOVERY_BOOST and Race.VALLEY_RECOVERY_DURATION > Race.RECOVERY_DURATION and Race.VALLEY_RECOVERY_GAP > Race.RECOVERY_GAP)
 
 func _bots() -> void:
 	for bot in ["good", "medium", "idle"]:

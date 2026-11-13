@@ -38,7 +38,9 @@ const VALLEY_DECAY := 0.28
 const VALLEY_CENTER := Vector2(24, -5)
 const VALLEY_RADIUS := 12.0
 const VALLEY_STRAIGHT := 45.0
-const VALLEY_RECOVERY_GAP := 30.0
+const VALLEY_RECOVERY_GAP := 15.0
+const VALLEY_RECOVERY_BOOST := 3.0
+const VALLEY_RECOVERY_DURATION := 6.0
 const VALLEY_RIVALS := {
 	"sleepy": {"miss": 0.3},
 	"playful": {"speed": 2.3, "miss": 0.6},
@@ -66,12 +68,12 @@ var _speed := BASE_SPEED
 var _rival_speed := RIVAL_SPEED
 var speed: float:
 	get:
-		return maxf(_speed, base_speed + RECOVERY_BOOST) if recovery_boost_left > 0 else _speed
+		return maxf(_speed, base_speed + (VALLEY_RECOVERY_BOOST if valley else RECOVERY_BOOST)) if recovery_boost_left > 0 else _speed
 	set(value):
 		_speed = value
 var rival_speed: float:
 	get:
-		var value := maxf(_rival_speed, rival_base_speed + RECOVERY_BOOST) if rival_recovery_boost_left > 0 else _rival_speed
+		var value := maxf(_rival_speed, rival_base_speed + (VALLEY_RECOVERY_BOOST if valley else RECOVERY_BOOST)) if rival_recovery_boost_left > 0 else _rival_speed
 		return value - DISTRACTION_SLOW if rival_distracted_left > 0 else value
 	set(value):
 		_rival_speed = value
@@ -441,9 +443,9 @@ func _advance_recovery(delta: float, previous: float, rival_previous: float) -> 
 				contact = pickup_contact.call(-1, rival)
 			if contact:
 				if rival:
-					rival_recovery_boost_left = RECOVERY_DURATION
+					rival_recovery_boost_left = VALLEY_RECOVERY_DURATION if valley else RECOVERY_DURATION
 				else:
-					recovery_boost_left = RECOVERY_DURATION
+					recovery_boost_left = VALLEY_RECOVERY_DURATION if valley else RECOVERY_DURATION
 					collected += 1
 					golden_collected += 1
 				recovery_fruit.clear()
