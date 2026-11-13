@@ -62,6 +62,10 @@ _Avoid_: sem limite, velocidade infinita
 
 ### Recompensas
 
+**Acessório**:
+Elemento visual opcional usado pelo dino, como boné ou óculos, sem alterar seus atributos.
+_Avoid_: equipamento, upgrade
+
 **Adesivo**:
 Conquista guardada no navegador ao terminar uma corrida que cumpre sua condição.
 _Avoid_: troféu, medalha, conquista

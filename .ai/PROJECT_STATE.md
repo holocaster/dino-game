@@ -1,13 +1,14 @@
-goal: Vale - pista longa de 3 voltas com setas de impulso e retorno decrescente
-feature: 0001-pista-longa
+goal: Cinco brincadeiras em uma feature - reações, acessórios, caminhos expressivos, filhote e cooperação local
+feature: 0002-brincadeiras-na-corrida
 context: docs/CONTEXT.md
-brief: docs/briefs/0001-pista-longa.md
-spec: docs/specs/0001-pista-longa.md
-tickets_index: tickets/0001-pista-longa/index.md
+brief: docs/briefs/0002-brincadeiras-na-corrida.md
+spec: null
+tickets_index: null
 active_ticket: null
 base_sha: null
 head_sha: null
 review: null
 review_round: 0
-blockers: []
-next_action: feature 0001-pista-longa complete and browser-validated (0.25.0); awaiting user decision to merge feature branch into main
+blockers:
+  - Awaiting discovery answers for cooperative camera, finish, fruit accounting and keyboard/touch coverage
+next_action: Await second discovery round answers, finalize user-reviewed brief, then dispatch sdd-planner
