@@ -2,12 +2,12 @@ goal: Cinco brincadeiras em uma feature - reações, acessórios, caminhos expre
 feature: 0002-brincadeiras-na-corrida
 context: docs/CONTEXT.md
 brief: docs/briefs/0002-brincadeiras-na-corrida.md
-spec: null
-tickets_index: null
-active_ticket: null
+spec: docs/specs/0002-brincadeiras-na-corrida.md
+tickets_index: tickets/0002-brincadeiras-na-corrida/index.md
+active_ticket: "01"
 base_sha: null
 head_sha: null
 review: null
 review_round: 0
 blockers: []
-next_action: Dispatch sdd-planner for the confirmed brief
+next_action: Dispatch sdd-implementer for ticket 01; all required local feature commits authorized on 2026-11-16
