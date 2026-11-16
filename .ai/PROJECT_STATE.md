@@ -4,10 +4,10 @@ context: docs/CONTEXT.md
 brief: docs/briefs/0002-brincadeiras-na-corrida.md
 spec: docs/specs/0002-brincadeiras-na-corrida.md
 tickets_index: tickets/0002-brincadeiras-na-corrida/index.md
-active_ticket: "04"
-base_sha: c2039c384e13fcbfc5b7157a777a8952b562c5af
-head_sha: 6eef890021b5f33d2a5ce2b20b3422a8aca718d3
+active_ticket: null
+base_sha: null
+head_sha: null
 review: null
 review_round: 0
 blockers: []
-next_action: Dispatch sdd-reviewer for final delivery ticket 04 exact range; all required local feature commits authorized on 2026-11-16
+next_action: Feature complete in 0.28.0 with all four tickets independently approved; await next user task. No push or merge authorized.
