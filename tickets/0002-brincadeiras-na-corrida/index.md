@@ -6,7 +6,7 @@ Implementação sequencial; trabalhar somente um ticket por vez. Estado de cada 
 |---|-------|-----------|--------|
 | 01 | [Aparência com prévia e acessórios salvos](01-aparencia-e-acessorios.md) | none | done |
 | 02 | [Reações, caminhos expressivos e Filhote na chegada](02-brincadeiras-e-filhote.md) | none | done |
-| 03 | [Dupla completa no mesmo aparelho](03-dupla-cooperativa.md) | 01, 02 | ready |
+| 03 | [Dupla completa no mesmo aparelho](03-dupla-cooperativa.md) | 01, 02 | done |
 | 04 | [Entrega 0.28.0 e validação no navegador](04-entrega-0-28-0.md) | 01, 02, 03 | ready |
 
 ## Cobertura
@@ -19,4 +19,4 @@ Implementação sequencial; trabalhar somente um ticket por vez. Estado de cada 
 | R13, R14, R15 | 01, 02 (quando aplicável), 03, 04 |
 | R16 | 04 |
 
-Spec canônica: `docs/specs/0002-brincadeiras-na-corrida.md`. Próximo ticket recomendado: 03.
+Spec canônica: `docs/specs/0002-brincadeiras-na-corrida.md`. Próximo ticket recomendado: 04.
