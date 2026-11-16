@@ -57,9 +57,10 @@ func _run() -> void:
 				unchanged = _facts(game)
 				game.scenery.advance(0.05, previous, other_previous)
 				assert(_facts(game) == unchanged, "Path effects cannot change physical motion, fruit, arrows, boosts or RNG")
+				var model: Node3D = game.dinosaur.get_node("Model")
+				assert(is_zero_approx(model.position.y) and is_zero_approx(model.rotation.x), "Fruit paths do not lift or pitch the runner")
 				await physics_frame
 			assert(path.player_played and path.node.visible, "Both existing fruit paths react to physical passage")
-			assert(game.dinosaur.get_node("Model").position.y > 0.05, "Fruit path reaction hops instead of wobbling")
 			assert(game.dinosaur.get_node("BodyShape").transform == shape)
 			var piece: MeshInstance3D = path.node.get_child(0)
 			assert((piece.mesh is BoxMesh) == (side < 0), "The two sides have distinct shapes")
@@ -85,8 +86,10 @@ func _run() -> void:
 				await physics_frame
 				for step in range(10):
 					game._process(0.05)
+					var model: Node3D = game.friend.get_node("Model")
+					assert(is_zero_approx(model.position.y) and is_zero_approx(model.rotation.x), "Fruit paths do not lift or pitch the second runner")
 					await physics_frame
-				assert(path.rival_played and game.friend.get_node("Model").position.y > 0.05, "Second body shares the same presentation")
+				assert(path.rival_played, "Second body shares the same path effects")
 		for fruit_count in [0, 4]:
 			game.restart()
 			game.race.advance(3)
@@ -127,7 +130,7 @@ func _run() -> void:
 			assert(game.scenery.find_children("*", "Node", true, false).size() == nodes, "Restart reuses every effect and baby node")
 		game.queue_free()
 		await process_frame
-	print("Playful scene checks passed: three species/tracks in Solo and Rival, both paths, distinct reactions, physical/collection/RNG invariance, pause/reset, baby with zero/fruit and win/loss, finish framing.")
+	print("Playful scene checks passed: three species/tracks in Solo and Rival, both path effects without runner hops, puddle wobble, physical/collection/RNG invariance, pause/reset, baby with zero/fruit and win/loss, finish framing.")
 	quit()
 
 func _facts(game: Node3D) -> Array:

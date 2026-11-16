@@ -1,16 +1,16 @@
 # Brincadeiras e Filhote — ticket 02
 
-Reações duram 0,85 s e atuam só no `Model`, preservando orientação y, animação, acessório e corpo físico. Poças provocam balanço lateral; trechos de frutas/Setas provocam salto curto com inclinação. As duas reações compõem quando os elementos coincidem. Lado negativo/esquerdo solta confetes dourados; positivo/direito solta pétalas rosas. Cada lado pode repetir a resposta por corredor/Volta. Reinício reposiciona os mesmos efeitos a partir do novo layout, sem sorteio adicional nem novos nós.
+Efeitos duram 0,85 s. Poças provocam balanço lateral no `Model`, preservando orientação y, animação, acessório e corpo físico. Desde 0.28.1, trechos de frutas/Setas acionam partículas sem salto ou inclinação do corredor, conforme feedback do usuário. Lado negativo/esquerdo solta confetes dourados; positivo/direito solta pétalas rosas. Cada lado pode repetir a resposta por corredor/Volta. Reinício reposiciona os mesmos efeitos a partir do novo layout, sem sorteio adicional nem novos nós.
 
 O Filhote reutiliza Tricerátopo em escala 0,48, a 3,1 m do centro junto à chegada, sem colisão. Ao concluir, até cinco frutas representam visualmente a coleta, voando até ele em aproximadamente dois segundos; o número completo continua no resultado e nos contadores. Com zero ele também pula e balança. Vitória/derrota não condicionam o encontro. Pausa congela a apresentação; reinício limpa tudo. Resultado e ações ocupam os 42% inferiores, deixando 58% para a cena com câmera de chegada entre corredor e Filhote.
 
 ## Conferência pelo Main
 
 - Nas três pistas: o lado inicial (-0,9 m) cruza a primeira poça aos 7 m, aproximadamente três segundos após a largada. Outras poças ficam em `7 + comprimento da Volta × i/4`, alternando -0,9/+0,9 m. Observar balanço e gotas, sem mudança de velocidade.
-- Manter esquerda ou direita nos trechos visíveis de frutas: conferir salto, confetes dourados versus pétalas rosas, com acessórios acompanhando a animação. As posições são derivadas de cada fruta lateral/Seta existente; no Vale o lado da Seta continua diferente do lado das frutas nos trechos assimétricos. Nada obriga um caminho.
-- Combinar Tricerátopo/Floresta, T-rex/Praia e Raptor/Vale; complementar T-rex/Floresta, Raptor/Praia e Tricerátopo/Vale nas capturas. Conferir boné/óculos durante balanço e salto.
+- Manter esquerda ou direita nos trechos visíveis de frutas: conferir confetes dourados versus pétalas rosas e corredor sem salto ou inclinação. As posições são derivadas de cada fruta lateral/Seta existente; no Vale o lado da Seta continua diferente do lado das frutas nos trechos assimétricos. Nada obriga um caminho.
+- Combinar Tricerátopo/Floresta, T-rex/Praia e Raptor/Vale; complementar T-rex/Floresta, Raptor/Praia e Tricerátopo/Vale nas capturas. Conferir boné/óculos durante o balanço nas poças e a corrida.
 - Concluir Sozinho e contra Rival. Após derrota, continuar até sua própria chegada: o Filhote recebe a coleta normalmente. Conferir encontro e os dois botões em 1280×900 e 390×844, reinício e retorno ao menu. Zero exato depende do caminho na corrida natural; o teste físico dirigido cobre zero nas três pistas sem comando de depuração no produto.
-- Assets intermediários podem permanecer no cache com `0.27.0`; usar bypass temporário de query no navegador. O bump final para 0.28.0 pertence ao ticket 04.
+- Página, módulos e pack usam `?v=0.28.1` para carregar a alteração sem reutilizar a versão anterior em cache.
 
 ## Evidência
 

@@ -1,6 +1,6 @@
 # Corrida dos dinos
 
-Corrida infantil em **Godot + GDScript**, versão **0.28.0**: tricerátopo, T-rex e velociraptor na Floresta, Praia ou Vale. Avanço automático, frutas e Setas de impulso, poças, caminhos com efeitos diferentes e um Filhote que comemora na chegada, mesmo sem frutas.
+Corrida infantil em **Godot + GDScript**, versão **0.28.1**: tricerátopo, T-rex e velociraptor na Floresta, Praia ou Vale. Avanço automático, frutas e Setas de impulso, poças, caminhos com efeitos diferentes e um Filhote que comemora na chegada, mesmo sem frutas.
 
 Execute `npm run dev` e abra [o jogo](http://127.0.0.1:4173). A exportação web está incluída; jogar não exige Godot nem instalar dependências.
 

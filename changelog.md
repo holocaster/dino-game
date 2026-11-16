@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.28.1 — 2026-11-16
+
+- Removidos o salto e a inclinação do dino ao passar pelos trechos de frutas/Setas, conforme feedback de teste. Confetes, pétalas e balanço nas poças continuam disponíveis.
+- Página, módulos e exportação web atualizados para 0.28.1. PCK reexportado: **14.787.436 bytes**.
+
 ## 0.28.0 — 2026-11-16
 
 - Aparências independentes para dois jogadores, com prévia do dino real, cores do álbum e boné/óculos gratuitos nos três dinos; escolhas salvas no navegador sem apagar adesivos antigos.

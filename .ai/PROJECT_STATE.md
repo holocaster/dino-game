@@ -10,4 +10,4 @@ head_sha: null
 review: null
 review_round: 0
 blockers: []
-next_action: Feature complete in 0.28.0 with all four tickets independently approved; await next user task. No push or merge authorized.
+next_action: Feature complete; follow-up 0.28.1 removes fruit hops at user request, validated with focused tests and browser. Await next user task. No push or merge authorized.

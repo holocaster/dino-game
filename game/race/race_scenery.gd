@@ -12,7 +12,7 @@ var splashes: Array[Dictionary] = []
 var birds: Array[Dictionary] = []
 var spectators: Array[Dictionary] = []
 var runner_laps := [1, 1]
-var reactions := [{"splash": REACTION_DURATION, "fruit": REACTION_DURATION}, {"splash": REACTION_DURATION, "fruit": REACTION_DURATION}]
+var reactions := [REACTION_DURATION, REACTION_DURATION]
 var paths: Array[Dictionary] = []
 var baby: Node3D
 var baby_base := Vector3.ZERO
@@ -146,7 +146,7 @@ func reset() -> void:
 		splash.age = SPLASH_DURATION
 		splash.node.visible = false
 	for index in range(2):
-		reactions[index] = {"splash": REACTION_DURATION, "fruit": REACTION_DURATION}
+		reactions[index] = REACTION_DURATION
 		var model: Node3D = (game.dinosaur if index == 0 else game.friend).get_node("Model")
 		model.position.y = 0
 		model.rotation.x = 0
@@ -212,7 +212,7 @@ func advance(delta: float, previous: Vector3, rival_previous: Vector3) -> void:
 					puddle[key] = true
 					splashes[index].age = 0.0
 					splashes[index].origin = runner.position
-					reactions[index].splash = 0.0
+					reactions[index] = 0.0
 					if index == 0 or game.dinosaur.position.distance_to(runner.position) < 8:
 						game._notify({"type": "park-sound", "name": "splash"})
 			for path in paths:
@@ -220,17 +220,11 @@ func advance(delta: float, previous: Vector3, rival_previous: Vector3) -> void:
 				if not path[played] and _crossed_puddle(path.pose, before, runner.position):
 					path[played] = true
 					path.age = 0.0
-					reactions[index].fruit = 0.0
 	for index in range(2):
-		var reaction: Dictionary = reactions[index]
-		reaction.splash = minf(REACTION_DURATION, reaction.splash + delta)
-		reaction.fruit = minf(REACTION_DURATION, reaction.fruit + delta)
-		var splash_phase: float = reaction.splash / REACTION_DURATION
-		var fruit_phase: float = reaction.fruit / REACTION_DURATION
+		reactions[index] = minf(REACTION_DURATION, reactions[index] + delta)
+		var splash_phase: float = reactions[index] / REACTION_DURATION
 		var model: Node3D = (game.dinosaur if index == 0 else game.friend).get_node("Model")
 		model.rotation.z = sin(splash_phase * TAU * 2) * sin(splash_phase * PI) * 0.23
-		model.position.y = sin(fruit_phase * PI) * 0.28
-		model.rotation.x = sin(fruit_phase * TAU) * sin(fruit_phase * PI) * 0.12
 	for path in paths:
 		path.age = minf(REACTION_DURATION, path.age + delta)
 		path.node.visible = path.age < REACTION_DURATION
