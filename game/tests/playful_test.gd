@@ -63,6 +63,7 @@ func _run() -> void:
 			assert(game.dinosaur.get_node("BodyShape").transform == shape)
 			var piece: MeshInstance3D = path.node.get_child(0)
 			assert((piece.mesh is BoxMesh) == (side < 0), "The two sides have distinct shapes")
+			assert((piece.mesh.get_aabb().size * piece.scale).length() < 0.4, "Path pieces stay small enough to leave the runner visible")
 			game._web_command(["pause"])
 			var frozen := [game.scenery.elapsed, path.age, game.dinosaur.get_node("Model").transform]
 			unchanged = _facts(game)

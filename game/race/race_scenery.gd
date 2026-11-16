@@ -1,5 +1,7 @@
 extends Node3D
 
+const PETAL_SIZE := Vector3(0.16, 0.045, 0.09)
+
 const SPLASH_DURATION := 0.6
 const REACTION_DURATION := 0.85
 
@@ -171,7 +173,7 @@ func _reset_paths() -> void:
 					if side < 0:
 						game._box(Vector3(0.3, 0.055, 0.055), Vector3.ZERO, "ffd45e", burst)
 					else:
-						game._sphere(Vector3.ZERO, Vector3(0.16, 0.045, 0.09), "f29cc2", burst)
+						game._sphere(Vector3.ZERO, PETAL_SIZE, "f29cc2", burst)
 				paths.append({"node": burst})
 			var path: Dictionary = paths[index]
 			path.distance = progress
@@ -240,7 +242,7 @@ func advance(delta: float, previous: Vector3, rival_previous: Vector3) -> void:
 			var angle: float = index * TAU / 8 + phase * path.side
 			piece.position = Vector3(cos(angle) * (0.3 + phase), sin(phase * PI) * 0.9 + 0.1, sin(angle) * (0.3 + phase))
 			piece.rotation = Vector3(phase * PI, angle, phase * PI / 2)
-			piece.scale = Vector3.ONE * (1 - phase * 0.6)
+			piece.scale = (Vector3.ONE if path.side < 0 else PETAL_SIZE) * (1 - phase * 0.6)
 	for splash in splashes:
 		splash.age = minf(SPLASH_DURATION, splash.age + delta)
 		splash.node.visible = splash.age < SPLASH_DURATION

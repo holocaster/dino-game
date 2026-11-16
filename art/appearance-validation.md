@@ -11,8 +11,10 @@ Todos ligados a `Head` por `BoneAttachment3D`, sem sobrescrever pose. Coordenada
 | Espécie | Boné (x,y,z) | Óculos (x,y,z) | Largura dos óculos |
 | --- | --- | --- | --- |
 | Tricerátopo | 0, 0.26, -0.32 | 0, 0.07, -0.49 | 0.52 |
-| T-rex | 0, 0.52, -0.13 | 0, 0.34, -0.34 | 0.51 |
-| Velociraptor | 0, 0.51, -0.21 | 0, 0.31, -0.39 | 0.47 |
+| T-rex | 0, 0.52, -0.13 | 0, 0.38, -0.18 | 0.51 |
+| Velociraptor | 0, 0.51, -0.21 | 0, 0.47, -0.23 | 0.47 |
+
+Os encaixes dos óculos de T-rex/velociraptor foram recalibrados na entrega 0.28.0 após inspeção ampliada: as lentes estavam adiantadas no focinho. A posição foi elevada/recuada conforme os olhos no GLB existente; bonés, tricerátopo e larguras ficaram preservados. Main confirmou as duas prévias corrigidas no navegador: [T-rex](previews/release-0.28-glasses-trex.png) e [velociraptor](previews/release-0.28-glasses-raptor.png).
 
 Conferir as nove combinações em idle/prévia e run, frente/lateral, com cor natural e uma cor liberada: boné sobre a cabeça sem atravessar chifres/crista; lentes diante dos olhos, hastes junto às laterais; materiais vermelho/amarelo/azul preservados ao trocar a cor. Confirmar que o acessório continua encaixado após pausa, reinício, menu e recarga. Conferir menu/prévia em 1280×900 e 390×844.
 

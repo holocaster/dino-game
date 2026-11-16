@@ -9,8 +9,8 @@ const MODELS := {
 const ACCESSORIES := ["none", "cap", "glasses"]
 const FIT := {
 	"triceratops": {"cap": Vector3(0, 0.26, -0.32), "glasses": Vector3(0, 0.07, -0.49), "width": 0.52},
-	"trex": {"cap": Vector3(0, 0.52, -0.13), "glasses": Vector3(0, 0.34, -0.34), "width": 0.51},
-	"raptor": {"cap": Vector3(0, 0.51, -0.21), "glasses": Vector3(0, 0.31, -0.39), "width": 0.47}
+	"trex": {"cap": Vector3(0, 0.52, -0.13), "glasses": Vector3(0, 0.38, -0.18), "width": 0.51},
+	"raptor": {"cap": Vector3(0, 0.51, -0.21), "glasses": Vector3(0, 0.47, -0.23), "width": 0.47}
 }
 
 static func create(species: String, accessory: String = "none") -> Node3D:

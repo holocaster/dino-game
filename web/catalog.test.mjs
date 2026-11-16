@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, statSync } from 'node:fs';
 import { COLORS } from './rewards.mjs';
 import { SPECIES, ACCESSORIES } from './appearance.mjs';
 
@@ -57,9 +57,17 @@ test('cores da página existem no Godot', () => {
 
 test('todas as versões de cache seguem o package.json', () => {
   const { version } = JSON.parse(read('../package.json'));
+  assert.equal(read('../game/project.godot').match(/config\/version="([^"]+)"/)[1], version);
   for (const file of ['./index.html', './game.js', './appearance.mjs', './rewards.mjs', './godot/index.html', '../game/shell.html']) {
     const found = [...read(file).matchAll(/\?v=([\d.]+)/g)].map(match => match[1]);
     assert.ok(found.length > 0, `${file} sem versão de cache`);
     assert.deepEqual([...new Set(found)], [version], file);
+  }
+});
+
+test('exportação anuncia os tamanhos reais do pack e runtime', () => {
+  const config = JSON.parse(read('./godot/index.html').match(/const config = (.*);/)[1]);
+  for (const file of ['index.pck', 'index.wasm']) {
+    assert.equal(config.fileSizes[file], statSync(new URL(`./godot/${file}`, import.meta.url)).size, file);
   }
 });

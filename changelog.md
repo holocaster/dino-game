@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.28.0 — 2026-11-16
+
+- Aparências independentes para dois jogadores, com prévia do dino real, cores do álbum e boné/óculos gratuitos nos três dinos; escolhas salvas no navegador sem apagar adesivos antigos.
+- Reações automáticas breves: balanço na poça e salto contente nas frutas. Caminhos existentes ganham efeitos distintos à esquerda/direita, sem mudar coleta, impulso ou colisões. O Filhote recebe o total e comemora na chegada, inclusive com zero frutas ou derrota.
+- **Dupla** nas três pistas, separada de Rival/Sozinho: A/D e setas, dois pares de toque simultâneo, aparências próprias, frutas compartilhadas, espera sem bloquear e resultado só após ambos chegarem. Álbum usa a soma e exclui prêmios competitivos/de Sozinho.
+- Câmera enquadra os dois em tela larga/vertical. Ajuda longitudinal exclusiva da Dupla reduz avanço a partir de 6 m e para o líder no limite de 18 m, sem recuar/teletransportar nem tomar direção lateral; giro continua limitado a 50 graus/s. Separação máxima medida: 16,6424285366 m nas simulações de estresse. Modos anteriores preservam a caracterização numérica.
+- Versão/cache 0.28.0 sincronizados. PCK reexportado com Godot 4.7.2: **14.787.676 bytes**; runtime WASM existente: **39.514.754 bytes**. Templates Web completos indisponíveis: atualização por `--export-pack`, com JS/WASM 4.7.2 reutilizados. Evidências e limites em [validação da entrega](art/release-0.28.0-validation.md); sem mídia paga, dependências ou serviços novos.
+
 ## 0.27.0 — 2026-11-12
 
 - Fruta dourada mais forte no Vale, para quem está atrás conseguir alcançar: aparece a 15 u de diferença (`VALLEY_RECOVERY_GAP`, antes 30), com impulso de 3,0 (`VALLEY_RECOVERY_BOOST`, antes 2,0) por 6 s (`VALLEY_RECOVERY_DURATION`, antes 4). Vale para os dois corredores; Floresta e Praia não mudaram. Simulação no Vale (3 dinos x 20 sorteios por célula), vitória do jogador antes -> depois: médio x Rapidinho 10% -> 35%, médio x Brincalhão 48% -> 57%, parado x Brincalhão 10% -> 23%, bom x Rapidinho 77% -> 77%. A tabela de calibração da 0.25.0 vale para a regra antiga.
