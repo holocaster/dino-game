@@ -1,4 +1,5 @@
 import { ParkAudio } from './audio.mjs?v=0.27.0';
+import { loadAppearances, saveAppearances } from './appearance.mjs?v=0.27.0';
 import { STICKERS, COLORS, award, unlocked, prizeText, loadRewards, saveRewards } from './rewards.mjs?v=0.27.0';
 
 const frame = document.querySelector('#game');
@@ -26,6 +27,14 @@ let state = null;
 let storage = null;
 try { storage = window.localStorage; } catch {}
 const rewards = loadRewards(storage);
+const appearances = loadAppearances(storage, rewards);
+document.querySelector(`[name="dino"][value="${appearances[0].species}"]`).checked = true;
+document.querySelector(`[name="accessory"][value="${appearances[0].accessory}"]`).checked = true;
+
+function sendAppearance(slot) {
+  const { species, color, accessory } = appearances[slot - 1];
+  command(`appearance:${slot}:${species}:${color}:${accessory}`);
+}
 let prize = '';
 
 function renderRewards() {
@@ -45,11 +54,12 @@ function renderRewards() {
     const label = document.createElement('label');
     label.className = 'choice';
     const input = document.createElement('input');
-    Object.assign(input, { type: 'radio', name: 'color', value: color.id, checked: color.id === rewards.color, disabled: !unlocked(color, rewards.stickers) });
+    Object.assign(input, { type: 'radio', name: 'color', value: color.id, checked: color.id === appearances[0].color, disabled: !unlocked(color, rewards.stickers) });
     input.addEventListener('change', () => {
-      rewards.color = color.id;
+      rewards.color = appearances[0].color = color.id;
       saveRewards(storage, rewards);
-      command(`color:${color.id}`);
+      saveAppearances(storage, appearances, rewards);
+      sendAppearance(1);
     });
     const swatch = document.createElement('span');
     swatch.className = 'swatch';
@@ -247,6 +257,7 @@ function renderRace(data) {
 play.addEventListener('click', () => {
   started = true;
   welcome.hidden = true;
+  delete park.dataset.preview;
   restart.disabled = false;
   pause.disabled = false;
   frame.tabIndex = 0;
@@ -255,16 +266,24 @@ play.addEventListener('click', () => {
   frame.focus();
 });
 
-for (const input of document.querySelectorAll('[name="dino"], [name="track"], [name="rival"]')) {
+for (const input of document.querySelectorAll('[name="dino"], [name="accessory"]')) {
   input.addEventListener('change', () => {
-    const dino = document.querySelector('[name="dino"]:checked').value;
+    appearances[0].species = document.querySelector('[name="dino"]:checked').value;
+    appearances[0].accessory = document.querySelector('[name="accessory"]:checked').value;
+    saveAppearances(storage, appearances, rewards);
+    sendAppearance(1);
+  });
+}
+
+for (const input of document.querySelectorAll('[name="track"], [name="rival"]')) {
+  input.addEventListener('change', () => {
     const track = document.querySelector('[name="track"]:checked').value;
     const rival = document.querySelector('[name="rival"]:checked').value;
     play.disabled = true;
     for (const group of choices) group.disabled = true;
     play.querySelector('span').textContent = 'Preparando a pista...';
     document.querySelector('#load-status').textContent = 'Seu dino já está chegando.';
-    command(`select:${dino}:${track}:${rival}`);
+    command(`select:${appearances[0].species}:${track}:${rival}`);
   });
 }
 
@@ -276,6 +295,7 @@ document.querySelector('#choose-again').addEventListener('click', () => {
   command('menu');
   panel.hidden = true;
   welcome.hidden = false;
+  park.dataset.preview = 'true';
   countdown.hidden = true;
   document.querySelector('#race-hud').hidden = true;
   lapCount.hidden = true;
@@ -369,7 +389,8 @@ window.addEventListener('message', event => {
   }
   if (data?.type === 'park-sound' && started && typeof data.name === 'string') sound?.play(data.name);
   if (data?.type === 'park-ready') {
-    command(`color:${rewards.color}`);
+    sendAppearance(1);
+    sendAppearance(2);
     play.disabled = false;
     for (const group of choices) group.disabled = false;
     play.querySelector('span').textContent = 'Vamos correr';

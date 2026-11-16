@@ -2,12 +2,14 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { COLORS } from './rewards.mjs';
+import { SPECIES, ACCESSORIES } from './appearance.mjs';
 
 const read = path => readFileSync(new URL(path, import.meta.url), 'utf8');
 const state = read('../game/race/race_state.gd');
 const scene = read('../game/race/race.gd');
 const page = read('./index.html');
 const effects = read('../game/race/speed_effects.gd');
+const models = read('../game/dinos/runner_model.gd');
 
 function gdKeys(source, name) {
   const declaration = `const ${name} := `;
@@ -38,6 +40,9 @@ test('lê chaves de primeiro nível do GDScript', () => {
 
 test('página e Godot usam os mesmos dinos, pistas e amigos', () => {
   assert.deepEqual(values('dino'), gdKeys(state, 'DINOS'));
+  assert.deepEqual(SPECIES, gdKeys(state, 'DINOS'));
+  assert.deepEqual(ACCESSORIES, gdKeys(models, 'ACCESSORIES'));
+  assert.deepEqual(values('accessory'), ACCESSORIES);
   assert.deepEqual(values('track'), gdKeys(state, 'TRACKS'));
   assert.deepEqual(values('rival'), [...gdKeys(state, 'RIVALS'), 'none']);
   assert.deepEqual(gdKeys(scene, 'RIVAL_COLORS'), gdKeys(state, 'RIVALS'));
@@ -50,7 +55,7 @@ test('cores da página existem no Godot', () => {
 
 test('todas as versões de cache seguem o package.json', () => {
   const { version } = JSON.parse(read('../package.json'));
-  for (const file of ['./index.html', './game.js', './godot/index.html', '../game/shell.html']) {
+  for (const file of ['./index.html', './game.js', './appearance.mjs', './godot/index.html', '../game/shell.html']) {
     const found = [...read(file).matchAll(/\?v=([\d.]+)/g)].map(match => match[1]);
     assert.ok(found.length > 0, `${file} sem versão de cache`);
     assert.deepEqual([...new Set(found)], [version], file);

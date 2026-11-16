@@ -26,6 +26,10 @@ const PLAYER_COLORS := {"natural": Color.WHITE, "sunset": Color(1.0, 0.5, 0.38),
 func _ready() -> void:
 	var selection: Array = get_tree().get_meta("race_selection", ["triceratops", "forest"])
 	race.configure(selection[0], selection[1], selection[2] if selection.size() > 2 else "playful")
+	var appearance := _appearance(1).duplicate()
+	appearance.species = race.dino_id
+	appearance.color = get_tree().get_meta("race_color", "natural")
+	get_tree().set_meta("race_appearances", [appearance, _appearance(2).duplicate()])
 	var environment := Environment.new()
 	environment.background_mode = Environment.BG_COLOR
 	environment.background_color = Color("cdeef0") if race.track_id == "beach" else Color("e8f2ed")
@@ -119,7 +123,7 @@ func _runner(green: bool) -> Node3D:
 	runner.collision_mask = 3
 	add_child(runner)
 	var species: String = "triceratops" if green else race.dino_id
-	var model := preload("res://dinos/runner_model.gd").create(species)
+	var model := preload("res://dinos/runner_model.gd").create(species, "none" if green else _appearance(1).accessory)
 	model.name = "Model"
 	runner.add_child(model)
 	model.get_node("AnimationPlayer").callback_mode_process = AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_PHYSICS
@@ -150,6 +154,8 @@ func _trail_color() -> Color:
 
 func _tint(runner: Node3D, color: Color) -> void:
 	for mesh in runner.get_node("Model").find_children("*", "MeshInstance3D", true, false):
+		if mesh.skin == null:
+			continue
 		for surface in range(mesh.mesh.get_surface_count()):
 			var material: ShaderMaterial = null
 			if color != Color.WHITE:
@@ -270,6 +276,14 @@ func _camera_focus_point() -> Vector3:
 	var weight := 0.5 * (1 - smoothstep(3.0, 6.0, dinosaur.position.distance_to(friend.position)))
 	return dinosaur.position.lerp(friend.position, weight)
 
+func _update_camera(weight: float, delta: float = 1.0) -> void:
+	if race.stage == "ready":
+		camera.position = dinosaur.position + Vector3(-2.8, 1.9, -3.2).rotated(Vector3.UP, dinosaur.rotation.y)
+		camera.look_at(dinosaur.position + Vector3.UP * 0.72)
+		forest.reveal_character(camera.position, dinosaur.position, delta, 0.9)
+	else:
+		super._update_camera(weight, delta)
+
 func _fit_camera() -> void:
 	super._fit_camera()
 	var size := get_viewport().get_visible_rect().size
@@ -337,12 +351,54 @@ func restart() -> void:
 	race.start()
 	_report()
 
+func _appearance(slot: int) -> Dictionary:
+	var appearances: Array = get_tree().get_meta("race_appearances", [])
+	if appearances.size() == 2:
+		return appearances[slot - 1]
+	return {"species": race.dino_id if slot == 1 else "trex", "color": get_tree().get_meta("race_color", "natural") if slot == 1 else "natural", "accessory": "none"}
+
+func _apply_appearance(slot: int, appearance: Dictionary) -> void:
+	var appearances := [_appearance(1).duplicate(), _appearance(2).duplicate()]
+	appearances[slot - 1] = appearance
+	get_tree().set_meta("race_appearances", appearances)
+	if slot != 1:
+		return
+	get_tree().set_meta("race_color", appearance.color)
+	var changed_species: bool = appearance.species != race.dino_id
+	if changed_species:
+		race.configure(appearance.species, race.track_id, race.rival_id)
+		get_tree().set_meta("race_selection", [race.dino_id, race.track_id, race.rival_id])
+	var old_model := dinosaur.get_node("Model")
+	dinosaur.remove_child(old_model)
+	old_model.queue_free()
+	var model := preload("res://dinos/runner_model.gd").create(appearance.species, appearance.accessory)
+	model.name = "Model"
+	dinosaur.add_child(model)
+	dinosaur_animation = model.get_node("AnimationPlayer")
+	dinosaur_animation.callback_mode_process = AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_PHYSICS
+	_tint(dinosaur, PLAYER_COLORS[appearance.color])
+	speed_effects.paint(0, _trail_color())
+	if changed_species:
+		reset_race()
+	else:
+		_animate_runner(dinosaur, dinosaur_animation, 0)
+		_report()
+
 func _web_command(arguments: Array) -> void:
 	if arguments.size() != 1 or not arguments[0] is String:
+		return
+	if arguments[0].begins_with("appearance:"):
+		var values: PackedStringArray = arguments[0].split(":")
+		if values.size() != 5 or values[1] not in ["1", "2"] or not race.DINOS.has(values[2]) or not PLAYER_COLORS.has(values[3]) or values[4] not in preload("res://dinos/runner_model.gd").ACCESSORIES or race.stage not in ["ready", "finished"]:
+			return
+		_apply_appearance(int(values[1]), {"species": values[2], "color": values[3], "accessory": values[4]})
 		return
 	if arguments[0].begins_with("color:"):
 		var color: String = arguments[0].substr(6)
 		if PLAYER_COLORS.has(color):
+			var appearance := _appearance(1).duplicate()
+			appearance.color = color
+			get_tree().set_meta("race_appearances", [appearance, _appearance(2).duplicate()])
 			get_tree().set_meta("race_color", color)
 			_tint(dinosaur, PLAYER_COLORS[color])
 			speed_effects.paint(0, _trail_color())

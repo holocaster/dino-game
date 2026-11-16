@@ -178,3 +178,13 @@ progress::-moz-progress-bar { background: #df9865; border-radius: 8px; }
   .race-hud { inset: 8px 10px auto; }
   .lap, .fruit-score { padding: 8px 10px; }
 }
+
+.park[data-preview] iframe { height: 34%; }
+.park[data-preview] #welcome { top: 34%; padding: 6px 12px 12px; background: #edf3e9; backdrop-filter: none; }
+.park[data-preview] #welcome .welcome-card { height: 100%; max-height: 100%; }
+.accessory-choices .choice { justify-content: center; min-height: 44px; }
+@media (max-height: 500px) and (orientation: landscape) {
+  .park[data-preview] iframe { width: 34%; height: 100%; }
+  .park[data-preview] #welcome { top: 0; left: 34%; }
+  #welcome .menu-columns { display: block; }
+}

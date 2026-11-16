@@ -33,7 +33,7 @@
         <button id="restart" class="round-button" type="button" aria-label="Recomeçar corrida" title="Recomeçar corrida" disabled><svg aria-hidden="true"><use href="#restart-icon"/></svg></button>
       </div>
     </header>
-    <section class="park" aria-label="Corrida amigável de dinossauros">
+    <section class="park" data-preview="true" aria-label="Corrida amigável de dinossauros">
       <iframe id="game" title="Corrida: use as setas esquerda e direita para pegar frutas" src="godot/index.html?v=0.27.0" tabindex="-1"></iframe>
       <div class="speed-lines" aria-hidden="true"></div>
       <div id="race-hud" class="race-hud" hidden>
@@ -55,6 +55,15 @@
                 <label class="choice dino-trex"><input type="radio" name="dino" value="trex"><svg aria-hidden="true"><use href="#trex-icon"/></svg><strong>T-rex</strong><span>Mais veloz</span></label>
                 <label class="choice dino-raptor"><input type="radio" name="dino" value="raptor"><svg aria-hidden="true"><use href="#raptor-icon"/></svg><strong>Velociraptor</strong><span>Mais ágil</span></label>
               </fieldset>
+              <fieldset class="choices accessory-choices" id="accessory-choices" disabled>
+                <legend>Acessório do seu dino</legend>
+                <label class="choice"><input type="radio" name="accessory" value="none" checked><strong>Sem acessório</strong></label>
+                <label class="choice"><input type="radio" name="accessory" value="cap"><strong>Boné</strong></label>
+                <label class="choice"><input type="radio" name="accessory" value="glasses"><strong>Óculos</strong></label>
+              </fieldset>
+              <fieldset class="choices color-choices" id="color-choices" disabled>
+                <legend>Cor do seu dino</legend>
+              </fieldset>
               <fieldset class="choices track-choices" id="track-choices" disabled>
                 <legend>Onde vamos brincar?</legend>
                 <label class="choice"><input type="radio" name="track" value="forest" checked><span class="track-preview forest-preview" aria-hidden="true"></span><strong>Floresta</strong></label>
@@ -72,11 +81,8 @@
                 <label class="choice rival-none"><input type="radio" name="rival" value="none"><svg aria-hidden="true"><use href="#leaf"/></svg><strong>Sozinho</strong><span>Passeio tranquilo</span></label>
               </fieldset>
               <details class="rewards">
-                <summary>Adesivos e cores <span id="sticker-count">0/9</span></summary>
+                <summary>Álbum de adesivos <span id="sticker-count">0/9</span></summary>
                 <ul id="sticker-list" class="sticker-list"></ul>
-                <fieldset class="choices color-choices" id="color-choices" disabled>
-                  <legend>Cor do seu dino</legend>
-                </fieldset>
               </details>
               <button id="play" class="primary" type="button" disabled><svg aria-hidden="true"><use href="#play-icon"/></svg><span>Preparando a pista...</span></button>
               <p id="load-status" class="load-status" role="status">Só um instante.</p>
