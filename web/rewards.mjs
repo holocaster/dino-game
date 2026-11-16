@@ -1,3 +1,5 @@
+import { validCoopFinish } from './race-report.mjs?v=0.27.0';
+
 const KEY = 'dino-race-rewards';
 
 export const STICKERS = [
@@ -20,7 +22,10 @@ export const COLORS = [
 ];
 
 export function award(owned, result) {
-  return STICKERS.filter(sticker => !owned.includes(sticker.id) && sticker.earned(result)).map(sticker => sticker.id);
+  if (result.mode === 'coop' && !validCoopFinish(result)) return [];
+  return STICKERS.filter(sticker => !owned.includes(sticker.id)
+    && (result.mode !== 'coop' || !['calm', 'first-place', 'speedy'].includes(sticker.id))
+    && sticker.earned(result)).map(sticker => sticker.id);
 }
 
 export function prizeText(previous, earned) {

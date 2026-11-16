@@ -1,5 +1,7 @@
 extends RefCounted
 
+const COOP_SOFT_GAP := 6.0
+const COOP_MAX_GAP := 18.0
 const TRACK_WIDTH := 2.8
 const LATERAL_LIMIT := 1.65
 const BASE_SPEED := 2.2
@@ -57,6 +59,18 @@ var lap: int:
 var rival_lap: int:
 	get:
 		return _lap_index(rival_distance) + 1
+var mode := "competitive"
+var partner_id := "trex"
+var partner_collected := 0
+var partner_golden := 0
+var partner_arrows := 0
+var partner_streak := 0
+var total_collected: int:
+	get:
+		return collected + partner_collected if mode == "coop" else collected
+var total_golden: int:
+	get:
+		return golden_collected + partner_golden if mode == "coop" else golden_collected
 var stage := "ready"
 var countdown := 3.0
 var paused := false
@@ -126,7 +140,7 @@ func _init() -> void:
 
 var solo: bool:
 	get:
-		return rival_id == "none"
+		return mode == "solo"
 
 static func speed_level(bonus: float) -> int:
 	return SPEED_LEVELS.filter(func(threshold): return bonus >= threshold).size()
@@ -137,6 +151,7 @@ func can_configure(dino: String, circuit: String, rival: String) -> bool:
 func configure(dino: String, circuit: String, rival: String = "playful") -> bool:
 	if not can_configure(dino, circuit, rival):
 		return false
+	mode = "solo" if rival == "none" else "competitive"
 	dino_id = dino
 	track_id = circuit
 	rival_id = rival
@@ -145,6 +160,24 @@ func configure(dino: String, circuit: String, rival: String = "playful") -> bool
 	rival_reaction = profile.reaction
 	base_speed = DINOS[dino].speed
 	_steer_speed = DINOS[dino].steer
+	_build_track()
+	reset()
+	return true
+
+func can_configure_coop(first: String, second: String, circuit: String) -> bool:
+	return DINOS.has(first) and DINOS.has(second) and circuit in TRACKS and stage in ["ready", "finished"]
+
+func configure_coop(first: String, second: String, circuit: String) -> bool:
+	if not can_configure_coop(first, second, circuit):
+		return false
+	mode = "coop"
+	dino_id = first
+	partner_id = second
+	track_id = circuit
+	rival_id = "none"
+	base_speed = DINOS[first].speed
+	_steer_speed = DINOS[first].steer
+	rival_base_speed = DINOS[second].speed
 	_build_track()
 	reset()
 	return true
@@ -214,6 +247,10 @@ func reset() -> void:
 	rival_distracted_left = 0
 	rival_distraction_check = DISTRACTION_EVERY
 	collected = 0
+	partner_collected = 0
+	partner_golden = 0
+	partner_arrows = 0
+	partner_streak = 0
 	arrows_taken = 0
 	streak = 0
 	golden_collected = 0
@@ -237,7 +274,7 @@ func reset() -> void:
 			for side in [-1, 1]:
 				slots.append(Vector2(start + step * 4, side * offset))
 		slots.append(Vector2(start + 8, 0))
-	var miss: float = _rival_profile().miss
+	var miss: float = 0.0 if mode == "coop" else _rival_profile().miss
 	for slot in slots:
 		fruits.append({"distance": float(slot.x), "lateral": float(slot.y), "owner": "", "respawn": 0.0, "player_taken": false, "rival_taken": false, "rival_skip": rng.randf() < miss})
 
@@ -310,8 +347,8 @@ func _steer_rival(delta: float) -> void:
 	rival_lateral_velocity = move_toward(rival_lateral_velocity, desired_velocity, RIVAL_STEER_ACCELERATION * factor * delta)
 	rival_lateral = clampf(rival_lateral + rival_lateral_velocity * delta, -LATERAL_LIMIT, LATERAL_LIMIT)
 
-func advance(delta: float, steering: float = 0) -> void:
-	if paused or stage in ["ready", "finished"] or delta <= 0:
+func advance(delta: float, steering: float = 0, partner_steering: float = 0) -> void:
+	if paused or stage in ["ready", "finished"] or not is_finite(delta) or not is_finite(steering) or not is_finite(partner_steering) or delta <= 0:
 		return
 	if stage == "countdown":
 		var waiting := minf(delta, countdown)
@@ -333,6 +370,7 @@ func advance(delta: float, steering: float = 0) -> void:
 		streak = 0
 		speed = move_toward(_speed, base_speed, decay * delta)
 	if rival_boost_left == 0:
+		partner_streak = 0
 		rival_speed = move_toward(_rival_speed, rival_base_speed, decay * delta)
 	for fruit in fruits:
 		if fruit.get("respawn", 0.0) > 0:
@@ -343,15 +381,25 @@ func advance(delta: float, steering: float = 0) -> void:
 	var rival_previous := rival_distance
 	if solo and steering == 0 and delta > 0:
 		steering = _assist(delta)
-	lateral = clampf(lateral + clampf(steering, -1, 1) * steer_speed * delta, -LATERAL_LIMIT, LATERAL_LIMIT)
-	if not solo:
-		_steer_rival(delta)
-	distance = minf(length, distance + speed * delta)
-	if not solo:
-		rival_distance = minf(length, rival_distance + rival_speed * delta)
+	if mode == "coop":
+		if distance < length:
+			lateral = clampf(lateral + clampf(steering, -1, 1) * steer_speed * delta, -LATERAL_LIMIT, LATERAL_LIMIT)
+		if rival_distance < length:
+			rival_lateral = clampf(rival_lateral + clampf(partner_steering, -1, 1) * DINOS[partner_id].steer * _rival_steer_factor() * delta, -LATERAL_LIMIT, LATERAL_LIMIT)
+		distance = minf(length, distance + speed * delta * (1 - smoothstep(COOP_SOFT_GAP, COOP_MAX_GAP, previous - rival_previous)))
+		rival_distance = minf(length, rival_distance + rival_speed * delta * (1 - smoothstep(COOP_SOFT_GAP, COOP_MAX_GAP, rival_previous - previous)))
+		distance = minf(distance, maxf(previous, rival_distance + COOP_MAX_GAP))
+		rival_distance = minf(rival_distance, maxf(rival_previous, distance + COOP_MAX_GAP))
+	else:
+		lateral = clampf(lateral + clampf(steering, -1, 1) * steer_speed * delta, -LATERAL_LIMIT, LATERAL_LIMIT)
+		if not solo:
+			_steer_rival(delta)
+		distance = minf(length, distance + speed * delta)
+		if not solo:
+			rival_distance = minf(length, rival_distance + rival_speed * delta)
 	if resolve_motion.is_valid() and delta > 0:
 		resolve_motion.call(previous, rival_previous, delta)
-	if winner.is_empty():
+	if mode != "coop" and winner.is_empty():
 		var player_time := (length - previous) / speed if distance >= length else INF
 		var rival_time := (length - rival_previous) / rival_speed if rival_distance >= length else INF
 		if minf(player_time, rival_time) <= delta:
@@ -384,6 +432,8 @@ func advance(delta: float, steering: float = 0) -> void:
 		elif rival_hit:
 			fruit.owner = "rival"
 			fruit.rival_taken = true
+			if mode == "coop":
+				partner_collected += 1
 			fruit.respawn = FRUIT_RESPAWN
 			_impulse(true)
 	for arrow in arrows:
@@ -391,13 +441,17 @@ func advance(delta: float, steering: float = 0) -> void:
 			arrows_taken += 1
 			_impulse(false)
 		if rival_local_previous < arrow.distance and rival_local >= arrow.distance and absf(rival_lateral - arrow.lateral) < 0.8 and rival_previous < length:
+			if mode == "coop":
+				partner_arrows += 1
 			_impulse(true)
 	_advance_recovery(delta, previous, rival_previous)
-	if distance >= length:
+	if distance >= length and (mode != "coop" or rival_distance >= length):
 		stage = "finished"
 
 func _impulse(rival: bool) -> void:
 	if rival:
+		if mode == "coop":
+			partner_streak += 1
 		rival_speed = _boosted(_rival_speed, rival_base_speed)
 		rival_boost_left = BOOST_DURATION
 	else:
@@ -443,6 +497,9 @@ func _advance_recovery(delta: float, previous: float, rival_previous: float) -> 
 				contact = pickup_contact.call(-1, rival)
 			if contact:
 				if rival:
+					if mode == "coop":
+						partner_collected += 1
+						partner_golden += 1
 					rival_recovery_boost_left = VALLEY_RECOVERY_DURATION if valley else RECOVERY_DURATION
 				else:
 					recovery_boost_left = VALLEY_RECOVERY_DURATION if valley else RECOVERY_DURATION

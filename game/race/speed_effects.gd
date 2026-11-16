@@ -37,6 +37,8 @@ func level(index: int) -> int:
 	if game.race.stage != "racing":
 		return 0
 	var race = game.race
+	if race.mode == "coop" and (race.distance if index == 0 else race.rival_distance) >= race.length:
+		return 0
 	return race.speed_level(race.speed - race.base_speed if index == 0 else race.rival_speed - race.rival_base_speed)
 
 func advance() -> void:

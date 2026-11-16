@@ -196,3 +196,24 @@ progress::-moz-progress-bar { background: #df9865; border-radius: 8px; }
   .park[data-preview] #welcome { top: 0; left: 34%; }
   #welcome .menu-columns { display: block; }
 }
+
+.player-controls { display: contents; }
+.control-label { display: none; }
+.player-controls [data-direction="left"] { order: 1; }
+.invitation { order: 2; }
+.player-controls [data-direction="right"] { order: 3; }
+body[data-mode="coop"] .race-footer { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 20px; }
+body[data-mode="coop"] .player-controls { display: grid; grid-template-columns: auto auto; justify-content: space-between; gap: 6px; }
+body[data-mode="coop"] .control-label { display: block; grid-column: 1 / -1; text-align: center; font-size: 12px; font-weight: bold; }
+body[data-mode="coop"] .invitation { grid-column: 1 / -1; grid-row: 2; width: 100%; }
+body[data-mode="coop"] .steer { width: clamp(58px, 14vw, 88px); height: 58px; }
+body[data-mode="coop"] .invitation p { font-size: 14px; }
+body[data-mode="coop"] .lap label { gap: 8px; }
+body[data-mode="coop"] .lap label span { max-width: 145px; }
+@media (max-height: 500px) and (orientation: landscape) {
+  body[data-mode="coop"] main { display: flex; }
+  body[data-mode="coop"] .race-footer { padding-top: 6px; }
+  body[data-mode="coop"] .player-controls { display: flex; align-items: center; justify-content: center; }
+  body[data-mode="coop"] .steer { height: 44px; width: 50px; }
+  body[data-mode="coop"] .invitation { display: none; }
+}

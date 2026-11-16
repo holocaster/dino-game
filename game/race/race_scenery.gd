@@ -258,7 +258,7 @@ func _update_baby(delta: float) -> void:
 	if game.race.stage != "finished":
 		return
 	if baby_received < 0:
-		baby_received = game.race.collected
+		baby_received = game.race.total_collected
 	delivery_age += delta
 	baby.position = baby_base + Vector3.UP * absf(sin(delivery_age * 6)) * 0.22
 	baby.rotation.z = sin(delivery_age * 5) * 0.13

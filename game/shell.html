@@ -8,7 +8,7 @@
   $GODOT_HEAD_INCLUDE
 </head>
 <body>
-  <canvas id="canvas" aria-label="Use as setas esquerda e direita para pegar frutas na corrida" tabindex="0"></canvas>
+  <canvas id="canvas" aria-label="Na Dupla use A/D para jogador 1 e setas para jogador 2; nos outros modos use as setas" tabindex="0"></canvas>
   <div id="progress" role="status">Preparando a pista...</div>
   <script src="$GODOT_URL"></script>
   <script>
@@ -19,16 +19,27 @@
     for (const type of ['keydown', 'keyup']) {
       window.addEventListener(type, event => {
         if (typeof window.parkCommand !== 'function') return;
-        if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+        const coop = window.parkMode === 'coop';
+        const arrow = event.key === 'ArrowLeft' || event.key === 'ArrowRight';
+        const letter = coop && ['a', 'd'].includes(event.key.toLowerCase());
+        if (!arrow && !letter) return;
         event.preventDefault();
-        event.stopPropagation();
-        const direction = event.key === 'ArrowLeft' ? 'left' : 'right';
-        window.parkCommand(`${direction}-${type === 'keydown' ? 'down' : 'up'}`);
+        event.stopImmediatePropagation();
+        if (event.repeat) return;
+        const slot = coop && arrow ? 2 : 1;
+        const direction = event.key === 'ArrowLeft' || event.key.toLowerCase() === 'a' ? 'left' : 'right';
+        window.parkCommand(`input:${slot}:${direction}:${type === 'keydown' ? 'down' : 'up'}:frame`);
       }, true);
     }
     window.addEventListener('blur', () => {
       window.parkCommand?.('release');
       window.parent.postMessage({ type: 'park-blur' }, location.origin);
+    });
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        window.parkCommand?.('release');
+        window.parkCommand?.('pause');
+      }
     });
     engine.startGame({ mainPack: pack, args: ['--audio-driver', 'Dummy'], onProgress(current, total) {
       const message = total > 0 ? `Preparando a pista... ${Math.round(current / total * 100)}%` : 'Preparando a pista...';

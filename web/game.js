@@ -1,3 +1,5 @@
+import { SteeringInputs, keyDirection } from './controls.mjs?v=0.27.0';
+import { validRaceReport } from './race-report.mjs?v=0.27.0';
 import { ParkAudio } from './audio.mjs?v=0.27.0';
 import { loadAppearances, saveAppearances } from './appearance.mjs?v=0.27.0';
 import { STICKERS, COLORS, award, unlocked, prizeText, loadRewards, saveRewards } from './rewards.mjs?v=0.27.0';
@@ -28,8 +30,10 @@ let storage = null;
 try { storage = window.localStorage; } catch {}
 const rewards = loadRewards(storage);
 const appearances = loadAppearances(storage, rewards);
-document.querySelector(`[name="dino"][value="${appearances[0].species}"]`).checked = true;
-document.querySelector(`[name="accessory"][value="${appearances[0].accessory}"]`).checked = true;
+for (const [index, suffix] of ['', '2'].entries()) {
+  document.querySelector(`[name="dino${suffix}"][value="${appearances[index].species}"]`).checked = true;
+  document.querySelector(`[name="accessory${suffix}"][value="${appearances[index].accessory}"]`).checked = true;
+}
 
 function sendAppearance(slot) {
   const { species, color, accessory } = appearances[slot - 1];
@@ -48,28 +52,31 @@ function renderRewards() {
     item.setAttribute('aria-label', owned ? `Adesivo ${sticker.name}` : `Adesivo por ganhar: ${sticker.hint}`);
     return item;
   }));
-  const colors = document.querySelector('#color-choices');
-  for (const label of colors.querySelectorAll('label')) label.remove();
-  for (const color of COLORS) {
-    const label = document.createElement('label');
-    label.className = 'choice';
-    const input = document.createElement('input');
-    Object.assign(input, { type: 'radio', name: 'color', value: color.id, checked: color.id === appearances[0].color, disabled: !unlocked(color, rewards.stickers) });
-    input.addEventListener('change', () => {
-      rewards.color = appearances[0].color = color.id;
-      saveRewards(storage, rewards);
-      saveAppearances(storage, appearances, rewards);
-      sendAppearance(1);
-    });
-    const swatch = document.createElement('span');
-    swatch.className = 'swatch';
-    swatch.style.background = color.swatch;
-    const name = document.createElement('strong');
-    name.textContent = color.name;
-    const hint = document.createElement('span');
-    hint.textContent = input.disabled ? `Junte ${color.needs} adesivos` : 'Liberada';
-    label.append(input, swatch, name, hint);
-    colors.append(label);
+  for (const [index, suffix] of ['', '2'].entries()) {
+    const colors = document.querySelector(`#color${suffix}-choices`);
+    for (const label of colors.querySelectorAll('label')) label.remove();
+    for (const color of COLORS) {
+      const label = document.createElement('label');
+      label.className = 'choice';
+      const input = document.createElement('input');
+      Object.assign(input, { type: 'radio', name: `color${suffix}`, value: color.id, checked: color.id === appearances[index].color, disabled: !unlocked(color, rewards.stickers) });
+      input.addEventListener('change', () => {
+        appearances[index].color = color.id;
+        if (index === 0) rewards.color = color.id;
+        saveRewards(storage, rewards);
+        saveAppearances(storage, appearances, rewards);
+        sendAppearance(index + 1);
+      });
+      const swatch = document.createElement('span');
+      swatch.className = 'swatch';
+      swatch.style.background = color.swatch;
+      const name = document.createElement('strong');
+      name.textContent = color.name;
+      const hint = document.createElement('span');
+      hint.textContent = input.disabled ? `Junte ${color.needs} adesivos` : 'Liberada';
+      label.append(input, swatch, name, hint);
+      colors.append(label);
+    }
   }
 }
 renderRewards();
@@ -104,15 +111,17 @@ function resumeAudio() {
   }
 }
 
+const inputs = new SteeringInputs(command);
+
 function releaseDirections() {
   for (const button of controls) button.classList.remove('held');
-  command('release');
+  inputs.clear();
 }
 
-function steer(direction, pressed) {
-  if (!started) return;
-  command(`${direction}-${pressed ? 'down' : 'up'}`);
-  controls.find(button => button.dataset.direction === direction)?.classList.toggle('held', pressed);
+function steer(source, slot, direction, pressed) {
+  if (pressed && (!started || state?.paused || state?.stage !== 'racing')) return;
+  inputs.set(source, slot, direction, pressed);
+  for (const button of controls) button.classList.toggle('held', inputs.held(Number(button.dataset.player), button.dataset.direction));
 }
 
 function pauseRace() {
@@ -129,39 +138,6 @@ function restartRace() {
   frame.focus();
 }
 
-/**
- * Mensagem enviada por `_report()` em game/race/race.gd. `award()` usa track, fruit, golden, rival e winner.
- * @typedef {object} RaceReport
- * @property {'park-race'} type
- * @property {'ready'|'countdown'|'racing'|'finished'} stage
- * @property {number} countdown
- * @property {boolean} paused
- * @property {number} progress de 0 a 1
- * @property {number} rivalProgress de 0 a 1
- * @property {number} fruit
- * @property {number} golden frutas douradas pegas pelo jogador
- * @property {number} speed
- * @property {number} baseSpeed
- * @property {number} boostLeft
- * @property {number} recoveryBoostLeft
- * @property {number} rivalRecoveryBoostLeft
- * @property {''|'player'|'rival'} recoveryTarget
- * @property {string} dino
- * @property {'forest'|'beach'|'valley'} track
- * @property {'sleepy'|'playful'|'speedy'|'none'} rival personalidade do outro corredor
- * @property {''|'player'|'rival'|'both'} winner
- * @property {number} lateral
- * @property {number} rivalLateral
- * @property {number} rivalSpeed
- * @property {boolean} rivalDistracted
- * @property {0|1|2|3} speedLevel nível do rastro do jogador
- * @property {number} streak frutas comuns seguidas dentro do bônus
- * @property {number} lap volta atual do jogador, de 1 a laps
- * @property {number} laps 1 na floresta e na praia, 3 no vale
- * @property {number} arrows setas de impulso que o jogador pegou
- */
-
-/** @param {RaceReport} data */
 function streakText(count) {
   return count >= 4 ? 'Super rápido!' : `${count} seguidas!`;
 }
@@ -200,7 +176,10 @@ function renderRace(data) {
   }
   document.querySelector('#player-progress').value = data.progress;
   document.querySelector('#friend-progress').value = data.rivalProgress;
-  document.querySelector('#friend-lap').hidden = data.rival === 'none';
+  const coop = data.mode === 'coop';
+  document.querySelector('#friend-lap').hidden = data.mode === 'solo';
+  document.querySelector('#player-label').textContent = coop ? `J1 · ${data.players[0].finished ? 'Aguardando' : `Volta ${data.players[0].lap}/${data.laps}`}` : 'Você';
+  document.querySelector('#friend-label').textContent = coop ? `J2 · ${data.players[1].finished ? 'Aguardando' : `Volta ${data.players[1].lap}/${data.laps}`}` : 'Amigo';
   document.querySelector('#fruit-count').textContent = data.fruit;
   document.querySelector('#speed').textContent = data.recoveryBoostLeft > 0 ? 'Impulso dourado!' : `Ritmo +${Math.max(0, Math.round((data.speed / data.baseSpeed - 1) * 100))}%`;
   countdown.hidden = data.stage !== 'countdown' || data.paused;
@@ -221,11 +200,11 @@ function renderRace(data) {
     renderRewards();
   }
   if (arrow) sound?.play('whoosh');
-  const solo = data.rival === 'none';
+  const solo = data.mode === 'solo';
   panel.hidden = !data.paused && !finished;
   if (!panel.hidden) {
     document.querySelector('#panel-title').textContent = finished
-      ? (solo ? (data.laps > 1 ? 'Passeio de três voltas completo!' : 'Volta tranquila completa!') : data.winner === 'player' ? 'Você chegou primeiro!' : data.winner === 'both' ? 'Chegaram juntinhos!' : 'Seu amigo chegou primeiro!')
+      ? (coop ? 'A dupla chegou!' : solo ? (data.laps > 1 ? 'Passeio de três voltas completo!' : 'Volta tranquila completa!') : data.winner === 'player' ? 'Você chegou primeiro!' : data.winner === 'both' ? 'Chegaram juntinhos!' : 'Seu amigo chegou primeiro!')
       : 'Uma pequena pausa';
     document.querySelector('#panel-message').textContent = finished
       ? [`O filhote recebeu ${data.fruit} frutinhas e está comemorando!`, prize].filter(Boolean).join(' ')
@@ -238,11 +217,12 @@ function renderRace(data) {
   }
   for (const button of controls) button.disabled = data.paused || data.stage !== 'racing';
   sound?.setPaused(data.paused);
-  if (!previous || previous.stage !== data.stage || previous.paused !== data.paused || previous.countdown !== data.countdown || previous.fruit !== data.fruit || previous.recoveryTarget !== data.recoveryTarget || (previous.recoveryBoostLeft > 0) !== (data.recoveryBoostLeft > 0) || (previous.rivalRecoveryBoostLeft > 0) !== (data.rivalRecoveryBoostLeft > 0) || previous.rivalDistracted !== data.rivalDistracted || newLap || arrow) {
+  if (!previous || previous.stage !== data.stage || previous.paused !== data.paused || previous.countdown !== data.countdown || previous.fruit !== data.fruit || previous.recoveryTarget !== data.recoveryTarget || (previous.recoveryBoostLeft > 0) !== (data.recoveryBoostLeft > 0) || (previous.rivalRecoveryBoostLeft > 0) !== (data.rivalRecoveryBoostLeft > 0) || previous.rivalDistracted !== data.rivalDistracted || newLap || arrow || (coop && previous.players?.some(player => player.finished) !== data.players.some(player => player.finished))) {
     message.textContent = data.paused ? 'Corrida pausada.'
       : data.stage === 'countdown' ? `Prepare-se... ${data.countdown}!`
       : finished ? `${data.laps > 1 ? 'Três voltas completas!' : 'Uma volta completa!'} ${solo ? 'Que passeio gostoso.' : 'Os dois dinos merecem comemorar.'}`
       : newLap ? (lastLap ? 'Última volta!' : `Volta ${data.lap} de ${data.laps}!`)
+      : coop && data.players.some(player => player.finished) ? 'Um jogador aguarda na chegada. Vamos juntos!'
       : data.rivalDistracted ? 'Seu amigo parou para olhar um passarinho!'
       : data.recoveryBoostLeft > 0 ? 'Impulso dourado! Vamos alcançar o amigo!'
       : data.rivalRecoveryBoostLeft > 0 ? 'Seu amigo ganhou um impulso dourado!'
@@ -267,26 +247,35 @@ play.addEventListener('click', () => {
   frame.focus();
 });
 
-for (const input of document.querySelectorAll('[name="dino"], [name="accessory"]')) {
-  input.addEventListener('change', () => {
-    appearances[0].species = document.querySelector('[name="dino"]:checked').value;
-    appearances[0].accessory = document.querySelector('[name="accessory"]:checked').value;
-    saveAppearances(storage, appearances, rewards);
-    sendAppearance(1);
-  });
+for (const [index, suffix] of ['', '2'].entries()) {
+  for (const input of document.querySelectorAll(`[name="dino${suffix}"], [name="accessory${suffix}"]`)) {
+    input.addEventListener('change', () => {
+      appearances[index].species = document.querySelector(`[name="dino${suffix}"]:checked`).value;
+      appearances[index].accessory = document.querySelector(`[name="accessory${suffix}"]:checked`).value;
+      saveAppearances(storage, appearances, rewards);
+      sendAppearance(index + 1);
+    });
+  }
 }
 
-for (const input of document.querySelectorAll('[name="track"], [name="rival"]')) {
-  input.addEventListener('change', () => {
-    const track = document.querySelector('[name="track"]:checked').value;
-    const rival = document.querySelector('[name="rival"]:checked').value;
-    play.disabled = true;
-    for (const group of choices) group.disabled = true;
-    play.querySelector('span').textContent = 'Preparando a pista...';
-    document.querySelector('#load-status').textContent = 'Seu dino já está chegando.';
-    command(`select:${appearances[0].species}:${track}:${rival}`);
-  });
+function configureRace() {
+  releaseDirections();
+  const track = document.querySelector('[name="track"]:checked').value;
+  const rival = document.querySelector('[name="rival"]:checked').value;
+  const coop = rival === 'coop';
+  document.body.dataset.mode = coop ? 'coop' : rival === 'none' ? 'solo' : 'competitive';
+  document.querySelector('#partner-appearance').hidden = !coop;
+  document.querySelector('[data-slot="2"]').hidden = !coop;
+  document.querySelector('#control-hint').textContent = coop ? 'Jogador 1: A/D. Jogador 2: setas. Juntem as frutinhas!' : 'Segure as setas para mudar de lado e pegar frutas.';
+  frame.title = coop ? 'Corrida em dupla: jogador 1 usa A/D; jogador 2 usa as setas' : 'Corrida: use as setas esquerda e direita para pegar frutas';
+  play.disabled = true;
+  for (const group of choices) group.disabled = true;
+  play.querySelector('span').textContent = 'Preparando a pista...';
+  document.querySelector('#load-status').textContent = 'Seus dinos já estão chegando.';
+  command(coop ? `select-coop:${appearances[0].species}:${appearances[1].species}:${track}` : `select:${appearances[0].species}:${track}:${rival}`);
 }
+
+for (const input of document.querySelectorAll('[name="track"], [name="rival"]')) input.addEventListener('change', configureRace);
 
 document.querySelector('#choose-again').addEventListener('click', () => {
   releaseDirections();
@@ -334,36 +323,39 @@ soundButton.addEventListener('click', () => {
 });
 
 for (const button of controls) {
+  const slot = Number(button.dataset.player);
+  const direction = button.dataset.direction;
   button.addEventListener('pointerdown', event => {
     if (button.disabled) return;
     event.preventDefault();
     button.setPointerCapture(event.pointerId);
-    steer(button.dataset.direction, true);
+    steer(`pointer:${event.pointerId}`, slot, direction, true);
   });
   for (const type of ['pointerup', 'pointercancel', 'lostpointercapture']) {
-    button.addEventListener(type, () => steer(button.dataset.direction, false));
+    button.addEventListener(type, event => steer(`pointer:${event.pointerId}`, slot, direction, false));
   }
-  button.addEventListener('keydown', event => {
-    if (event.key === ' ' || event.key === 'Enter') {
-      event.preventDefault();
-      steer(button.dataset.direction, true);
-    }
+  for (const type of ['keydown', 'keyup']) {
+    button.addEventListener(type, event => {
+      if (event.key === ' ' || event.key === 'Enter') {
+        event.preventDefault();
+        if (event.repeat) return;
+        steer(`button:${slot}:${direction}:${event.key}`, slot, direction, type === 'keydown');
+      }
+    });
+  }
+  button.addEventListener('blur', () => {
+    for (const key of [' ', 'Enter']) steer(`button:${slot}:${direction}:${key}`, slot, direction, false);
   });
-  button.addEventListener('keyup', event => {
-    if (event.key === ' ' || event.key === 'Enter') {
-      event.preventDefault();
-      steer(button.dataset.direction, false);
-    }
-  });
-  button.addEventListener('blur', () => steer(button.dataset.direction, false));
 }
 
 for (const type of ['keydown', 'keyup']) {
   window.addEventListener(type, event => {
     if (!started) return;
-    if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+    const direction = keyDirection(event.key, state?.mode);
+    if (direction) {
       event.preventDefault();
-      steer(event.key === 'ArrowLeft' ? 'left' : 'right', type === 'keydown');
+      if (event.repeat) return;
+      steer(`key:${event.code || event.key.toLowerCase()}`, ...direction, type === 'keydown');
     } else if (event.key === 'Escape' && type === 'keydown' && !event.repeat) {
       if (state?.paused) command('resume');
       else pauseRace();
@@ -377,6 +369,7 @@ window.addEventListener('blur', () => {
 });
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) {
+    releaseDirections();
     pauseRace();
     sound?.context.suspend().catch(audioFailed);
   }
@@ -405,8 +398,5 @@ window.addEventListener('message', event => {
   if (data?.type === 'park-blur') {
     if (!document.hasFocus()) pauseRace();
   }
-  if (data?.type === 'park-race' && ['ready', 'countdown', 'racing', 'finished'].includes(data.stage)
-      && [data.progress, data.rivalProgress, data.speed, data.baseSpeed, data.fruit, data.countdown, data.recoveryBoostLeft, data.rivalRecoveryBoostLeft, data.golden, data.speedLevel, data.streak, data.lap, data.laps].every(Number.isFinite)
-      && typeof data.rival === 'string' && typeof data.track === 'string' && typeof data.winner === 'string'
-      && data.baseSpeed > 0) renderRace(data);
+  if (validRaceReport(data)) renderRace(data);
 });

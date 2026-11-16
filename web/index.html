@@ -37,7 +37,7 @@
       <iframe id="game" title="Corrida: use as setas esquerda e direita para pegar frutas" src="godot/index.html?v=0.27.0" tabindex="-1"></iframe>
       <div class="speed-lines" aria-hidden="true"></div>
       <div id="race-hud" class="race-hud" hidden>
-        <div class="lap"><span id="lap-title">UMA VOLTA</span><label>Você <progress id="player-progress" max="1" value="0"></progress></label><label id="friend-lap">Amigo <progress id="friend-progress" max="1" value="0"></progress></label></div>
+        <div class="lap"><span id="lap-title">UMA VOLTA</span><label><span id="player-label">Você</span> <progress id="player-progress" max="1" value="0"></progress></label><label id="friend-lap"><span id="friend-label">Amigo</span> <progress id="friend-progress" max="1" value="0"></progress></label></div>
         <div class="fruit-score"><svg aria-hidden="true"><use href="#fruit"/></svg><strong id="fruit-count">0</strong><span id="speed">Ritmo +0%</span></div>
       </div>
       <div id="countdown" class="countdown" aria-hidden="true" hidden>3</div>
@@ -64,6 +64,23 @@
               <fieldset class="choices color-choices" id="color-choices" disabled>
                 <legend>Cor do seu dino</legend>
               </fieldset>
+              <div id="partner-appearance" hidden>
+                <fieldset class="choices" id="dino2-choices" disabled>
+                  <legend>Dino do jogador 2</legend>
+                  <label class="choice dino-triceratops"><input type="radio" name="dino2" value="triceratops" checked><svg aria-hidden="true"><use href="#triceratops-icon"/></svg><strong>Tricerátopo</strong><span>Equilibrado</span></label>
+                  <label class="choice dino-trex"><input type="radio" name="dino2" value="trex"><svg aria-hidden="true"><use href="#trex-icon"/></svg><strong>T-rex</strong><span>Mais veloz</span></label>
+                  <label class="choice dino-raptor"><input type="radio" name="dino2" value="raptor"><svg aria-hidden="true"><use href="#raptor-icon"/></svg><strong>Velociraptor</strong><span>Mais ágil</span></label>
+                </fieldset>
+                <fieldset class="choices accessory-choices" id="accessory2-choices" disabled>
+                  <legend>Acessório do jogador 2</legend>
+                  <label class="choice"><input type="radio" name="accessory2" value="none" checked><strong>Sem acessório</strong></label>
+                  <label class="choice"><input type="radio" name="accessory2" value="cap"><strong>Boné</strong></label>
+                  <label class="choice"><input type="radio" name="accessory2" value="glasses"><strong>Óculos</strong></label>
+                </fieldset>
+                <fieldset class="choices color-choices" id="color2-choices" disabled>
+                  <legend>Cor do jogador 2</legend>
+                </fieldset>
+              </div>
               <fieldset class="choices track-choices" id="track-choices" disabled>
                 <legend>Onde vamos brincar?</legend>
                 <label class="choice"><input type="radio" name="track" value="forest" checked><span class="track-preview forest-preview" aria-hidden="true"></span><strong>Floresta</strong></label>
@@ -79,6 +96,7 @@
                 <label class="choice rival-playful"><input type="radio" name="rival" value="playful" checked><svg aria-hidden="true"><use href="#triceratops-icon"/></svg><strong>Brincalhão</strong><span>Na medida</span></label>
                 <label class="choice rival-speedy"><input type="radio" name="rival" value="speedy"><svg aria-hidden="true"><use href="#triceratops-icon"/></svg><strong>Rapidinho</strong><span>Um desafio</span></label>
                 <label class="choice rival-none"><input type="radio" name="rival" value="none"><svg aria-hidden="true"><use href="#leaf"/></svg><strong>Sozinho</strong><span>Passeio tranquilo</span></label>
+                <label class="choice"><input type="radio" name="rival" value="coop"><svg aria-hidden="true"><use href="#raptor-icon"/></svg><strong>Dupla</strong><span>Dois jogadores</span></label>
               </fieldset>
               <details class="rewards">
                 <summary>Álbum de adesivos <span id="sticker-count">0/9</span></summary>
@@ -101,9 +119,17 @@
       </div>
     </section>
     <footer class="race-footer">
-      <button class="steer" type="button" data-direction="left" aria-label="Mover para a esquerda. Segure para continuar." disabled><svg aria-hidden="true"><use href="#left-icon"/></svg></button>
-      <div class="invitation"><strong id="lap-count" class="lap-count" hidden></strong><p id="message" role="status" aria-live="polite">Uma corrida para brincar juntos.</p><span>Segure as setas para mudar de lado e pegar frutas.</span></div>
-      <button class="steer" type="button" data-direction="right" aria-label="Mover para a direita. Segure para continuar." disabled><svg aria-hidden="true"><use href="#right-icon"/></svg></button>
+      <div class="player-controls" data-slot="1">
+        <span class="control-label">Jogador 1 · A / D</span>
+        <button class="steer" type="button" data-player="1" data-direction="left" aria-label="Jogador 1: mover para a esquerda. Segure para continuar." disabled><svg aria-hidden="true"><use href="#left-icon"/></svg></button>
+        <button class="steer" type="button" data-player="1" data-direction="right" aria-label="Jogador 1: mover para a direita. Segure para continuar." disabled><svg aria-hidden="true"><use href="#right-icon"/></svg></button>
+      </div>
+      <div class="invitation"><strong id="lap-count" class="lap-count" hidden></strong><p id="message" role="status" aria-live="polite">Uma corrida para brincar juntos.</p><span id="control-hint">Segure as setas para mudar de lado e pegar frutas.</span></div>
+      <div class="player-controls" data-slot="2" hidden>
+        <span class="control-label">Jogador 2 · Setas</span>
+        <button class="steer" type="button" data-player="2" data-direction="left" aria-label="Jogador 2: mover para a esquerda. Segure para continuar." disabled><svg aria-hidden="true"><use href="#left-icon"/></svg></button>
+        <button class="steer" type="button" data-player="2" data-direction="right" aria-label="Jogador 2: mover para a direita. Segure para continuar." disabled><svg aria-hidden="true"><use href="#right-icon"/></svg></button>
+      </div>
     </footer>
   </main>
   <noscript>Ative o JavaScript do navegador para abrir a corrida.</noscript>

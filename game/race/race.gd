@@ -9,6 +9,7 @@ var arrow_nodes: Array[Node3D] = []
 var recovery_node: Area3D
 var left_pressed := false
 var right_pressed := false
+var input_sources: Dictionary = {}
 var report_elapsed := 0.0
 var player_contacts: Array[Node3D] = []
 var rival_contacts: Array[Node3D] = []
@@ -25,7 +26,10 @@ const PLAYER_COLORS := {"natural": Color.WHITE, "sunset": Color(1.0, 0.5, 0.38),
 
 func _ready() -> void:
 	var selection: Array = get_tree().get_meta("race_selection", ["triceratops", "forest"])
-	race.configure(selection[0], selection[1], selection[2] if selection.size() > 2 else "playful")
+	if selection.size() == 4 and selection[2] == "coop":
+		race.configure_coop(selection[0], selection[3], selection[1])
+	else:
+		race.configure(selection[0], selection[1], selection[2] if selection.size() > 2 else "playful")
 	var appearance := _appearance(1).duplicate()
 	appearance.species = race.dino_id
 	appearance.color = get_tree().get_meta("race_color", "natural")
@@ -82,6 +86,8 @@ func _ready() -> void:
 	add_child(speed_effects)
 	speed_effects.setup(self)
 	speed_effects.paint(0, _trail_color())
+	if race.mode == "coop":
+		speed_effects.paint(1, _partner_trail_color())
 	race.resolve_motion = _resolve_motion
 	race.pickup_contact = _pickup_contact
 	if OS.has_feature("web"):
@@ -122,12 +128,13 @@ func _runner(green: bool) -> Node3D:
 	runner.collision_layer = 1
 	runner.collision_mask = 3
 	add_child(runner)
-	var species: String = "triceratops" if green else race.dino_id
-	var model := preload("res://dinos/runner_model.gd").create(species, "none" if green else _appearance(1).accessory)
+	var partner: bool = green and race.mode == "coop"
+	var species: String = race.partner_id if partner else ("triceratops" if green else race.dino_id)
+	var model := preload("res://dinos/runner_model.gd").create(species, _appearance(2 if green else 1).accessory if not green or partner else "none")
 	model.name = "Model"
 	runner.add_child(model)
 	model.get_node("AnimationPlayer").callback_mode_process = AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_PHYSICS
-	var model_scale := 0.86 if green else 1.0
+	var model_scale := 0.86 if green and not partner else 1.0
 	model.scale = Vector3.ONE * model_scale
 	var shape := CollisionShape3D.new()
 	shape.name = "BodyShape"
@@ -138,7 +145,16 @@ func _runner(green: bool) -> Node3D:
 	shape.position = Vector3(0, 0.6, 0.08) * model_scale
 	runner.add_child(shape)
 	if green:
-		_tint(runner, RIVAL_COLORS.get(race.rival_id, RIVAL_COLORS.playful))
+		_tint(runner, PLAYER_COLORS[_appearance(2).color] if partner else RIVAL_COLORS.get(race.rival_id, RIVAL_COLORS.playful))
+	if race.mode == "coop":
+		var label := Label3D.new()
+		label.name = "PlayerLabel"
+		label.text = "Jogador 2" if green else "Jogador 1"
+		label.position.y = 1.9
+		label.font_size = 40
+		label.pixel_size = 0.005
+		label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+		runner.add_child(label)
 	var glow := Node3D.new()
 	glow.name = "RecoveryGlow"
 	runner.add_child(glow)
@@ -151,6 +167,10 @@ func _runner(green: bool) -> Node3D:
 func _trail_color() -> Color:
 	var tint: Color = PLAYER_COLORS.get(get_tree().get_meta("race_color", "natural"), Color.WHITE)
 	return speed_effects.DINO_COLORS.get(race.dino_id, Color.WHITE) if tint == Color.WHITE else tint
+
+func _partner_trail_color() -> Color:
+	var tint: Color = PLAYER_COLORS[_appearance(2).color]
+	return speed_effects.DINO_COLORS[race.partner_id] if tint == Color.WHITE else tint
 
 func _tint(runner: Node3D, color: Color) -> void:
 	for mesh in runner.get_node("Model").find_children("*", "MeshInstance3D", true, false):
@@ -233,6 +253,22 @@ func _resolve_motion(previous: float, rival_previous: float, delta: float) -> vo
 		race.lateral = solo_position.y
 		player_contacts = _fruit_contacts(dinosaur)
 		return
+	if race.mode == "coop":
+		if previous < race.length:
+			race.distance = minf(race.distance, rival_previous + race.COOP_MAX_GAP)
+			_move_runner(dinosaur, race.distance, race.lateral, delta)
+			var position_1 := _track_coordinates(dinosaur, previous)
+			race.distance = clampf(position_1.x, previous, race.distance)
+			race.lateral = position_1.y
+		if rival_previous < race.length:
+			race.rival_distance = minf(race.rival_distance, previous + race.COOP_MAX_GAP)
+			_move_runner(friend, race.rival_distance, race.rival_lateral, delta)
+			var position_2 := _track_coordinates(friend, rival_previous)
+			race.rival_distance = clampf(position_2.x, rival_previous, race.rival_distance)
+			race.rival_lateral = position_2.y
+		player_contacts = _fruit_contacts(dinosaur)
+		rival_contacts = _fruit_contacts(friend)
+		return
 	var rival_goal: float = race.rival_distance
 	if rival_previous >= race.length:
 		rival_runout = minf(2.5, rival_runout + delta * 1.8)
@@ -271,13 +307,50 @@ func _update_recovery_visuals() -> void:
 		glow.rotation.y = elapsed * 2
 
 func _camera_focus_point() -> Vector3:
+	if race.mode == "coop":
+		return dinosaur.position.lerp(friend.position, 0.5)
 	if race.solo:
 		return dinosaur.position
 	var weight := 0.5 * (1 - smoothstep(3.0, 6.0, dinosaur.position.distance_to(friend.position)))
 	return dinosaur.position.lerp(friend.position, weight)
 
 func _update_camera(weight: float, delta: float = 1.0) -> void:
-	if race.stage == "finished":
+	if race.mode == "coop" and race.stage == "ready":
+		var focus := _camera_focus_point() + Vector3.UP * 0.7
+		var direction := Vector3(-2.8, 1.9, -3.2).rotated(Vector3.UP, dinosaur.rotation.y).normalized()
+		camera.position = focus + direction * 4.5
+		camera.look_at(focus)
+		var size := get_viewport().get_visible_rect().size
+		var vertical := tan(deg_to_rad(camera.fov * 0.5))
+		var horizontal := vertical * size.x / maxf(1, size.y)
+		var view_distance := 4.5
+		for runner in [dinosaur, friend]:
+			for mesh in runner.get_node("Model").find_children("*", "MeshInstance3D", true, false) + [runner.get_node("PlayerLabel")]:
+				var bounds: AABB = mesh.get_aabb()
+				for corner in range(8):
+					var point: Vector3 = mesh.global_transform * bounds.get_endpoint(corner) - focus
+					view_distance = maxf(view_distance, point.dot(camera.basis.z) + maxf(absf(point.dot(camera.basis.x)) / horizontal, absf(point.dot(camera.basis.y)) / vertical) * 1.12)
+		camera.position = focus + direction * view_distance
+		camera_yaw = atan2(direction.x, direction.z)
+		camera_turn_velocity = 0
+		forest.reveal_character(camera.position, focus, delta, 2.5)
+	elif race.mode == "coop":
+		var focus := _camera_focus_point() + Vector3.UP * 0.8
+		if race.stage == "finished":
+			focus = (dinosaur.position + friend.position + scenery.baby_base) / 3 + Vector3.UP * 0.8
+		var radius := maxf(focus.distance_to(dinosaur.position + Vector3.UP * 0.8), focus.distance_to(friend.position + Vector3.UP * 0.8)) + 2.5
+		if race.stage == "finished":
+			radius = maxf(radius, focus.distance_to(scenery.baby_base) + 1.2)
+		_aim_camera(focus, radius, weight, delta)
+		var size := get_viewport().get_visible_rect().size
+		var half_fov := deg_to_rad(camera.fov * 0.5)
+		var narrow_fov := minf(half_fov, atan(tan(half_fov) * size.x / maxf(1, size.y)))
+		var view_distance := maxf(7, radius / sin(narrow_fov) * 1.12)
+		camera.position = focus + Vector3(0, 0.7, 1).normalized().rotated(Vector3.UP, camera_yaw) * view_distance
+		camera.look_at(focus)
+		forest.reveal_character(camera.position, dinosaur.position, delta, 2.5)
+		forest.reveal_character(camera.position, friend.position, delta, 2.5)
+	elif race.stage == "finished":
 		_aim_camera(dinosaur.position.lerp(scenery.baby_base, 0.5), 2.5, weight, delta)
 	elif race.stage == "ready":
 		camera.position = dinosaur.position + Vector3(-2.8, 1.9, -3.2).rotated(Vector3.UP, dinosaur.rotation.y)
@@ -321,8 +394,11 @@ func _decorate_track() -> void:
 
 func reset_race() -> void:
 	race.reset()
-	left_pressed = false
-	right_pressed = false
+	_release_inputs()
+	if race.mode == "coop":
+		for runner in [dinosaur, friend]:
+			runner.collision_layer = 1
+			runner.collision_mask = 3
 	step_distance = 0
 	rival_runout = 0
 	player_contacts.clear()
@@ -363,31 +439,76 @@ func _apply_appearance(slot: int, appearance: Dictionary) -> void:
 	var appearances := [_appearance(1).duplicate(), _appearance(2).duplicate()]
 	appearances[slot - 1] = appearance
 	get_tree().set_meta("race_appearances", appearances)
-	if slot != 1:
+	if slot == 2 and race.mode != "coop":
 		return
-	get_tree().set_meta("race_color", appearance.color)
-	var changed_species: bool = appearance.species != race.dino_id
+	var runner: Node3D = dinosaur if slot == 1 else friend
+	var changed_species: bool = appearance.species != (race.dino_id if slot == 1 else race.partner_id)
+	if slot == 1:
+		get_tree().set_meta("race_color", appearance.color)
 	if changed_species:
-		race.configure(appearance.species, race.track_id, race.rival_id)
-		get_tree().set_meta("race_selection", [race.dino_id, race.track_id, race.rival_id])
-	var old_model := dinosaur.get_node("Model")
-	dinosaur.remove_child(old_model)
+		if race.mode == "coop":
+			race.configure_coop(appearances[0].species, appearances[1].species, race.track_id)
+			get_tree().set_meta("race_selection", [race.dino_id, race.track_id, "coop", race.partner_id])
+		else:
+			race.configure(appearance.species, race.track_id, race.rival_id)
+			get_tree().set_meta("race_selection", [race.dino_id, race.track_id, race.rival_id])
+	var old_model := runner.get_node("Model")
+	runner.remove_child(old_model)
 	old_model.queue_free()
 	var model := preload("res://dinos/runner_model.gd").create(appearance.species, appearance.accessory)
 	model.name = "Model"
-	dinosaur.add_child(model)
-	dinosaur_animation = model.get_node("AnimationPlayer")
-	dinosaur_animation.callback_mode_process = AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_PHYSICS
-	_tint(dinosaur, PLAYER_COLORS[appearance.color])
-	speed_effects.paint(0, _trail_color())
+	runner.add_child(model)
+	var animation: AnimationPlayer = model.get_node("AnimationPlayer")
+	animation.callback_mode_process = AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_PHYSICS
+	if slot == 1:
+		dinosaur_animation = animation
+	else:
+		friend_animation = animation
+	_tint(runner, PLAYER_COLORS[appearance.color])
+	speed_effects.paint(slot - 1, _trail_color() if slot == 1 else _partner_trail_color())
 	if changed_species:
 		reset_race()
 	else:
-		_animate_runner(dinosaur, dinosaur_animation, 0)
+		_animate_runner(runner, animation, 0)
 		_report()
+
+func _release_inputs() -> void:
+	left_pressed = false
+	right_pressed = false
+	input_sources.clear()
+
+func _steering(slot: int) -> float:
+	var left := left_pressed if slot == 1 else false
+	var right := right_pressed if slot == 1 else false
+	for source in input_sources.values():
+		if source.slot == slot:
+			left = left or source.direction == "left"
+			right = right or source.direction == "right"
+	return float(right) - float(left)
 
 func _web_command(arguments: Array) -> void:
 	if arguments.size() != 1 or not arguments[0] is String:
+		return
+	if arguments[0].begins_with("input:"):
+		var values: PackedStringArray = arguments[0].split(":")
+		if values.size() != 5 or values[1] not in ["1", "2"] or values[2] not in ["left", "right"] or values[3] not in ["down", "up"] or values[4] not in ["page", "frame"] or (values[1] == "2" and race.mode != "coop"):
+			return
+		var key := "%s:%s:%s" % [values[1], values[2], values[4]]
+		if values[3] == "up":
+			input_sources.erase(key)
+		elif race.stage == "racing" and not race.paused:
+			input_sources[key] = {"slot": int(values[1]), "direction": values[2]}
+		return
+	if arguments[0].begins_with("select-coop:"):
+		var values: PackedStringArray = arguments[0].split(":")
+		if values.size() != 4 or not race.can_configure_coop(values[1], values[2], values[3]):
+			return
+		var previous: Array = get_tree().get_meta("race_selection", ["triceratops", "forest"])
+		_release_inputs()
+		get_tree().set_meta("race_selection", [values[1], values[3], "coop", values[2]])
+		if get_tree().reload_current_scene() != OK:
+			get_tree().set_meta("race_selection", previous)
+			_notify({"type": "park-error"})
 		return
 	if arguments[0].begins_with("appearance:"):
 		var values: PackedStringArray = arguments[0].split(":")
@@ -421,27 +542,33 @@ func _web_command(arguments: Array) -> void:
 		"menu":
 			if race.paused or race.stage == "finished":
 				reset_race()
-		"left-down": left_pressed = true
+		"left-down": left_pressed = race.stage in ["countdown", "racing"] and not race.paused
 		"left-up": left_pressed = false
-		"right-down": right_pressed = true
+		"right-down": right_pressed = race.stage in ["countdown", "racing"] and not race.paused
 		"right-up": right_pressed = false
-		"release":
-			left_pressed = false
-			right_pressed = false
+		"release": _release_inputs()
 		"pause":
 			if race.stage in ["countdown", "racing"]:
 				race.paused = true
-			left_pressed = false
-			right_pressed = false
+			_release_inputs()
 		"resume": race.paused = false
 	_report()
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and not event.echo:
-		if event.keycode == KEY_LEFT:
-			left_pressed = event.pressed
-		elif event.keycode == KEY_RIGHT:
-			right_pressed = event.pressed
+		if race.mode != "coop" and event.keycode in [KEY_LEFT, KEY_RIGHT]:
+			if event.keycode == KEY_LEFT:
+				left_pressed = event.pressed and race.stage in ["countdown", "racing"] and not race.paused
+			else:
+				right_pressed = event.pressed and race.stage in ["countdown", "racing"] and not race.paused
+			return
+		var slot := 2 if race.mode == "coop" and event.keycode in [KEY_LEFT, KEY_RIGHT] else 1
+		if event.keycode in ([KEY_A, KEY_D, KEY_LEFT, KEY_RIGHT] if race.mode == "coop" else [KEY_LEFT, KEY_RIGHT]):
+			var key := "native:%s" % event.keycode
+			if not event.pressed:
+				input_sources.erase(key)
+			elif race.stage == "racing" and not race.paused:
+				input_sources[key] = {"slot": slot, "direction": "left" if event.keycode in [KEY_A, KEY_LEFT] else "right"}
 		elif event.keycode == KEY_ESCAPE and event.pressed:
 			_web_command(["resume" if race.paused else "pause"])
 
@@ -475,10 +602,18 @@ func _process(delta: float) -> void:
 	var previous := dinosaur.position
 	var previous_rival_position := friend.position
 	var previous_rival_yaw: float = friend.rotation.y + friend.get_node("Model").rotation.y
-	var collected: int = race.collected
+	var collected: int = race.total_collected
 	var arrows_taken: int = race.arrows_taken
 	var stage: String = race.stage
-	race.advance(delta, float(right_pressed) - float(left_pressed))
+	race.advance(delta, _steering(1), _steering(2))
+	if race.mode == "coop":
+		for index in range(2):
+			var progress: float = race.distance if index == 0 else race.rival_distance
+			var runner: Node3D = dinosaur if index == 0 else friend
+			if progress >= race.length:
+				runner.collision_layer = 0
+				runner.collision_mask = 0
+				_position_runner(runner, dinosaur_animation if index == 0 else friend_animation, race.length + 1.5, -1.6 if index == 0 else 1.6, 0)
 	var moving: bool = race.stage == "racing" and not race.paused
 	var rival_movement := friend.position - previous_rival_position
 	if Vector2(rival_movement.x, rival_movement.z).length() > 0.001:
@@ -500,7 +635,7 @@ func _process(delta: float) -> void:
 	_update_recovery_visuals()
 	scenery.advance(delta, previous, previous_rival_position)
 	speed_effects.advance()
-	if race.collected > collected or race.arrows_taken > arrows_taken:
+	if race.total_collected > collected or race.arrows_taken > arrows_taken:
 		_notify({"type": "park-sound", "name": "pickup"})
 	if race.arrows_taken > arrows_taken:
 		var nearest: Node3D = arrow_nodes[0]
@@ -512,9 +647,17 @@ func _process(delta: float) -> void:
 	if race.stage == "finished" and stage != "finished":
 		_notify({"type": "park-sound", "name": "happy"})
 	report_elapsed += delta
-	if report_elapsed >= 0.1 or stage != race.stage or collected != race.collected or arrows_taken != race.arrows_taken:
+	if report_elapsed >= 0.1 or stage != race.stage or collected != race.total_collected or arrows_taken != race.arrows_taken:
 		report_elapsed = 0
 		_report()
 
+func _players_report() -> Array:
+	var players := [{"species": race.dino_id, "progress": race.distance / race.length, "lap": race.lap, "fruit": race.collected, "golden": race.golden_collected, "speed": race.speed, "baseSpeed": race.base_speed, "finished": race.distance >= race.length}]
+	if race.mode == "coop":
+		players.append({"species": race.partner_id, "progress": race.rival_distance / race.length, "lap": race.rival_lap, "fruit": race.partner_collected, "golden": race.partner_golden, "speed": race.rival_speed, "baseSpeed": race.rival_base_speed, "finished": race.rival_distance >= race.length})
+	return players
+
 func _report() -> void:
-	_notify({"type": "park-race", "stage": race.stage, "countdown": ceili(race.countdown), "paused": race.paused, "progress": race.distance / race.length, "rivalProgress": race.rival_distance / race.length, "fruit": race.collected, "speed": race.speed, "baseSpeed": race.base_speed, "boostLeft": race.boost_left, "recoveryBoostLeft": race.recovery_boost_left, "rivalRecoveryBoostLeft": race.rival_recovery_boost_left, "recoveryTarget": race.recovery_fruit.get("target", ""), "dino": race.dino_id, "track": race.track_id, "winner": race.winner, "lateral": race.lateral, "rivalLateral": race.rival_lateral, "rivalSpeed": race.rival_speed, "rival": race.rival_id, "golden": race.golden_collected, "rivalDistracted": race.rival_distracted_left > 0, "speedLevel": race.speed_level(race.speed - race.base_speed), "streak": race.streak, "lap": race.lap, "laps": race.laps, "arrows": race.arrows_taken})
+	if OS.has_feature("web"):
+		JavaScriptBridge.eval("window.parkMode = %s;" % JSON.stringify(race.mode), true)
+	_notify({"type": "park-race", "mode": race.mode, "players": _players_report(), "stage": race.stage, "countdown": ceili(race.countdown), "paused": race.paused, "progress": race.distance / race.length, "rivalProgress": race.rival_distance / race.length, "fruit": race.total_collected, "speed": race.speed, "baseSpeed": race.base_speed, "boostLeft": race.boost_left, "recoveryBoostLeft": race.recovery_boost_left, "rivalRecoveryBoostLeft": race.rival_recovery_boost_left, "recoveryTarget": race.recovery_fruit.get("target", ""), "dino": race.dino_id, "track": race.track_id, "winner": race.winner, "lateral": race.lateral, "rivalLateral": race.rival_lateral, "rivalSpeed": race.rival_speed, "rival": race.rival_id, "golden": race.total_golden, "rivalDistracted": race.rival_distracted_left > 0, "speedLevel": race.speed_level(race.speed - race.base_speed), "streak": race.streak, "lap": race.lap, "laps": race.laps, "arrows": race.arrows_taken})
