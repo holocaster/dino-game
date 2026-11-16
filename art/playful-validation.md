@@ -1,0 +1,23 @@
+# Brincadeiras e Filhote — ticket 02
+
+Reações duram 0,85 s e atuam só no `Model`, preservando orientação y, animação, acessório e corpo físico. Poças provocam balanço lateral; trechos de frutas/Setas provocam salto curto com inclinação. As duas reações compõem quando os elementos coincidem. Lado negativo/esquerdo solta confetes dourados; positivo/direito solta pétalas rosas. Cada lado pode repetir a resposta por corredor/Volta. Reinício reposiciona os mesmos efeitos a partir do novo layout, sem sorteio adicional nem novos nós.
+
+O Filhote reutiliza Tricerátopo em escala 0,48, a 3,1 m do centro junto à chegada, sem colisão. Ao concluir, até cinco frutas representam visualmente a coleta, voando até ele em aproximadamente dois segundos; o número completo continua no resultado e nos contadores. Com zero ele também pula e balança. Vitória/derrota não condicionam o encontro. Pausa congela a apresentação; reinício limpa tudo. Resultado e ações ocupam os 42% inferiores, deixando 58% para a cena com câmera de chegada entre corredor e Filhote.
+
+## Conferência pelo Main
+
+- Nas três pistas: o lado inicial (-0,9 m) cruza a primeira poça aos 7 m, aproximadamente três segundos após a largada. Outras poças ficam em `7 + comprimento da Volta × i/4`, alternando -0,9/+0,9 m. Observar balanço e gotas, sem mudança de velocidade.
+- Manter esquerda ou direita nos trechos visíveis de frutas: conferir salto, confetes dourados versus pétalas rosas, com acessórios acompanhando a animação. As posições são derivadas de cada fruta lateral/Seta existente; no Vale o lado da Seta continua diferente do lado das frutas nos trechos assimétricos. Nada obriga um caminho.
+- Combinar Tricerátopo/Floresta, T-rex/Praia e Raptor/Vale; complementar T-rex/Floresta, Raptor/Praia e Tricerátopo/Vale nas capturas. Conferir boné/óculos durante balanço e salto.
+- Concluir Sozinho e contra Rival. Após derrota, continuar até sua própria chegada: o Filhote recebe a coleta normalmente. Conferir encontro e os dois botões em 1280×900 e 390×844, reinício e retorno ao menu. Zero exato depende do caminho na corrida natural; o teste físico dirigido cobre zero nas três pistas sem comando de depuração no produto.
+- Assets intermediários podem permanecer no cache com `0.27.0`; usar bypass temporário de query no navegador. O bump final para 0.28.0 pertence ao ticket 04.
+
+## Evidência
+
+- `playful_test.gd`: seis cenas físicas com sementes fixas, três pistas/espécies em Sozinho e Rival, poças, ambos lados, segundo corpo, formas distintas e movimentos reais. Compara fatos de física/coleta/impulso/layout/RNG antes/depois da apresentação. Verifica pausa, fim da reação, reinício sem acumular nós, Filhote zero/4 frutas e vitória/derrota nas três pistas, sequência congelada e projeção de corredor/Filhote em viewports de resultado 1280×520 e 390×340.
+- Exportação parcial `--export-pack Web`, runtime 4.7.2 existente, tamanho sincronizado em `web/godot/index.html`. Templates Web completos continuam ausentes; nenhum GLB, dependência ou mídia paga foi acrescentado.
+- Inspeção visual do navegador cabe ao Main. Testes de projeção não comprovam legibilidade visual, desempenho em aparelho físico ou preferência infantil.
+- Main concluiu corrida natural T-rex/Floresta com boné, nove frutas e vitória. Inspecionou `.playwright-mcp/playful-forest-result.png` (1280×900) e `.playwright-mcp/playful-mobile-result.png` (390×844): corredor e Filhote inteiros, resultado legível e os dois botões visíveis, sem overflow horizontal. Capturas `playful-forest-run`, `playful-forest-puddle` e `playful-forest-right` mostram cenário e boné durante corrida, mas não capturaram o instante breve dos novos confetes/pétalas. Closeups dos efeitos e imagens das outras pistas continuam na matriz final do ticket 04.
+- Main também concluiu naturalmente Raptor/Praia contra Rapidinho em 390×844, com derrota, nove frutas e uma dourada. `.playwright-mcp/playful-beach-run.png` registra a chegada, apesar do nome: Filhote inteiro, acolhimento das nove frutas, título "Seu amigo chegou primeiro" e ações visíveis.
+- `npm test`: 23/23 passaram. `XDG_DATA_HOME=/tmp/dino-game-godot-data npm run test:race`: exit 0, 15 scripts Godot, incluindo 72 fingerprints numéricos de Floresta/Praia e colisão física. Uma execução anterior encerrou com SIGTERM/143 após scenery, sem assert/erro no log; causa externa não estabelecida. A execução seguinte terminou integralmente, sem alterar comportamento para contornar a interrupção.
+- Pack final: 14.779.900 bytes, igual a `fileSizes`; `godot --headless --main-pack web/godot/index.pck --quit-after 5` passou com exit 0. Exportação retornou 0; sandbox impediu somente a escuta de rede do editor. `git diff --check` passou.

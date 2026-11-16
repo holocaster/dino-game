@@ -1,6 +1,7 @@
 extends Node3D
 
 const SPLASH_DURATION := 0.6
+const REACTION_DURATION := 0.85
 
 var game: Node3D
 var elapsed := 0.0
@@ -9,6 +10,14 @@ var splashes: Array[Dictionary] = []
 var birds: Array[Dictionary] = []
 var spectators: Array[Dictionary] = []
 var runner_laps := [1, 1]
+var reactions := [{"splash": REACTION_DURATION, "fruit": REACTION_DURATION}, {"splash": REACTION_DURATION, "fruit": REACTION_DURATION}]
+var paths: Array[Dictionary] = []
+var baby: Node3D
+var baby_base := Vector3.ZERO
+var baby_animation: AnimationPlayer
+var baby_received := -1
+var delivery: Node3D
+var delivery_age := 0.0
 
 func setup(race_game: Node3D) -> void:
 	game = race_game
@@ -45,7 +54,32 @@ func setup(race_game: Node3D) -> void:
 		_create_bird(index)
 	for index in range(6):
 		_create_spectator(index)
+	_create_baby()
 	reset()
+
+func _create_baby() -> void:
+	baby = Node3D.new()
+	baby.name = "Baby"
+	add_child(baby)
+	var pose: Transform2D = game.race.sample(game.race.lap_length - 0.6, 3.1)
+	baby_base = game.forest.point(pose.origin.x, pose.origin.y)
+	baby.position = baby_base
+	var toward: Vector2 = game.race.sample(game.race.lap_length - 0.6).origin - pose.origin
+	baby.rotation.y = atan2(-toward.x, -toward.y)
+	var model := preload("res://dinos/runner_model.gd").create("triceratops")
+	model.scale = Vector3.ONE * 0.48
+	baby.add_child(model)
+	baby_animation = model.get_node("AnimationPlayer")
+	baby_animation.callback_mode_process = AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_MANUAL
+	baby_animation.play("idle")
+	delivery = Node3D.new()
+	delivery.name = "FruitDelivery"
+	add_child(delivery)
+	for index in range(5):
+		var fruit := Node3D.new()
+		delivery.add_child(fruit)
+		game._sphere(Vector3.ZERO, Vector3.ONE * 0.14, "e88a63", fruit)
+		game._sphere(Vector3(0.05, 0.15, 0), Vector3(0.08, 0.025, 0.04), "588c43", fruit)
 
 func _create_bird(index: int) -> void:
 	var bird := Node3D.new()
@@ -95,12 +129,26 @@ func _create_spectator(index: int) -> void:
 func reset() -> void:
 	elapsed = 0
 	runner_laps = [1, 1]
+	_reset_paths()
+	baby_received = -1
+	delivery_age = 0
+	baby.position = baby_base
+	baby.rotation.z = 0
+	baby_animation.seek(0, true)
+	for fruit in delivery.get_children():
+		fruit.visible = false
 	for puddle in puddles:
 		puddle.player_splashed = false
 		puddle.rival_splashed = false
 	for splash in splashes:
 		splash.age = SPLASH_DURATION
 		splash.node.visible = false
+	for index in range(2):
+		reactions[index] = {"splash": REACTION_DURATION, "fruit": REACTION_DURATION}
+		var model: Node3D = (game.dinosaur if index == 0 else game.friend).get_node("Model")
+		model.position.y = 0
+		model.rotation.x = 0
+		model.rotation.z = 0
 	for bird in birds:
 		bird.sung = false
 	for spectator in spectators:
@@ -108,11 +156,41 @@ func reset() -> void:
 		spectator.animation.seek(0, true)
 	_update_animals(0)
 
+func _reset_paths() -> void:
+	var slots := {}
+	for slot in game.race.fruits + game.race.arrows:
+		if slot.lateral != 0:
+			slots[slot.distance] = absf(slot.lateral)
+	var index := 0
+	for progress in slots:
+		for side in [-1, 1]:
+			if index == paths.size():
+				var burst := Node3D.new()
+				add_child(burst)
+				for piece in range(8):
+					if side < 0:
+						game._box(Vector3(0.3, 0.055, 0.055), Vector3.ZERO, "ffd45e", burst)
+					else:
+						game._sphere(Vector3.ZERO, Vector3(0.16, 0.045, 0.09), "f29cc2", burst)
+				paths.append({"node": burst})
+			var path: Dictionary = paths[index]
+			path.distance = progress
+			path.side = side
+			path.offset = slots[progress] * side
+			path.pose = game.race.sample(progress, path.offset)
+			path.player_played = false
+			path.rival_played = false
+			path.age = REACTION_DURATION
+			path.node.visible = false
+			path.node.position = game.forest.point(path.pose.origin.x, path.pose.origin.y)
+			index += 1
+
 func advance(delta: float, previous: Vector3, rival_previous: Vector3) -> void:
 	if game.race.paused:
 		return
 	elapsed += delta
 	_update_animals(delta)
+	_update_baby(delta)
 	if game.race.stage == "racing" or game.race.stage == "finished":
 		for index in range(2):
 			var runner: Node3D = game.dinosaur if index == 0 else game.friend
@@ -123,6 +201,8 @@ func advance(delta: float, previous: Vector3, rival_previous: Vector3) -> void:
 				runner_laps[index] = runner_lap
 				for puddle in puddles:
 					puddle[key] = false
+				for path in paths:
+					path["player_played" if index == 0 else "rival_played"] = false
 			if before.distance_squared_to(runner.position) < 0.000001:
 				continue
 			for puddle in puddles:
@@ -130,8 +210,37 @@ func advance(delta: float, previous: Vector3, rival_previous: Vector3) -> void:
 					puddle[key] = true
 					splashes[index].age = 0.0
 					splashes[index].origin = runner.position
+					reactions[index].splash = 0.0
 					if index == 0 or game.dinosaur.position.distance_to(runner.position) < 8:
 						game._notify({"type": "park-sound", "name": "splash"})
+			for path in paths:
+				var played := "player_played" if index == 0 else "rival_played"
+				if not path[played] and _crossed_puddle(path.pose, before, runner.position):
+					path[played] = true
+					path.age = 0.0
+					reactions[index].fruit = 0.0
+	for index in range(2):
+		var reaction: Dictionary = reactions[index]
+		reaction.splash = minf(REACTION_DURATION, reaction.splash + delta)
+		reaction.fruit = minf(REACTION_DURATION, reaction.fruit + delta)
+		var splash_phase: float = reaction.splash / REACTION_DURATION
+		var fruit_phase: float = reaction.fruit / REACTION_DURATION
+		var model: Node3D = (game.dinosaur if index == 0 else game.friend).get_node("Model")
+		model.rotation.z = sin(splash_phase * TAU * 2) * sin(splash_phase * PI) * 0.23
+		model.position.y = sin(fruit_phase * PI) * 0.28
+		model.rotation.x = sin(fruit_phase * TAU) * sin(fruit_phase * PI) * 0.12
+	for path in paths:
+		path.age = minf(REACTION_DURATION, path.age + delta)
+		path.node.visible = path.age < REACTION_DURATION
+		if not path.node.visible:
+			continue
+		var phase: float = path.age / REACTION_DURATION
+		for index in range(path.node.get_child_count()):
+			var piece: Node3D = path.node.get_child(index)
+			var angle: float = index * TAU / 8 + phase * path.side
+			piece.position = Vector3(cos(angle) * (0.3 + phase), sin(phase * PI) * 0.9 + 0.1, sin(angle) * (0.3 + phase))
+			piece.rotation = Vector3(phase * PI, angle, phase * PI / 2)
+			piece.scale = Vector3.ONE * (1 - phase * 0.6)
 	for splash in splashes:
 		splash.age = minf(SPLASH_DURATION, splash.age + delta)
 		splash.node.visible = splash.age < SPLASH_DURATION
@@ -143,6 +252,22 @@ func advance(delta: float, previous: Vector3, rival_previous: Vector3) -> void:
 			var drop: Node3D = splash.node.get_child(index)
 			drop.position = p
 			drop.scale = Vector3.ONE * 0.065 * (1 - splash.age / SPLASH_DURATION * 0.7)
+
+func _update_baby(delta: float) -> void:
+	baby_animation.advance(delta)
+	if game.race.stage != "finished":
+		return
+	if baby_received < 0:
+		baby_received = game.race.collected
+	delivery_age += delta
+	baby.position = baby_base + Vector3.UP * absf(sin(delivery_age * 6)) * 0.22
+	baby.rotation.z = sin(delivery_age * 5) * 0.13
+	for index in range(delivery.get_child_count()):
+		var fruit: Node3D = delivery.get_child(index)
+		fruit.visible = index < mini(baby_received, delivery.get_child_count())
+		var phase := clampf((delivery_age - index * 0.16) / 1.3, 0, 1)
+		var target := baby_base + Vector3((index % 3 - 1) * 0.18, 0.25, -0.35 + (index / 3) * 0.18)
+		fruit.position = (game.dinosaur.position + Vector3.UP * 0.7).lerp(target, phase) + Vector3.UP * sin(phase * PI) * 1.0
 
 func _crossed_puddle(pose: Transform2D, before: Vector3, after: Vector3) -> bool:
 	var side := Vector2(-pose.x.y, pose.x.x)

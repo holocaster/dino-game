@@ -277,7 +277,9 @@ func _camera_focus_point() -> Vector3:
 	return dinosaur.position.lerp(friend.position, weight)
 
 func _update_camera(weight: float, delta: float = 1.0) -> void:
-	if race.stage == "ready":
+	if race.stage == "finished":
+		_aim_camera(dinosaur.position.lerp(scenery.baby_base, 0.5), 2.5, weight, delta)
+	elif race.stage == "ready":
 		camera.position = dinosaur.position + Vector3(-2.8, 1.9, -3.2).rotated(Vector3.UP, dinosaur.rotation.y)
 		camera.look_at(dinosaur.position + Vector3.UP * 0.72)
 		forest.reveal_character(camera.position, dinosaur.position, delta, 0.9)

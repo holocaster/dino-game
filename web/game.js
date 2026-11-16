@@ -212,6 +212,7 @@ function renderRace(data) {
   pause.setAttribute('aria-label', data.paused ? 'Continuar corrida' : 'Pausar corrida');
   pause.querySelector('use').setAttribute('href', data.paused ? '#play-icon' : '#pause-icon');
   const finished = data.stage === 'finished';
+  park.toggleAttribute('data-finished', finished);
   if (finished && previous && previous.stage !== 'finished') {
     const earned = award(rewards.stickers, data);
     prize = prizeText(rewards.stickers, earned);
@@ -227,7 +228,7 @@ function renderRace(data) {
       ? (solo ? (data.laps > 1 ? 'Passeio de três voltas completo!' : 'Volta tranquila completa!') : data.winner === 'player' ? 'Você chegou primeiro!' : data.winner === 'both' ? 'Chegaram juntinhos!' : 'Seu amigo chegou primeiro!')
       : 'Uma pequena pausa';
     document.querySelector('#panel-message').textContent = finished
-      ? [solo ? `Você pegou ${data.fruit} frutinhas.` : 'Que corrida gostosa!', prize, 'Vamos brincar de novo?'].filter(Boolean).join(' ')
+      ? [`O filhote recebeu ${data.fruit} frutinhas e está comemorando!`, prize].filter(Boolean).join(' ')
       : 'Seus dinos esperam por você.';
     panelAction.textContent = finished ? 'Correr de novo' : 'Continuar';
     if (previous && !previous.paused && previous.stage !== 'finished') {
@@ -296,6 +297,7 @@ document.querySelector('#choose-again').addEventListener('click', () => {
   panel.hidden = true;
   welcome.hidden = false;
   park.dataset.preview = 'true';
+  delete park.dataset.finished;
   countdown.hidden = true;
   document.querySelector('#race-hud').hidden = true;
   lapCount.hidden = true;
