@@ -7,7 +7,7 @@ Jogo infantil de corrida de dinossauros: o jogador escolhe dino, pista e rival n
 ### Corrida
 
 **Corrida**:
-Uma partida do início (contagem regressiva) até a chegada de um dos corredores.
+Percurso do início (contagem regressiva) até a condição de chegada do modo: a chegada do jogador nos modos atuais ou dos dois jogadores na cooperação.
 _Avoid_: partida, jogo
 
 **Pista**:
@@ -23,12 +23,16 @@ Uma passagem completa pela pista; Floresta e Praia têm uma volta, o Vale tem tr
 _Avoid_: lap
 
 **Corredor**:
-Quem disputa a corrida: o dino do jogador ou o rival.
+Dino que participa da corrida, controlado por uma pessoa ou pelo jogo.
 _Avoid_: piloto, competidor
 
 **Rival**:
 O dino controlado pelo jogo, com uma personalidade (Dorminhoco, Brincalhão, Rapidinho); ausente no modo Sozinho.
 _Avoid_: amigo, oponente, bot, friend
+
+**Dupla**:
+Dois jogadores humanos que cooperam na mesma corrida e no mesmo aparelho, com frutas somadas e chegada dos dois.
+_Avoid_: rivais, adversários
 
 ### Velocidade
 
@@ -61,6 +65,10 @@ Regra do Vale em que cada impulso soma menos quanto mais rápido o corredor já 
 _Avoid_: sem limite, velocidade infinita
 
 ### Recompensas
+
+**Filhote**:
+Dino que recebe as frutas na chegada e comemora com os corredores, mesmo sem coleta ou vitória.
+_Avoid_: prêmio, recompensa desbloqueável
 
 **Acessório**:
 Elemento visual opcional usado pelo dino, como boné ou óculos, sem alterar seus atributos.

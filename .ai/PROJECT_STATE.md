@@ -9,6 +9,5 @@ base_sha: null
 head_sha: null
 review: null
 review_round: 0
-blockers:
-  - Awaiting discovery answers for cooperative camera, finish, fruit accounting and keyboard/touch coverage
-next_action: Await second discovery round answers, finalize user-reviewed brief, then dispatch sdd-planner
+blockers: []
+next_action: Dispatch sdd-planner for the confirmed brief
