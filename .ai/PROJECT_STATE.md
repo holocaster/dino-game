@@ -1,13 +1,13 @@
-goal: Cinco brincadeiras em uma feature - reações, acessórios, caminhos expressivos, filhote e cooperação local
-feature: 0002-brincadeiras-na-corrida
+goal: Quarta pista Vulcão com lava visível e animada nos três modos
+feature: 0004-pista-vulcao
 context: docs/CONTEXT.md
-brief: docs/briefs/0002-brincadeiras-na-corrida.md
-spec: docs/specs/0002-brincadeiras-na-corrida.md
-tickets_index: tickets/0002-brincadeiras-na-corrida/index.md
-active_ticket: null
+brief: null
+spec: null
+tickets_index: tickets/0004-pista-vulcao/index.md
+active_ticket: 01
 base_sha: null
 head_sha: null
 review: null
 review_round: 0
 blockers: []
-next_action: Feature complete; follow-up 0.28.1 removes fruit hops at user request, validated with focused tests and browser. Await next user task. No push or merge authorized.
+next_action: Implementer executes fast-path ticket 01, then independent review. Local commits authorized; no push authorized.
