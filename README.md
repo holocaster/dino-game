@@ -13,6 +13,8 @@ Execute `npm run dev` e abra [o jogo](http://127.0.0.1:4173). A exportação web
 
 [Validação 0.28.0](art/release-0.28.0-validation.md) · [Calibração da Dupla](art/coop-validation.md) · [Changelog](changelog.md).
 
+Feature futura: [versões nativas para Windows, Linux e macOS](docs/briefs/0003-portabilidade-desktop.md).
+
 ## Desenvolvimento
 
 Projeto em `game/`, cena inicial `race/race.tscn`; página e exportação em `web/`. Use **Godot 4.7.2** no PATH:
