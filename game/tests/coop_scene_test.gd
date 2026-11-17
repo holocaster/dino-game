@@ -6,7 +6,7 @@ func _initialize() -> void:
 
 func _run() -> void:
 	set_meta("race_appearances", [{"species": "trex", "color": "natural", "accessory": "cap"}, {"species": "raptor", "color": "natural", "accessory": "glasses"}])
-	for track in ["forest", "beach", "valley"]:
+	for track in ["forest", "beach", "valley", "volcano"]:
 		set_meta("race_selection", ["trex", track, "coop", "raptor"])
 		var game: Node3D = load("res://race/race.tscn").instantiate()
 		root.add_child(game)

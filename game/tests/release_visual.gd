@@ -17,7 +17,7 @@ func _select(arguments: Array) -> void:
 	var values: PackedStringArray = str(arguments[0]).split(":")
 	assert(values.size() == 5)
 	assert(values[0] in ["preview", "run", "paths", "puddle", "wait1", "wait2", "curve", "zero", "loss"])
-	assert(values[1] in ["triceratops", "trex", "raptor"] and values[2] in ["forest", "beach", "valley"])
+	assert(values[1] in ["triceratops", "trex", "raptor"] and values[2] in ["forest", "beach", "valley", "volcano"])
 	assert(values[3] in ["none", "cap", "glasses"] and values[4] in ["none", "cap", "glasses"])
 	if game != null:
 		remove_child(game)

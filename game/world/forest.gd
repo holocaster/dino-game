@@ -15,8 +15,12 @@ var materials: Dictionary = {}
 var trees: Array[Dictionary] = []
 var race_track: Curve2D
 var theme := "forest"
+var lava_material: ShaderMaterial
 
 func height_at(x: float, z: float) -> float:
+	if theme == "volcano":
+		var basin := ((Vector2(x, z) - Vector2(-1, -5)) / Vector2(10.5, 8.8)).length()
+		return 0.18 + sin(x * 0.3) * cos(z * 0.25) * 0.06 - (1 - smoothstep(0.92, 1.08, basin)) * 0.65
 	if theme == "valley":
 		var field := ((Vector2(x, z) - VALLEY_CENTER) / VALLEY_FIELD).length()
 		return 0.12 + sin(x * 0.23) * cos(z * 0.19) * 0.1 - smoothstep(0.9, 1.1, field) * 0.6
@@ -72,6 +76,9 @@ func _ready() -> void:
 		return
 	if theme == "valley":
 		_valley()
+		return
+	if theme == "volcano":
+		_volcano()
 		return
 
 	if not race_track:
@@ -326,6 +333,101 @@ func _valley() -> void:
 		var p := VALLEY_CENTER + Vector2(rng.randf_range(-32, 32), rng.randf_range(-50, 50))
 		if distance_to_trail(p) > 7 and not trees.any(func(item): return item.position.distance_to(p) < 4.0):
 			tree(p, rng.randf_range(1.4, 2.0), i)
+
+func _volcano() -> void:
+	var backdrop := PlaneMesh.new()
+	backdrop.size = Vector2.ONE * 200
+	place(backdrop, Vector3(0, -0.55, 0), "77635d").cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	var surface := SurfaceTool.new()
+	surface.begin(Mesh.PRIMITIVE_TRIANGLES)
+	for x in range(-32, 31):
+		for z in range(-36, 27):
+			for offset in [Vector2(0, 0), Vector2(1, 0), Vector2(0, 1), Vector2(1, 0), Vector2(1, 1), Vector2(0, 1)]:
+				var p: Vector2 = Vector2(x, z) + offset
+				var grain := (sin(p.x * 0.9) * cos(p.y * 1.3) + 1) * 0.5
+				var color := Color("65555b").lerp(Color("92786b"), grain)
+				color = color.lerp(Color("e4c59c"), 1 - smoothstep(2.5, 3.1, distance_to_trail(p)))
+				surface.set_color(color.srgb_to_linear())
+				surface.add_vertex(point(p.x, p.y))
+	surface.generate_normals()
+	var terrain := place(surface.commit(), Vector3.ZERO, "ffffff")
+	terrain.name = "Terrain"
+	terrain.material_override.vertex_color_use_as_albedo = true
+	terrain.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	var lava := Node3D.new()
+	lava.name = "Lava"
+	add_child(lava)
+	lava_material = ShaderMaterial.new()
+	lava_material.shader = preload("res://world/lava.gdshader")
+	var lake := CylinderMesh.new()
+	lake.top_radius = 1
+	lake.bottom_radius = 1
+	lake.height = 0.06
+	lake.radial_segments = 64
+	var lake_node := place(lake, Vector3(-1, -0.14, -5), "ff8730")
+	lake_node.scale = Vector3(10.2, 1, 8.5)
+	lake_node.material_override = lava_material
+	lake_node.reparent(lava)
+	lake_node.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	_volcanic_peak(Vector3(-1, -0.45, -5), 5.1, 4.0, lava)
+	for i in range(48):
+		var angle := i * TAU / 48
+		var radius := Vector2(12, 10.6) if i % 2 else Vector2(22, 20)
+		var p := Vector2(-1, -5) + Vector2(cos(angle), sin(angle)) * radius
+		if distance_to_trail(p) > 4.3:
+			var size := 0.35 + float(i % 4) * 0.14
+			blob(point(p.x, p.y) + Vector3.UP * size * 0.2, Vector3(size, size * 0.65, size * 0.8), "4e4650" if i % 3 else "a86e58", true)
+	for peak in [Vector3(-30, 6, -31), Vector3(22, 8, -38), Vector3(-26, 5, 23)]:
+		_volcanic_peak(Vector3(peak.x, -0.5, peak.z), peak.y * 1.3, peak.y, lava)
+
+func _volcanic_peak(base: Vector3, radius: float, height: float, lava: Node3D) -> void:
+	var top := radius * 0.31
+	var cone := CylinderMesh.new()
+	cone.top_radius = top
+	cone.bottom_radius = radius
+	cone.height = height
+	cone.radial_segments = 16
+	var mountain := place(cone, base + Vector3.UP * height * 0.5, "775453")
+	mountain.name = "Volcano"
+	var rim := TorusMesh.new()
+	rim.inner_radius = top * 0.8
+	rim.outer_radius = top * 1.16
+	rim.rings = 24
+	place(rim, base + Vector3.UP * height, "493d49").scale.y = 0.45
+	var hot_rim := TorusMesh.new()
+	hot_rim.inner_radius = top * 0.72
+	hot_rim.outer_radius = top * 1.02
+	hot_rim.rings = 24
+	var hot_node := place(hot_rim, base + Vector3.UP * (height + 0.08), "ff8730")
+	hot_node.scale.y = 0.35
+	hot_node.material_override = lava_material
+	hot_node.reparent(lava)
+	hot_node.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	var crater := CylinderMesh.new()
+	crater.top_radius = top * 0.88
+	crater.bottom_radius = top * 0.88
+	crater.height = 0.04
+	crater.radial_segments = 32
+	var crater_node := place(crater, base + Vector3.UP * (height + 0.04), "ff8730")
+	crater_node.material_override = lava_material
+	crater_node.reparent(lava)
+	crater_node.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	var toward := (Vector2(-1, -5) - Vector2(base.x, base.z)).normalized()
+	if toward == Vector2.ZERO:
+		toward = Vector2(0, 1)
+	var across := Vector2(-toward.y, toward.x)
+	var stream := SurfaceTool.new()
+	stream.begin(Mesh.PRIMITIVE_TRIANGLES)
+	for step in range(12):
+		for corner in [Vector2(0, -1), Vector2(1, -1), Vector2(0, 1), Vector2(0, 1), Vector2(1, -1), Vector2(1, 1)]:
+			var t: float = (step + corner.x) / 12.0
+			var p: Vector2 = toward * lerpf(top, radius, t) + across * (sin(t * 4) * 0.12 + corner.y * lerpf(top * 0.23, top * 0.42, t))
+			stream.add_vertex(base + Vector3(p.x, lerpf(height + 0.1, 0.12, t), p.y))
+	stream.generate_normals()
+	var stream_node := place(stream.commit(), Vector3.ZERO, "ff8730")
+	stream_node.material_override = lava_material
+	stream_node.reparent(lava)
+	stream_node.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 
 func reveal_character(camera: Vector3, character: Vector3, delta: float, subject_radius: float = 0.65) -> void:
 	var start := Vector2(camera.x, camera.z)

@@ -52,6 +52,8 @@ iframe { width: 100%; height: 100%; border: 0; display: block; }
 .forest-preview { background: radial-gradient(ellipse at 28% 38%, #548d38 0 24%, transparent 26%), radial-gradient(ellipse at 75% 30%, #71a33c 0 22%, transparent 24%), linear-gradient(125deg, #8dbb46 36%, #e8c483 38% 60%, #8dbb46 62%); }
 .beach-preview { background: linear-gradient(135deg, #55c4cd 35%, #daf2e2 37% 42%, #efd7a0 44% 77%, #64a75c 79%); }
 .valley-preview { background: radial-gradient(ellipse at 50% 50%, #9cc45a 0 22%, #e8c483 24% 38%, #9cc45a 40% 62%, #548d38 64%); }
+.track-choices { grid-template-columns: repeat(4, 1fr); }
+.volcano-preview { background: radial-gradient(ellipse at 50% 36%, #ffd066 0 12%, #f57b32 14% 20%, transparent 22%), conic-gradient(from 145deg at 50% 14%, #775453 0 70deg, transparent 72deg), linear-gradient(160deg, #f2d4ba 40%, #65555b 42% 65%, #f57b32 67% 76%, #92786b 78%); }
 .secondary { min-height: 44px; border: 0; background: transparent; color: #486d3c; margin-top: 10px; text-decoration: underline; }
 .welcome-leaf { display: grid; place-items: center; margin: auto auto 15px; width: 44px; height: 44px; background: #e6edcf; border-radius: 50%; color: #789756; }
 .welcome-leaf svg { width: 29px; height: 29px; }

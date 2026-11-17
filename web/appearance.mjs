@@ -1,4 +1,4 @@
-import { COLORS, unlocked } from './rewards.mjs?v=0.28.1';
+import { COLORS, unlocked } from './rewards.mjs?v=0.29.0';
 
 const KEY = 'dino-race-appearances';
 export const SPECIES = ['triceratops', 'trex', 'raptor'];

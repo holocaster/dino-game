@@ -49,6 +49,21 @@ test('reports reject malformed enums, numbers, slots and inconsistent team facts
   assert.equal(validRaceReport({ ...solo, players: [player(9), player()] }), false);
 });
 
+test('volcano reports and existing rewards work in all three modes', () => {
+  const coop = { ...report(), track: 'volcano' };
+  assert.equal(validRaceReport(coop), true);
+  assert.deepEqual(award([], coop), ['first-lap']);
+  const solo = { ...coop, mode: 'solo', players: [player(9)], winner: 'player' };
+  assert.equal(validRaceReport(solo), true);
+  const competitive = { ...solo, mode: 'competitive', rival: 'playful' };
+  assert.equal(validRaceReport(competitive), true);
+  for (const result of [coop, solo, competitive]) {
+    assert.equal(validRaceReport({ ...result, track: 'lava' }), false);
+    assert.equal(validRaceReport({ ...result, laps: 3 }), false);
+  }
+  assert.deepEqual(award([], { ...coop, players: [player(), { ...player(5), finished: false, progress: 0.9 }] }), []);
+});
+
 test('coop awards only after both finish and never competitive/solo stickers', () => {
   const result = report();
   assert.deepEqual(award([], result), ['first-lap', 'forest']);

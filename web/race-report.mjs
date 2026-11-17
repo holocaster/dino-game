@@ -19,7 +19,7 @@ function validPlayers(data) {
 
 export function validCoopFinish(data) {
   return data?.mode === 'coop' && data.stage === 'finished'
-    && ['forest', 'beach', 'valley'].includes(data.track) && data.laps === (data.track === 'valley' ? 3 : 1)
+    && ['forest', 'beach', 'valley', 'volcano'].includes(data.track) && data.laps === (data.track === 'valley' ? 3 : 1)
     && validPlayers(data)
     && data.players.every(player => player.finished);
 }
@@ -27,7 +27,7 @@ export function validCoopFinish(data) {
 export function validRaceReport(data) {
   return data?.type === 'park-race' && ['competitive', 'solo', 'coop'].includes(data.mode)
     && ['ready', 'countdown', 'racing', 'finished'].includes(data.stage)
-    && ['forest', 'beach', 'valley'].includes(data.track)
+    && ['forest', 'beach', 'valley', 'volcano'].includes(data.track)
     && ['sleepy', 'playful', 'speedy', 'none'].includes(data.rival)
     && ['', 'player', 'rival', 'both'].includes(data.winner)
     && (data.mode === 'competitive' ? data.rival !== 'none' : data.rival === 'none')

@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.29.0 — 2026-11-17
+
+- Nova pista **Vulcão** nos modos Rival, Sozinho e Dupla: uma volta ao redor de uma cratera e lago de lava, rochas vulcânicas e caminho claro. Lava animada fora da pista, sem dano ou penalidade, respeitando pausa e reinício.
+- Seleção, relatórios e recompensas existentes integrados à quarta pista; progresso salvo preservado. Cenário e material procedural no Godot, sem novas dependências ou mídia paga.
+- Corrigida a perda de precisão na projeção da posição sobre a pista que podia impedir a chegada física no Vulcão; a chegada agora reconhece a posição final realmente alcançada, preservando colisões.
+- Testes de conclusão, segurança do caminho, animação e integração web; versão/cache e exportação atualizados para 0.29.0. PCK: **14.792.664 bytes**. Evidências e limites na [validação do Vulcão](art/volcano-validation.md).
+
 ## 0.28.1 — 2026-11-16
 
 - Removidos o salto e a inclinação do dino ao passar pelos trechos de frutas/Setas, conforme feedback de teste. Confetes, pétalas e balanço nas poças continuam disponíveis.

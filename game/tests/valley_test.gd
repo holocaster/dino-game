@@ -49,7 +49,7 @@ func _racing(race: Race) -> void:
 	assert(race.stage == "racing")
 
 func _catalog() -> void:
-	assert(Race.TRACKS == ["forest", "beach", "valley"])
+	assert(Race.TRACKS == ["forest", "beach", "valley", "volcano"])
 	for dino in Race.DINOS:
 		for rival in Race.RIVALS.keys() + ["none"]:
 			var race := Race.new()

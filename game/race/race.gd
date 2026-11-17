@@ -37,6 +37,8 @@ func _ready() -> void:
 	var environment := Environment.new()
 	environment.background_mode = Environment.BG_COLOR
 	environment.background_color = Color("cdeef0") if race.track_id == "beach" else Color("e8f2ed")
+	if race.track_id == "volcano":
+		environment.background_color = Color("f2d4ba")
 	environment.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
 	environment.ambient_light_color = Color("f4f2df")
 	environment.ambient_light_energy = 0.4
@@ -227,6 +229,11 @@ func _move_runner(runner: CharacterBody3D, progress: float, offset: float, delta
 
 func _track_coordinates(runner: Node3D, previous: float) -> Vector2:
 	var p := Vector2(runner.position.x, runner.position.z)
+	var requested: float = race.distance if runner == dinosaur else race.rival_distance
+	if requested == race.length and previous < race.length:
+		var offset: float = race.lateral if runner == dinosaur else race.rival_lateral
+		if p.is_equal_approx(race.sample(race.length, offset).origin):
+			return Vector2(race.length, offset)
 	var progress: float = race.track.get_closest_offset(p)
 	progress += roundf((previous - progress) / race.lap_length) * race.lap_length
 	var pose: Transform2D = race.sample(progress)
@@ -380,7 +387,7 @@ func _decorate_track() -> void:
 			var x := start.origin.x + (column - 5.5) * 0.46
 			var z := start.origin.y + row * 0.3
 			_box(Vector3(0.46, 0.025, 0.3), forest.point(x, z) + Vector3.UP * 0.025, "fff4d4" if (row + column) % 2 else "7c9462").cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	for i in range(40):
+	for i in range(0 if race.track_id == "volcano" else 40):
 		var pose: Transform2D = race.sample(race.lap_length * i / 40, 6.2 if i % 2 else -6.2)
 		var p := pose.origin
 		if p.distance_to(forest.POND) > 3.5 and not forest.trees.any(func(tree): return tree.position.distance_to(p) < 2.5):
@@ -394,6 +401,9 @@ func _decorate_track() -> void:
 
 func reset_race() -> void:
 	race.reset()
+	if forest.lava_material:
+		elapsed = 0
+		forest.lava_material.set_shader_parameter("animation_time", 0.0)
 	_release_inputs()
 	if race.mode == "coop":
 		for runner in [dinosaur, friend]:
@@ -625,6 +635,8 @@ func _process(delta: float) -> void:
 	travel_yaw = atan2(-direction.x, -direction.y)
 	if not race.paused:
 		elapsed += delta
+		if forest.lava_material:
+			forest.lava_material.set_shader_parameter("animation_time", elapsed)
 		_update_camera(1.0 - exp(-delta * 5), delta)
 		var rush := clampf((race.speed - race.base_speed) / race.RECOVERY_BOOST, 0, 1) if race.stage == "racing" else 0.0
 		camera.fov = lerpf(camera.fov, base_fov + FOV_RUSH * rush, 1 - exp(-delta * 2.5))

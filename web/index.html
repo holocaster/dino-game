@@ -6,8 +6,8 @@
   <meta name="theme-color" content="#eef3df">
   <title>Corrida dos dinos</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="game.css?v=0.28.1">
-  <script type="module" src="game.js?v=0.28.1"></script>
+  <link rel="stylesheet" href="game.css?v=0.29.0">
+  <script type="module" src="game.js?v=0.29.0"></script>
 </head>
 <body>
   <svg class="symbols" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -34,7 +34,7 @@
       </div>
     </header>
     <section class="park" data-preview="true" aria-label="Corrida amigável de dinossauros">
-      <iframe id="game" title="Corrida: use as setas esquerda e direita para pegar frutas" src="godot/index.html?v=0.28.1" tabindex="-1"></iframe>
+      <iframe id="game" title="Corrida: use as setas esquerda e direita para pegar frutas" src="godot/index.html?v=0.29.0" tabindex="-1"></iframe>
       <div class="speed-lines" aria-hidden="true"></div>
       <div id="race-hud" class="race-hud" hidden>
         <div class="lap"><span id="lap-title">UMA VOLTA</span><label><span id="player-label">Você</span> <progress id="player-progress" max="1" value="0"></progress></label><label id="friend-lap"><span id="friend-label">Amigo</span> <progress id="friend-progress" max="1" value="0"></progress></label></div>
@@ -86,6 +86,7 @@
                 <label class="choice"><input type="radio" name="track" value="forest" checked><span class="track-preview forest-preview" aria-hidden="true"></span><strong>Floresta</strong></label>
                 <label class="choice"><input type="radio" name="track" value="beach"><span class="track-preview beach-preview" aria-hidden="true"></span><strong>Praia</strong></label>
                 <label class="choice"><input type="radio" name="track" value="valley"><span class="track-preview valley-preview" aria-hidden="true"></span><strong>Vale</strong></label>
+                <label class="choice"><input type="radio" name="track" value="volcano"><span class="track-preview volcano-preview" aria-hidden="true"></span><strong>Vulcão</strong></label>
               </fieldset>
               <p>Escolha um caminho de frutinhas!<br>Cada volta pode render adesivos.</p>
             </div>
