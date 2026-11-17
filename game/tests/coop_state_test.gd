@@ -29,9 +29,9 @@ func _initialize() -> void:
 				assert(race.base_speed == Race.DINOS[first].speed and race.rival_base_speed == Race.DINOS[second].speed)
 				race.start()
 				for step in range(16000):
-					var old := Vector2(race.distance, race.rival_distance)
+					var old := [race.distance, race.rival_distance]
 					race.advance(0.05, sin(step * 0.02), -sin(step * 0.03))
-					assert(race.distance >= old.x and race.rival_distance >= old.y)
+					assert(race.distance >= old[0] and race.rival_distance >= old[1])
 					largest_gap = maxf(largest_gap, absf(race.distance - race.rival_distance))
 					assert(absf(race.distance - race.rival_distance) <= 18.00001)
 					assert(race.winner.is_empty() and race.rival_distracted_left == 0 and race.rival_target_fruit == -1)

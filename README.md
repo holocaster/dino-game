@@ -1,6 +1,6 @@
 # Corrida dos dinos
 
-Corrida infantil em **Godot + GDScript**, versão **0.29.0**: tricerátopo, T-rex e velociraptor na Floresta, Praia, Vale ou Vulcão. Avanço automático, frutas e Setas de impulso, poças, caminhos com efeitos diferentes e um Filhote que comemora na chegada, mesmo sem frutas.
+Corrida infantil em **Godot + GDScript**, versão **0.29.1**: tricerátopo, T-rex e velociraptor na Floresta, Praia, Vale ou Vulcão. Avanço automático, frutas e Setas de impulso, poças, caminhos com efeitos diferentes e um Filhote que comemora na chegada, mesmo sem frutas.
 
 Execute `npm run dev` e abra [o jogo](http://127.0.0.1:4173). A exportação web está incluída; jogar não exige Godot nem instalar dependências.
 
@@ -8,7 +8,7 @@ Execute `npm run dev` e abra [o jogo](http://127.0.0.1:4173). A exportação web
 - **Rival:** Dorminhoco se distrai, Brincalhão corre na medida e Rapidinho desafia. **Sozinho:** passeio sem rival, com ajuda para alcançar frutas. Use setas esquerda/direita ou os botões de toque.
 - **Dupla:** dois humanos no mesmo aparelho, inclusive da mesma espécie. Jogador 1 usa **A/D**, jogador 2 usa **setas**; no toque, cada um tem seu par identificado. Frutas são somadas; quem chega espera o outro, sem vencedor. A ajuda reduz o avanço do líder a partir de 6 m e o limita a 18 m de separação.
 - Vulcão tem cratera, lago e escorrimento de lava animada fora do caminho, sem dano ou penalidade.
-- Floresta/Praia/Vulcão têm uma volta; Vale tem três por pessoa e impulsos com retorno decrescente. Frutas reaparecem para o outro corredor, uma coleta por dino/volta. A dourada ajuda quem está atrás; Setas dão impulso sem contar fruta.
+- Floresta/Praia têm uma volta; Vale/Vulcão têm três por pessoa. No Vale, impulsos têm retorno decrescente. Frutas reaparecem para o outro corredor, uma coleta por dino/volta. A dourada ajuda quem está atrás; Setas dão impulso sem contar fruta.
 - Corridas concluídas rendem adesivos e liberam cores. Dupla recebe participação/coleta, sem prêmios competitivos ou de Sozinho. Álbum e duas aparências ficam salvos neste navegador; a corrida em andamento não fica salva.
 - Use pausa/reinício no topo ou escolha outra corrida na pausa/chegada. Perder o foco ou ocultar a aba limpa os controles e pausa; toque em **Continuar** ao voltar.
 

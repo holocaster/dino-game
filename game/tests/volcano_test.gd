@@ -12,19 +12,24 @@ func _run() -> void:
 		for rival in Race.RIVALS.keys() + ["none", "coop"]:
 			var race := Race.new()
 			assert(race.configure_coop(species, "raptor", "volcano") if rival == "coop" else race.configure(species, "volcano", rival))
-			assert(race.laps == 1 and not race.valley and race.lap_length == race.length)
-			assert(race.length > 95 and race.length < 105)
+			assert(race.laps == 3 and not race.valley and is_equal_approx(race.length, race.lap_length * 3))
+			assert(race.lap_length > 95 and race.lap_length < 105)
 			assert(race.sample(0).origin.distance_to(race.sample(race.length).origin) < 0.001)
 			assert(race.sample(0).x.dot(race.sample(race.length - 0.01).x) > 0.999)
 			assert(race.fruits.size() == 20 and race.arrows.is_empty())
 			race.start()
 			race.advance(3)
-			for step in range(1800):
+			var seen := [race.lap]
+			for step in range(5400):
 				race.advance(0.05, Bots.good(race), 0)
+				if seen[-1] != race.lap:
+					seen.append(race.lap)
+					assert(race.stage == "racing")
 				assert(race.speed <= race.base_speed + Race.RECOVERY_BOOST + 0.001)
 				if race.stage == "finished":
 					break
 			assert(race.stage == "finished" and race.distance == race.length)
+			assert(seen == [1, 2, 3] and race.lap == 3)
 			if rival == "coop":
 				assert(race.rival_distance == race.length and race.winner.is_empty())
 			assert(race.collected > 0)

@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.29.1 — 2026-11-17
+
+- Vulcão passa a ter três voltas nos modos Rival, Sozinho e Dupla, como o Vale. Contador, progresso e chegada acompanham as três voltas.
+- Relatórios da página, testes, versão/cache e exportação web atualizados.
+
 ## 0.29.0 — 2026-11-17
 
 - Nova pista **Vulcão** nos modos Rival, Sozinho e Dupla: uma volta ao redor de uma cratera e lago de lava, rochas vulcânicas e caminho claro. Lava animada fora da pista, sem dano ou penalidade, respeitando pausa e reinício.

@@ -185,7 +185,7 @@ func configure_coop(first: String, second: String, circuit: String) -> bool:
 func _build_track() -> void:
 	track.clear_points()
 	track.bake_interval = 0.08
-	laps = 1
+	laps = 3 if track_id == "volcano" else 1
 	if valley:
 		_build_stadium()
 		return
@@ -198,7 +198,7 @@ func _build_track() -> void:
 		var tangent := Vector2(-sin(angle), -cos(angle)) * radii * 0.55228475
 		track.add_point(p, -tangent, tangent)
 	lap_length = track.get_baked_length()
-	length = lap_length
+	length = lap_length * laps
 
 func _build_stadium() -> void:
 	var half := VALLEY_STRAIGHT / 2

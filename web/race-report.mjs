@@ -19,7 +19,7 @@ function validPlayers(data) {
 
 export function validCoopFinish(data) {
   return data?.mode === 'coop' && data.stage === 'finished'
-    && ['forest', 'beach', 'valley', 'volcano'].includes(data.track) && data.laps === (data.track === 'valley' ? 3 : 1)
+    && ['forest', 'beach', 'valley', 'volcano'].includes(data.track) && data.laps === (['valley', 'volcano'].includes(data.track) ? 3 : 1)
     && validPlayers(data)
     && data.players.every(player => player.finished);
 }
@@ -37,7 +37,7 @@ export function validRaceReport(data) {
     && Number.isInteger(data.countdown) && inRange(data.countdown, 0, 3)
     && count(data.fruit) && count(data.golden) && count(data.streak) && count(data.arrows)
     && Number.isInteger(data.speedLevel) && inRange(data.speedLevel, 0, 3)
-    && data.laps === (data.track === 'valley' ? 3 : 1) && Number.isInteger(data.lap) && inRange(data.lap, 1, data.laps)
+    && data.laps === (['valley', 'volcano'].includes(data.track) ? 3 : 1) && Number.isInteger(data.lap) && inRange(data.lap, 1, data.laps)
     && [data.speed, data.baseSpeed, data.rivalSpeed].every(value => inRange(value, 0.01, 1000))
     && [data.boostLeft, data.recoveryBoostLeft, data.rivalRecoveryBoostLeft].every(value => inRange(value, 0, 6))
     && [data.lateral, data.rivalLateral].every(value => inRange(value, -3, 3))
