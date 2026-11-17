@@ -11,7 +11,7 @@ Percurso do início (contagem regressiva) até a condição de chegada do modo: 
 _Avoid_: partida, jogo
 
 **Pista**:
-O circuito fechado onde a corrida acontece: Floresta, Praia ou Vale.
+O circuito fechado onde a corrida acontece: Floresta, Praia, Vale ou Vulcão.
 _Avoid_: mapa, fase, circuito
 
 **Vale**:
@@ -19,8 +19,12 @@ Pista longa em formato de estádio, com retas compridas e curvas abertas, corrid
 _Avoid_: estádio, grande circuito, pista longa
 
 **Volta**:
-Uma passagem completa pela pista; Floresta e Praia têm uma volta, o Vale tem três.
+Uma passagem completa pela pista; Floresta, Praia e Vulcão têm uma volta, o Vale tem três.
 _Avoid_: lap
+
+**Vulcão**:
+Pista curta em ambiente vulcânico, com cratera e lava animada fora do caminho, sem dano ou alteração dos controles.
+_Avoid_: fase de lava
 
 **Corredor**:
 Dino que participa da corrida, controlado por uma pessoa ou pelo jogo.
@@ -84,6 +88,6 @@ _Avoid_: skin
 
 ## Decisions
 
-- Velocidade com retorno decrescente vale só no Vale; Floresta e Praia mantêm o teto fixo de impulso (ADR proposto no brief 0001).
+- Velocidade com retorno decrescente vale só no Vale; Floresta, Praia e Vulcão mantêm o teto fixo de impulso (ADR proposto no brief 0001).
 - Nenhum modelo GLB novo para pistas: cenário gerado por código com os geradores existentes.
 - Toda versão `?v=` dos arquivos web acompanha a versão do `package.json` (garantido por teste).

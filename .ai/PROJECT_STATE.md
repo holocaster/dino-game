@@ -4,10 +4,10 @@ context: docs/CONTEXT.md
 brief: null
 spec: null
 tickets_index: tickets/0004-pista-vulcao/index.md
-active_ticket: 01
-base_sha: 46bee82a09fc4f9094d05b1ad0f3834445697510
-head_sha: 0245b6e1cc2b5bb3d903da1844c1ef2b94bcb250
-review: tickets/0004-pista-vulcao/01-pista-vulcao.review.md
+active_ticket: null
+base_sha: null
+head_sha: null
+review: null
 review_round: 0
 blockers: []
-next_action: Independent reviewer approved ticket 01 with no findings; mark criteria and ticket done. Local commits authorized; no push authorized.
+next_action: Feature complete in 0.29.0 with independent approval and all checks passing. Desktop portability remains a future feature. No push or merge authorized.
