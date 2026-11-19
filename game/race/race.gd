@@ -42,6 +42,10 @@ func _ready() -> void:
 	environment.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
 	environment.ambient_light_color = Color("f4f2df")
 	environment.ambient_light_energy = 0.4
+	if race.track_id == "forest":
+		environment.background_color = Color("bdddde")
+		environment.ambient_light_color = Color("e5efdf")
+		environment.ambient_light_energy = 0.65
 	var world := WorldEnvironment.new()
 	world.environment = environment
 	add_child(world)

@@ -1,6 +1,7 @@
 extends Node3D
 
 const TREE_SHADER := preload("res://world/tree.gdshader")
+const GROUND_SHADER := preload("res://world/forest_ground.gdshader")
 const VALLEY_CENTER: Vector2 = preload("res://race/race_state.gd").VALLEY_CENTER
 const VALLEY_FIELD := Vector2(36, 56)
 const POND := Vector2(-7.2, 0.1)
@@ -91,7 +92,9 @@ func _ready() -> void:
 				navigation.set_point_solid(Vector2i(x, z), blocked(Vector2(x, z) * 0.25))
 	var backdrop := PlaneMesh.new()
 	backdrop.size = Vector2.ONE * 200
-	place(backdrop, Vector3(0, -0.45, 0), "7caa42").cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	var horizon := place(backdrop, Vector3(0, -0.45, 0), "719864")
+	horizon.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	horizon.material_override.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	var surface := SurfaceTool.new()
 	surface.begin(Mesh.PRIMITIVE_TRIANGLES)
 	for x in range(-48, 41):
@@ -99,22 +102,22 @@ func _ready() -> void:
 			for offset in [Vector2(0, 0), Vector2(1, 0), Vector2(0, 1), Vector2(1, 0), Vector2(1, 1), Vector2(0, 1)]:
 				var p := Vector2(x + offset.x, z + offset.y) * 0.5
 				var distance := distance_to_trail(p)
-				var color := Color("8dbb46").lerp(Color("75a83d"), (sin(p.x * 1.8) * cos(p.y * 1.3) + 1) * 0.3)
+				var color := Color("7ba45a").lerp(Color("638e50"), (sin(p.x * 0.55) * cos(p.y * 0.45) + 1) * 0.3)
 				color = color.lerp(Color("61994c"), 1 - smoothstep(1.8, 4.2, p.distance_to(Vector2(0, -6.8))))
 				color = color.lerp(Color("4e8961"), 1 - smoothstep(2.5, 5.5, p.distance_to(Vector2(-11, -8))))
 				color = color.lerp(Color("a7bd5d"), 1 - smoothstep(3.0, 6.0, p.distance_to(Vector2(6, -12))))
 				color = color.lerp(Color("aaa987"), 1 - smoothstep(2.5, 4.5, p.distance_to(Vector2(0, -20))))
-				var width := 2.8 if race_track else 0.85
-				if distance < width:
-					color = Color("e8c483").lerp(color, smoothstep(width - 0.2, width, distance))
 				surface.set_color(color.srgb_to_linear())
+				surface.set_uv(Vector2(distance, 0))
 				surface.add_vertex(point(p.x, p.y))
 	surface.generate_normals()
 	var terrain := MeshInstance3D.new()
+	terrain.name = "Terrain"
 	terrain.mesh = surface.commit()
-	terrain.material_override = StandardMaterial3D.new()
-	terrain.material_override.vertex_color_use_as_albedo = true
-	terrain.material_override.roughness = 1
+	terrain.material_override = ShaderMaterial.new()
+	terrain.material_override.shader = GROUND_SHADER
+	terrain.material_override.set_shader_parameter("soil_color", Color("bba98c").srgb_to_linear())
+	terrain.material_override.set_shader_parameter("path_width", 2.8 if race_track else 0.85)
 	terrain.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(terrain)
 	blob(Vector3(POND.x, 0.025, POND.y), Vector3(POND_SIZE.x, 0.07, POND_SIZE.y), "30aeb0")
@@ -167,10 +170,10 @@ func _ready() -> void:
 		for j in range(7):
 			var angle := j * TAU / 7 + i
 			var direction := Vector3(cos(angle), 0, sin(angle))
-			var side := Vector3(-sin(angle), 0, cos(angle)) * 0.09
-			var end := base + direction * 0.48 + Vector3.UP * 0.2
-			var middle := base.lerp(end, 0.5) + Vector3.UP * 0.18
-			leaves.set_color((Color("447f35") if j % 2 else Color("6fa333")).srgb_to_linear())
+			var side := Vector3(-sin(angle), 0, cos(angle)) * 0.065
+			var end := base + direction * rng.randf_range(0.28, 0.48) + Vector3.UP * 0.14
+			var middle := base.lerp(end, 0.5) + Vector3.UP * 0.22
+			leaves.set_color((Color("578d50") if j % 2 else Color("8bad59")).srgb_to_linear())
 			for v in [base, middle + side, end, base, end, middle - side]:
 				leaves.add_vertex(v)
 	leaves.generate_normals()
@@ -183,6 +186,14 @@ func _ready() -> void:
 	add_child(plants)
 
 	_expanded_landscape()
+	_forest_border()
+	for i in range(12):
+		var angle := i * TAU / 12
+		var hill := Vector3(cos(angle) * 64 - 1, -1.5, sin(angle) * 64 - 5)
+		var first := get_child_count()
+		blob(hill, Vector3(24, 7 + i % 3 * 2, 18), ["88ad98", "9bbba2", "a7c7ae"][i % 3])
+		get_child(first).cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		get_child(first).material_override.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 
 func place(mesh: Mesh, position_3d: Vector3, color: String) -> MeshInstance3D:
 	var node := MeshInstance3D.new()
@@ -230,14 +241,20 @@ func tree(p: Vector2, size: float, variant: int) -> void:
 	trunk.bottom_radius = 0.22 * size
 	trunk.top_radius = 0.12 * size
 	trunk.height = 1.8 * size
+	if theme == "forest":
+		trunk.radial_segments = 10
 	place(trunk, base + Vector3.UP * trunk.height / 2, "987044")
 	for j in range(5):
-		var angle := j * TAU / 5
+		var angle := j * TAU / 5 + (variant * 0.73 if theme == "forest" else 0.0)
 		var canopy := base + Vector3(cos(angle) * 0.5, 1.8 + float(j % 2) * 0.35, sin(angle) * 0.5) * size
 		if theme == "beach":
 			var leaf_count := get_child_count()
 			blob(canopy, Vector3(0.95, 0.12, 0.3) * size, ["448655", "64a75c", "548d38"][j % 3])
 			get_child(leaf_count).rotation.y = -angle
+		elif theme == "forest":
+			canopy.y += sin(variant * 1.7 + j) * 0.16 * size
+			var crown_size := Vector3(0.76 + float(variant % 3) * 0.06, 0.72 + float((variant + j) % 3) * 0.09, 0.76)
+			blob(canopy, crown_size * size, (["376d53", "4d8258", "639463"] if variant >= 100 else ["578b49", "6d9b50", "8bad59"])[(j + variant) % 3])
 		else:
 			blob(canopy, Vector3(0.8, 0.62, 0.78) * size, (["306b47", "448655", "64a75c"] if variant >= 100 else ["548d38", "71a33c", "8db648"])[(j + variant) % 3])
 
@@ -266,10 +283,62 @@ func tree(p: Vector2, size: float, variant: int) -> void:
 	tree_mesh.mesh = merged.commit()
 	tree_mesh.material_override = ShaderMaterial.new()
 	tree_mesh.material_override.shader = TREE_SHADER
-	tree_mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	tree_mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON if theme == "forest" else GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(tree_mesh)
 	trees.append({"position": p, "radius": size * 1.4, "trunk_radius": size * 0.22, "node": tree_mesh, "canopy_alpha": 1.0, "trunk_alpha": 1.0})
 	_solid(base + Vector3.UP * 0.9 * size, 0.22 * size, 1.8 * size)
+
+func _forest_border() -> void:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 81173
+	var placements: Array[Transform3D] = []
+	var colors: Array[Color] = []
+	var width := 2.8 if race_track else 0.85
+	for path in trails:
+		for i in range(72):
+			var distance := path.get_baked_length() * i / 72.0
+			var p := path.sample_baked(distance)
+			var direction := (path.sample_baked(fmod(distance + 0.15, path.get_baked_length())) - p).normalized()
+			p += Vector2(-direction.y, direction.x) * (width + rng.randf_range(0.9, 1.8)) * (-1 if i % 2 else 1)
+			if distance_to_trail(p) < width + 0.7 or ((p - POND) / (POND_SIZE + Vector2.ONE)).length() < 1:
+				continue
+			var base := point(p.x, p.y)
+			for j in range(3):
+				var offset := Vector3(rng.randf_range(-0.3, 0.3), 0.15, rng.randf_range(-0.3, 0.3))
+				var dimensions := Vector3(0.30, rng.randf_range(0.22, 0.38), 0.26)
+				placements.append(Transform3D(Basis.from_scale(dimensions), base + offset))
+				colors.append(Color(["548257", "71974f", "8da75c"][j]))
+			if i % 3 == 0:
+				for j in range(5):
+					var angle := j * TAU / 5
+					var petal := base + Vector3(cos(angle) * 0.11, 0.48, sin(angle) * 0.11)
+					placements.append(Transform3D(Basis.from_scale(Vector3(0.09, 0.035, 0.09)), petal))
+					colors.append(Color("f1cd79") if i % 2 else Color("e3a38d"))
+				placements.append(Transform3D(Basis.from_scale(Vector3(0.065, 0.045, 0.065)), base + Vector3.UP * 0.49))
+				colors.append(Color("f8e5a8"))
+			else:
+				placements.append(Transform3D(Basis.from_scale(Vector3(0.22, 0.16, 0.19)), base + Vector3(0.35, 0.08, 0.2)))
+				colors.append(Color("a3a58c"))
+	var mesh := SphereMesh.new()
+	mesh.radial_segments = 12
+	mesh.rings = 6
+	mesh.radius = 1
+	mesh.height = 2
+	var border := MultiMeshInstance3D.new()
+	border.name = "ForestBorder"
+	border.multimesh = MultiMesh.new()
+	border.multimesh.transform_format = MultiMesh.TRANSFORM_3D
+	border.multimesh.use_colors = true
+	border.multimesh.mesh = mesh
+	border.multimesh.instance_count = placements.size()
+	border.material_override = StandardMaterial3D.new()
+	border.material_override.vertex_color_use_as_albedo = true
+	border.material_override.roughness = 1
+	border.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	for i in range(placements.size()):
+		border.multimesh.set_instance_transform(i, placements[i])
+		border.multimesh.set_instance_color(i, colors[i].srgb_to_linear())
+	add_child(border)
 
 func _beach() -> void:
 	var water := PlaneMesh.new()

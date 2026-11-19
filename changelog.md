@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.30.0 — 2026-11-19
+
+- Primeiro polimento do cenário da Floresta: material de terra e grama com variação suave, bordas irregulares, arbustos, flores e pedras em uma malha instanciada, copas variadas, sombras de árvores e colinas ao fundo.
+- Terreno físico, traçado, controles e regras preservados; Praia, Vale e Vulcão mantêm seus visuais. Sem novos assets pagos ou dependências.
+- Teste da vegetação fora da pista, versão/cache e exportação web atualizados. [Capturas e validação](art/forest-polish-validation.md).
+
 ## 0.29.1 — 2026-11-17
 
 - Vulcão passa a ter três voltas nos modos Rival, Sozinho e Dupla, como o Vale. Contador, progresso e chegada acompanham as três voltas.
