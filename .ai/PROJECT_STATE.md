@@ -1,13 +1,13 @@
-goal: Quarta pista Vulcão com lava visível e animada nos três modos
-feature: 0004-pista-vulcao
+goal: Caverna dos Cristais clara de uma volta com encontros opcionais de luz e som nos três modos
+feature: 0005-caverna-cristais
 context: docs/CONTEXT.md
 brief: null
 spec: null
-tickets_index: tickets/0004-pista-vulcao/index.md
-active_ticket: null
+tickets_index: tickets/0005-caverna-cristais/index.md
+active_ticket: 01-caverna-cristais
 base_sha: null
 head_sha: null
 review: null
 review_round: 0
 blockers: []
-next_action: Feature complete in 0.29.0 with independent approval and all checks passing. Desktop portability remains a future feature. No push or merge authorized.
+next_action: Implement ticket 01 using the approved fast-path criteria, then obtain independent review. Local commits authorized; no push or merge. Performance measurements remain deferred.
