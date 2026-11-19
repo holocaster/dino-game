@@ -2,6 +2,7 @@ extends Node
 
 var game: Node3D
 var callback: JavaScriptObject
+var overview := false
 
 func _ready() -> void:
 	callback = JavaScriptBridge.create_callback(_select)
@@ -9,16 +10,17 @@ func _ready() -> void:
 	_select(["preview:triceratops:forest:cap:glasses"])
 
 func _process(delta: float) -> void:
-	if game != null:
+	if game != null and not overview:
 		game._update_camera(1 - exp(-delta * 5), delta)
 
 func _select(arguments: Array) -> void:
 	JavaScriptBridge.eval("window.releaseFixtureCase = ''; window.releaseFixtureReport = null;", true)
 	var values: PackedStringArray = str(arguments[0]).split(":")
 	assert(values.size() == 5)
-	assert(values[0] in ["preview", "run", "paths", "puddle", "wait1", "wait2", "curve", "zero", "loss"])
-	assert(values[1] in ["triceratops", "trex", "raptor"] and values[2] in ["forest", "beach", "valley", "volcano"])
+	assert(values[0] in ["preview", "run", "paths", "puddle", "wait1", "wait2", "curve", "zero", "loss", "overview"])
+	assert(values[1] in ["triceratops", "trex", "raptor"] and values[2] in ["forest", "beach", "valley", "volcano", "cave"])
 	assert(values[3] in ["none", "cap", "glasses"] and values[4] in ["none", "cap", "glasses"])
+	overview = values[0] == "overview"
 	if game != null:
 		remove_child(game)
 		game.queue_free()
@@ -100,6 +102,10 @@ func _select(arguments: Array) -> void:
 		animation.advance(0.2)
 	for frame in range(30):
 		game._update_camera(1, 0.1)
+	if overview:
+		game.camera.position = Vector3(21, 28, 27)
+		game.camera.look_at(Vector3(-1, 1, -5))
+		game.forest.reveal_cave(game.camera.position, [game.dinosaur.position, game.friend.position])
 	await get_tree().physics_frame
 	assert(game.race.dino_id == values[1] and game.race.track_id == values[2])
 	var models := [game.dinosaur.get_node("Model").scene_file_path, game.friend.get_node("Model").scene_file_path]

@@ -1,8 +1,8 @@
-import { SteeringInputs, keyDirection } from './controls.mjs?v=0.31.0';
-import { validRaceReport } from './race-report.mjs?v=0.31.0';
-import { ParkAudio } from './audio.mjs?v=0.31.0';
-import { loadAppearances, saveAppearances } from './appearance.mjs?v=0.31.0';
-import { STICKERS, COLORS, award, unlocked, prizeText, loadRewards, saveRewards } from './rewards.mjs?v=0.31.0';
+import { SteeringInputs, keyDirection } from './controls.mjs?v=0.32.0';
+import { validRaceReport } from './race-report.mjs?v=0.32.0';
+import { ParkAudio } from './audio.mjs?v=0.32.0';
+import { loadAppearances, saveAppearances } from './appearance.mjs?v=0.32.0';
+import { STICKERS, COLORS, award, unlocked, prizeText, loadRewards, saveRewards } from './rewards.mjs?v=0.32.0';
 
 const frame = document.querySelector('#game');
 const welcome = document.querySelector('#welcome');
@@ -103,9 +103,9 @@ function resumeAudio() {
   try {
     sound ??= new ParkAudio(new AudioContext());
     sound.setMuted(muted);
-    sound.setPaused(Boolean(state?.paused));
+    sound.setPaused(Boolean(state?.paused), state?.track === 'cave');
     sound.environment(environment);
-    sound.context.resume().catch(audioFailed);
+    if (!sound.paused) sound.context.resume().catch(audioFailed);
   } catch {
     audioFailed();
   }
@@ -216,7 +216,7 @@ function renderRace(data) {
     }
   }
   for (const button of controls) button.disabled = data.paused || data.stage !== 'racing';
-  sound?.setPaused(data.paused);
+  sound?.setPaused(data.paused, data.track === 'cave');
   if (!previous || previous.stage !== data.stage || previous.paused !== data.paused || previous.countdown !== data.countdown || previous.fruit !== data.fruit || previous.recoveryTarget !== data.recoveryTarget || (previous.recoveryBoostLeft > 0) !== (data.recoveryBoostLeft > 0) || (previous.rivalRecoveryBoostLeft > 0) !== (data.rivalRecoveryBoostLeft > 0) || previous.rivalDistracted !== data.rivalDistracted || newLap || arrow || (coop && previous.players?.some(player => player.finished) !== data.players.some(player => player.finished))) {
     message.textContent = data.paused ? 'Corrida pausada.'
       : data.stage === 'countdown' ? `Prepare-se... ${data.countdown}!`

@@ -19,8 +19,11 @@ var race_track: Curve2D
 var theme := "forest"
 var lava_material: ShaderMaterial
 var water_material: ShaderMaterial
+var cave_stones: Array[MeshInstance3D] = []
 
 func height_at(x: float, z: float) -> float:
+	if theme == "cave":
+		return 0.16 + sin(x * 0.24) * cos(z * 0.22) * 0.05
 	if theme == "volcano":
 		var basin := ((Vector2(x, z) - Vector2(-1, -5)) / Vector2(10.5, 8.8)).length()
 		return 0.18 + sin(x * 0.3) * cos(z * 0.25) * 0.06 - (1 - smoothstep(0.92, 1.08, basin)) * 0.65
@@ -79,6 +82,9 @@ func _ready() -> void:
 		return
 	if theme == "valley":
 		_valley()
+		return
+	if theme == "cave":
+		_cave()
 		return
 	if theme == "volcano":
 		_volcano()
@@ -452,6 +458,57 @@ func _valley() -> void:
 
 	_track_border()
 	_hills(VALLEY_CENTER, 100)
+
+func _cave() -> void:
+	var backdrop := PlaneMesh.new()
+	backdrop.size = Vector2.ONE * 200
+	place(backdrop, Vector3(0, -0.3, 0), "c6bec7").cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	var surface := SurfaceTool.new()
+	surface.begin(Mesh.PRIMITIVE_TRIANGLES)
+	for x in range(-38, 38):
+		for z in range(-42, 33):
+			for offset in [Vector2(0, 0), Vector2(1, 0), Vector2(0, 1), Vector2(1, 0), Vector2(1, 1), Vector2(0, 1)]:
+				var p: Vector2 = Vector2(x, z) + offset
+				surface.set_color(Color("a59aac").lerp(Color("c8bfc8"), (sin(p.x * 0.4) * cos(p.y * 0.5) + 1) * 0.5).srgb_to_linear())
+				surface.set_uv(Vector2(distance_to_trail(p), 0))
+				surface.add_vertex(point(p.x, p.y))
+	surface.generate_normals()
+	var terrain := place(surface.commit(), Vector3.ZERO, "ffffff")
+	terrain.name = "Terrain"
+	terrain.material_override = _ground_material("c4b9a9")
+	terrain.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	var walls := Node3D.new()
+	walls.name = "CaveWalls"
+	add_child(walls)
+	for index in range(28):
+		var angle := index * TAU / 28
+		var p := Vector2(-1, -5) + Vector2(cos(angle) * 26, sin(angle) * 25)
+		_cave_stone(point(p.x, p.y) + Vector3.UP * 3.2, Vector3(3.4, 4.5 + index % 3, 3.2), index, walls)
+	for index in range(8):
+		var angle := index * TAU / 8
+		var p := Vector2(-1, -5) + Vector2(cos(angle) * 4.4, sin(angle) * 3.5)
+		_cave_stone(point(p.x, p.y) + Vector3.UP * 2.1, Vector3(1.8, 3.6, 1.8), index + 30, walls)
+	for index in range(3):
+		var pose := trail.sample_baked_with_rotation(trail.get_baked_length() * (0.19 + index * 0.31))
+		for side in [-1, 1]:
+			var p: Vector2 = pose.origin + pose.y * side * 7.2
+			_cave_stone(point(p.x, p.y) + Vector3.UP * 3.7, Vector3(1.3, 5.5, 1.4), index + 40, walls)
+		for step in range(7):
+			var p := pose.origin + pose.y * (step - 3) * 1.9
+			_cave_stone(point(p.x, p.y) + Vector3.UP * (10.3 - absf(step - 3) * 0.45), Vector3(1.5, 1.0, 1.6), step + index * 7, walls)
+
+func _cave_stone(base: Vector3, dimensions: Vector3, variant: int, holder: Node3D) -> void:
+	var stone := place(SCENERY_MESHES.rock(dimensions, variant, false), base, "b8a9ba" if variant % 2 else "a79aaf")
+	stone.name = "CaveStone"
+	stone.material_override = stone.material_override.duplicate()
+	stone.material_override.vertex_color_use_as_albedo = true
+	stone.reparent(holder)
+	cave_stones.append(stone)
+
+func reveal_cave(camera_position: Vector3, subjects: Array) -> void:
+	for stone in cave_stones:
+		var bounds: AABB = stone.get_aabb().grow(0.8)
+		stone.visible = not subjects.any(func(subject): return bounds.intersects_segment(camera_position - stone.position, subject + Vector3.UP * 0.8 - stone.position) != null)
 
 func _volcano() -> void:
 	var backdrop := PlaneMesh.new()

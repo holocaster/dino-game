@@ -23,7 +23,7 @@ func check_runner(game: Node3D, runner: Node3D, envelope: bool = true) -> void:
 			projections += 1
 
 func _run() -> void:
-	for pair in [["triceratops", "forest"], ["trex", "beach"], ["raptor", "valley"]]:
+	for pair in [["triceratops", "forest"], ["trex", "beach"], ["raptor", "valley"], ["triceratops", "cave"], ["trex", "cave"], ["raptor", "cave"]]:
 		var species: String = pair[0]
 		set_meta("race_selection", [species, pair[1], "coop", species])
 		set_meta("race_appearances", [{"species": species, "color": "natural", "accessory": "cap"}, {"species": species, "color": "natural", "accessory": "glasses"}])
@@ -71,5 +71,5 @@ func _run() -> void:
 			check_runner(game, game.friend)
 		game.queue_free()
 		await process_frame
-	print("Coop camera passed: ", projections, " projected body/mesh/accessory bounds; three species, 18m/opposite lanes, all three tracks, either waiting finisher, arrival, 1280x900/390x844/390x340, <=50 degrees/s.")
+	print("Coop camera passed: ", projections, " projected body/mesh/accessory bounds; three species, 18m/opposite lanes, forest/beach/valley and cave, either waiting finisher, arrival, 1280x900/390x844/390x340, <=50 degrees/s.")
 	quit()

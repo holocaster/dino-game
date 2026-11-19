@@ -58,6 +58,10 @@ func _ready() -> void:
 		environment.background_color = Color("ead5c5")
 		environment.ambient_light_color = Color("eadbce")
 		environment.ambient_light_energy = 0.55
+	elif race.track_id == "cave":
+		environment.background_color = Color("e1ece8")
+		environment.ambient_light_color = Color("eee6f2")
+		environment.ambient_light_energy = 0.72
 	var world := WorldEnvironment.new()
 	world.environment = environment
 	add_child(world)
@@ -382,6 +386,9 @@ func _update_camera(weight: float, delta: float = 1.0) -> void:
 	else:
 		super._update_camera(weight, delta)
 
+	if race.track_id == "cave":
+		forest.reveal_cave(camera.position, [dinosaur.position, friend.position] if race.mode == "coop" else [dinosaur.position])
+
 func _fit_camera() -> void:
 	super._fit_camera()
 	var size := get_viewport().get_visible_rect().size
@@ -398,12 +405,17 @@ func _decorate_track() -> void:
 		_box(Vector3(0.12, 2.6, 0.12), Vector3(side * 3.3, 1.3, 0), "b58a59", gate)
 		_sphere(Vector3(side * 3.3, 2.7, 0), Vector3.ONE * 0.18, "e9b75d", gate)
 		_box(Vector3(0.8, 0.5, 0.06), Vector3(side * 3.7, 2.25, 0), "df9865" if side < 0 else "719d68", gate)
+	if race.track_id == "cave":
+		_box(Vector3(7.0, 0.4, 0.4), Vector3(0, 4.6, 0), "b8a9ba", gate)
+		for side in [-1, 1]:
+			_box(Vector3(0.45, 4.6, 0.5), Vector3(side * 3.5, 2.3, 0), "b8a9ba", gate)
+			_sphere(Vector3(side * 2.3, 4.6, -0.26), Vector3(0.25, 0.32, 0.12), "76cec9" if side < 0 else "c5a0df", gate)
 	for row in range(2):
 		for column in range(12):
 			var x := start.origin.x + (column - 5.5) * 0.46
 			var z := start.origin.y + row * 0.3
 			_box(Vector3(0.46, 0.025, 0.3), forest.point(x, z) + Vector3.UP * 0.025, "fff4d4" if (row + column) % 2 else "7c9462").cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	for i in range(0 if race.track_id == "volcano" else 40):
+	for i in range(0 if race.track_id in ["volcano", "cave"] else 40):
 		var pose: Transform2D = race.sample(race.lap_length * i / 40, 6.2 if i % 2 else -6.2)
 		var p := pose.origin
 		if p.distance_to(forest.POND) > 3.5 and not forest.trees.any(func(tree): return tree.position.distance_to(p) < 2.5):

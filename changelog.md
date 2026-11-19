@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.32.0 — 2026-11-19
+
+- Caverna dos Cristais: quinta pista, curta e de uma volta, em Rival, Sozinho e Dupla, com paredes claras, arcos altos e largada de pedra.
+- Três encontros opcionais: escolher um lado acende cristais coloridos e toca uma nota curta; centro livre, sem efeito sobre corrida, frutas ou chegada. Ambos os humanos participam, com pausa/retomada e reinício dos efeitos.
+- Catálogo, relatórios, testes e exportação/cache sincronizados; preferências e álbum existentes preservados. [Capturas, verificações e limites](art/cave-validation.md).
+
 ## 0.31.0 — 2026-11-19
 
 - Árvores reconstruídas com troncos curvos, galhos e copas recortadas; palmeiras da Praia com folhas arqueadas. Rochas facetadas com proporções irregulares e musgo na Floresta/Vale.

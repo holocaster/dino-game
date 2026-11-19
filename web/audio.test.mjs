@@ -53,3 +53,35 @@ test('vento acompanha o nível de velocidade dentro dos limites', () => {
   assert.deepEqual(targets.filter(([name]) => name === 'frequency').map(([, value]) => value), [350, 350, 900, 1400, 1400, 350]);
   assert.ok(targets.filter(([name]) => name === 'gain').every(([, value]) => value > 0 && value <= 0.08));
 });
+
+test('crystal sides form six soft short notes and suppress a same-frame burst', () => {
+  const notes = [];
+  const audio = { context: { currentTime: 1 }, crystalTimes: [], tone: (...args) => notes.push(args) };
+  for (const [index, side] of [[0, 'left'], [0, 'right'], [1, 'left'], [1, 'right'], [2, 'left'], [2, 'right']]) {
+    audio.context.currentTime += 1;
+    ParkAudio.prototype.play.call(audio, `crystal-${index}-${side}`);
+  }
+  assert.equal(notes.length, 6);
+  assert.equal(new Set(notes.map(([frequency]) => frequency)).size, 6);
+  assert.ok(notes.every(([from, to, duration, volume]) => from === to && duration <= 0.35 && volume <= 0.1));
+  notes.length = 0;
+  audio.context.currentTime += 1;
+  for (const name of ['crystal-0-left', 'crystal-0-right', 'crystal-1-left', 'crystal-9-left']) ParkAudio.prototype.play.call(audio, name);
+  assert.equal(notes.length, 2);
+  for (const state of [{ muted: true }, { paused: true }]) {
+    ParkAudio.prototype.play.call({ ...audio, ...state, tone: () => assert.fail('Crystal sounded while silent') }, 'crystal-0-left');
+  }
+});
+
+test('pause suspends the audio clock and resume keeps the scheduled note', async () => {
+  const calls = [];
+  const audio = { paused: false, muted: false, effects: new Set(['note']),
+    context: { suspend: async () => calls.push('suspend'), resume: async () => calls.push('resume') },
+    setMuted: () => {}, stopEffects: () => assert.fail('Pause discarded a note') };
+  ParkAudio.prototype.setPaused.call(audio, true, true);
+  ParkAudio.prototype.setPaused.call(audio, true, true);
+  ParkAudio.prototype.setPaused.call(audio, false);
+  await Promise.resolve();
+  assert.deepEqual(calls, ['suspend', 'resume']);
+  assert.ok(audio.effects.has('note'));
+});

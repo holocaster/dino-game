@@ -131,7 +131,7 @@ const DINOS := {
 	"trex": {"speed": 2.27, "steer": 2.2},
 	"raptor": {"speed": 2.13, "steer": 2.7}
 }
-const TRACKS := ["forest", "beach", "valley", "volcano"]
+const TRACKS := ["forest", "beach", "valley", "volcano", "cave"]
 const SPEED_LEVELS := [0.3, 0.6, 1.0]
 
 func _init() -> void:
@@ -194,6 +194,8 @@ func _build_track() -> void:
 		var radii := Vector2(13, 14) if track_id == "forest" else Vector2(15, 11)
 		if track_id == "volcano":
 			radii = Vector2(17, 15)
+		elif track_id == "cave":
+			radii = Vector2(13, 12)
 		var p := Vector2(-1, -5) + Vector2(cos(angle), -sin(angle)) * radii
 		var tangent := Vector2(-sin(angle), -cos(angle)) * radii * 0.55228475
 		track.add_point(p, -tangent, tangent)

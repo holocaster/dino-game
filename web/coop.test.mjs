@@ -87,3 +87,20 @@ test('coop awards only after both finish and never competitive/solo stickers', (
   assert.deepEqual(award([], { ...result, laps: Infinity }), []);
   assert.deepEqual(award([], { ...result, track: 'unknown' }), []);
 });
+
+test('cave reports keep one lap and require both humans at the finish', () => {
+  for (const mode of ['coop', 'solo', 'competitive']) {
+    const result = { ...report(), track: 'cave', mode, rival: mode === 'competitive' ? 'playful' : 'none',
+      players: mode === 'coop' ? [player(), player(5)] : [player(9)] };
+    assert.equal(validRaceReport(result), true);
+    assert.deepEqual(award([], result), mode === 'solo' ? ['first-lap', 'calm'] : ['first-lap']);
+    assert.equal(validRaceReport({ ...result, track: 'cavern' }), false);
+    assert.equal(validRaceReport({ ...result, laps: 3 }), false);
+    if (mode === 'coop') {
+      const waiting = { ...result, rivalProgress: 0.9, players: [player(), { ...player(5), progress: 0.9, finished: false }] };
+      assert.equal(validRaceReport(waiting), false);
+      assert.deepEqual(award([], waiting), []);
+      assert.equal(validRaceReport({ ...waiting, stage: 'racing' }), true);
+    }
+  }
+});

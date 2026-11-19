@@ -219,3 +219,5 @@ body[data-mode="coop"] .lap label span { max-width: 145px; }
   body[data-mode="coop"] .steer { height: 44px; width: 50px; }
   body[data-mode="coop"] .invitation { display: none; }
 }
+
+.cave-preview { background: conic-gradient(from 155deg at 24% 75%, #76cec9 0 48deg, transparent 50deg), conic-gradient(from 155deg at 74% 62%, #bb94dc 0 48deg, transparent 50deg), radial-gradient(ellipse at 50% 5%, #edf8ee 0 25%, transparent 27%), linear-gradient(135deg, #b1a3ba 30%, #d6c8be 32% 75%, #9a8fa6 77%); }

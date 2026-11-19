@@ -3,8 +3,10 @@ export class ParkAudio {
     this.context = context;
     this.muted = false;
     this.paused = false;
+    this.clockPaused = false;
     this.effects = new Set();
     this.nextBird = 0;
+    this.crystalTimes = [];
     this.master = context.createGain();
     this.master.gain.value = 0.22;
     this.master.connect(context.destination);
@@ -35,10 +37,18 @@ export class ParkAudio {
     if (muted) this.stopEffects();
   }
 
-  setPaused(paused) {
+  setPaused(paused, preserveNote = false) {
+    if (paused === this.paused) return;
     this.paused = paused;
     this.setMuted(this.muted);
-    if (paused) this.stopEffects();
+    if (paused && preserveNote) {
+      this.clockPaused = true;
+      this.context.suspend().catch(() => this.setMuted(true));
+    } else if (paused) this.stopEffects();
+    else if (this.clockPaused) {
+      this.clockPaused = false;
+      this.context.resume().catch(() => this.setMuted(true));
+    }
   }
 
   stopEffects() {
@@ -48,6 +58,7 @@ export class ParkAudio {
 
   reset() {
     this.stopEffects();
+    this.crystalTimes = [];
     this.water.gain.setTargetAtTime(0, this.context.currentTime, 0.15);
     this.speed(0);
     this.nextBird = this.context.currentTime + 2;
@@ -119,6 +130,16 @@ export class ParkAudio {
 
   play(name) {
     if (this.muted || this.paused) return;
+    const crystal = ['crystal-0-left', 'crystal-0-right', 'crystal-1-left', 'crystal-1-right', 'crystal-2-left', 'crystal-2-right'].indexOf(name);
+    if (crystal >= 0) {
+      const time = this.context.currentTime;
+      this.crystalTimes = this.crystalTimes.filter(start => time - start < 0.3);
+      if (this.crystalTimes.length >= 2) return;
+      this.crystalTimes.push(time);
+      const frequency = [523.25, 587.33, 659.25, 783.99, 880, 1046.5][crystal];
+      this.tone(frequency, frequency, 0.28, 0.085);
+      return;
+    }
     switch (name) {
       case 'splash':
         this.rustle(1800, 0.3, 0.13);

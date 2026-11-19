@@ -4,6 +4,9 @@ const PETAL_SIZE := Vector3(0.16, 0.045, 0.09)
 
 const SPLASH_DURATION := 0.6
 const REACTION_DURATION := 0.85
+const CRYSTAL_DURATION := 1.2
+
+var crystals: Array[Dictionary] = []
 
 var game: Node3D
 var elapsed := 0.0
@@ -23,6 +26,11 @@ var delivery_age := 0.0
 
 func setup(race_game: Node3D) -> void:
 	game = race_game
+	if game.race.track_id == "cave":
+		_create_crystals()
+		_create_baby()
+		reset()
+		return
 	for index in range(4):
 		var progress: float = 7 + game.race.lap_length * index / 4
 		var offset := -0.9 if index % 2 == 0 else 0.9
@@ -58,6 +66,59 @@ func setup(race_game: Node3D) -> void:
 		_create_spectator(index)
 	_create_baby()
 	reset()
+
+func _create_crystals() -> void:
+	for index in range(3):
+		var progress: float = game.race.lap_length * (0.16 + index * 0.31)
+		var encounter := {"distance": progress, "played": [false, false], "groups": []}
+		for side in [-1, 1]:
+			var pose: Transform2D = game.race.sample(progress, side * 1.65)
+			var anchor: Transform2D = game.race.sample(progress, side * 3.5)
+			var group := Node3D.new()
+			group.name = "Crystals%d%s" % [index + 1, "Left" if side < 0 else "Right"]
+			add_child(group)
+			group.position = game.forest.point(anchor.origin.x, anchor.origin.y)
+			group.rotation.y = atan2(-anchor.x.x, -anchor.x.y)
+			var color := Color(["55aaa9", "9b77bc", "639bb9"][index] if side < 0 else ["cf91ac", "ccaa64", "8eb578"][index])
+			for piece in range(5):
+				var crystal := CylinderMesh.new()
+				crystal.top_radius = 0
+				crystal.bottom_radius = 0.37 if piece == 2 else 0.24
+				crystal.height = 2.8 if piece == 2 else 1.2 + piece * 0.15
+				crystal.radial_segments = 5
+				var node: MeshInstance3D = game._mesh(crystal, Vector3((piece % 2) * 0.35 - 0.18, crystal.height * 0.5, (piece - 2) * 0.42), color.to_html(false), group)
+				node.rotation.z = (piece - 2) * 0.10
+				node.material_override.emission_enabled = true
+				node.material_override.emission = color
+				node.material_override.emission_energy_multiplier = 0.0
+			encounter.groups.append({"node": group, "pose": pose, "color": color, "age": CRYSTAL_DURATION, "sound": "crystal-%d-%s" % [index, "left" if side < 0 else "right"]})
+		crystals.append(encounter)
+
+func _advance_crystals(delta: float, previous: Vector3, rival_previous: Vector3) -> void:
+	if game.race.stage != "racing":
+		return
+	for encounter in crystals:
+		for group in encounter.groups:
+			group.age = minf(CRYSTAL_DURATION, group.age + delta)
+		for index in range(2 if game.race.mode != "solo" else 1):
+			if encounter.played[index]:
+				continue
+			var runner: Node3D = game.dinosaur if index == 0 else game.friend
+			var before := previous if index == 0 else rival_previous
+			if before.distance_squared_to(runner.position) < 0.000001:
+				continue
+			var contacts: Array = encounter.groups.filter(func(group): return _crossed_puddle(group.pose, before, runner.position))
+			if contacts.is_empty():
+				continue
+			contacts.sort_custom(func(a, b): return Vector2(before.x, before.z).distance_squared_to(a.pose.origin) < Vector2(before.x, before.z).distance_squared_to(b.pose.origin))
+			encounter.played[index] = true
+			contacts[0].age = 0.0
+			game._notify({"type": "park-sound", "name": contacts[0].sound})
+		for group in encounter.groups:
+			var pulse: float = sin(PI * (1 - group.age / CRYSTAL_DURATION))
+			for crystal in group.node.get_children():
+				crystal.material_override.albedo_color = group.color.lerp(Color("f3f6df"), pulse * 0.28)
+				crystal.material_override.emission_energy_multiplier = pulse * 0.16
 
 func _create_baby() -> void:
 	baby = Node3D.new()
@@ -130,6 +191,13 @@ func _create_spectator(index: int) -> void:
 
 func reset() -> void:
 	elapsed = 0
+	for encounter in crystals:
+		encounter.played = [false, false]
+		for group in encounter.groups:
+			group.age = CRYSTAL_DURATION
+			for crystal in group.node.get_children():
+				crystal.material_override.albedo_color = group.color
+				crystal.material_override.emission_energy_multiplier = 0.0
 	runner_laps = [1, 1]
 	_reset_paths()
 	baby_received = -1
@@ -159,6 +227,8 @@ func reset() -> void:
 	_update_animals(0)
 
 func _reset_paths() -> void:
+	if game.race.track_id == "cave":
+		return
 	var slots := {}
 	for slot in game.race.fruits + game.race.arrows:
 		if slot.lateral != 0:
@@ -193,6 +263,9 @@ func advance(delta: float, previous: Vector3, rival_previous: Vector3) -> void:
 	elapsed += delta
 	_update_animals(delta)
 	_update_baby(delta)
+	if game.race.track_id == "cave":
+		_advance_crystals(delta, previous, rival_previous)
+		return
 	if game.race.stage == "racing" or game.race.stage == "finished":
 		for index in range(2):
 			var runner: Node3D = game.dinosaur if index == 0 else game.friend
