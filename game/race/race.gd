@@ -46,6 +46,18 @@ func _ready() -> void:
 		environment.background_color = Color("bdddde")
 		environment.ambient_light_color = Color("e5efdf")
 		environment.ambient_light_energy = 0.65
+	elif race.track_id == "beach":
+		environment.background_color = Color("b7dce6")
+		environment.ambient_light_color = Color("e4ece7")
+		environment.ambient_light_energy = 0.58
+	elif race.track_id == "valley":
+		environment.background_color = Color("c7dfda")
+		environment.ambient_light_color = Color("e8efdc")
+		environment.ambient_light_energy = 0.62
+	elif race.track_id == "volcano":
+		environment.background_color = Color("ead5c5")
+		environment.ambient_light_color = Color("eadbce")
+		environment.ambient_light_energy = 0.55
 	var world := WorldEnvironment.new()
 	world.environment = environment
 	add_child(world)
@@ -405,9 +417,8 @@ func _decorate_track() -> void:
 
 func reset_race() -> void:
 	race.reset()
-	if forest.lava_material:
-		elapsed = 0
-		forest.lava_material.set_shader_parameter("animation_time", 0.0)
+	elapsed = 0
+	forest.animate(0.0)
 	_release_inputs()
 	if race.mode == "coop":
 		for runner in [dinosaur, friend]:
@@ -639,8 +650,7 @@ func _process(delta: float) -> void:
 	travel_yaw = atan2(-direction.x, -direction.y)
 	if not race.paused:
 		elapsed += delta
-		if forest.lava_material:
-			forest.lava_material.set_shader_parameter("animation_time", elapsed)
+		forest.animate(elapsed)
 		_update_camera(1.0 - exp(-delta * 5), delta)
 		var rush := clampf((race.speed - race.base_speed) / race.RECOVERY_BOOST, 0, 1) if race.stage == "racing" else 0.0
 		camera.fov = lerpf(camera.fov, base_fov + FOV_RUSH * rush, 1 - exp(-delta * 2.5))

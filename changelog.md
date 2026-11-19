@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.31.0 — 2026-11-19
+
+- Árvores reconstruídas com troncos curvos, galhos e copas recortadas; palmeiras da Praia com folhas arqueadas. Rochas facetadas com proporções irregulares e musgo na Floresta/Vale.
+- Lago com água animada, borda rasa, margem irregular e juncos. Mar da Praia com variação de ondas e espuma junto à costa. A água acompanha pausa e reinício, assim como a lava.
+- Materiais e bordas das quatro pistas revisados: areia e vegetação costeira na Praia, prado e colinas no Vale, cinzas e rochas no Vulcão. Traçado, alturas, colisões e regras preservados.
+- Versão/cache e exportação web atualizados. [Capturas, verificações e limites](art/scenery-refinement-validation.md). Medição de desempenho adiada a pedido do usuário.
+
 ## 0.30.0 — 2026-11-19
 
 - Primeiro polimento do cenário da Floresta: material de terra e grama com variação suave, bordas irregulares, arbustos, flores e pedras em uma malha instanciada, copas variadas, sombras de árvores e colinas ao fundo.

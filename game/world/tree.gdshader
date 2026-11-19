@@ -1,4 +1,5 @@
 shader_type spatial;
+render_mode cull_disabled;
 
 uniform float canopy_alpha : hint_range(0.0, 1.0) = 1.0;
 uniform float trunk_alpha : hint_range(0.0, 1.0) = 1.0;

@@ -1,6 +1,6 @@
 # Corrida dos dinos
 
-Corrida infantil em **Godot + GDScript**, versão **0.30.0**: tricerátopo, T-rex e velociraptor na Floresta, Praia, Vale ou Vulcão. Avanço automático, frutas e Setas de impulso, poças, caminhos com efeitos diferentes e um Filhote que comemora na chegada, mesmo sem frutas.
+Corrida infantil em **Godot + GDScript**, versão **0.31.0**: tricerátopo, T-rex e velociraptor na Floresta, Praia, Vale ou Vulcão. Avanço automático, frutas e Setas de impulso, poças, caminhos com efeitos diferentes e um Filhote que comemora na chegada, mesmo sem frutas.
 
 Execute `npm run dev` e abra [o jogo](http://127.0.0.1:4173). A exportação web está incluída; jogar não exige Godot nem instalar dependências.
 
@@ -12,7 +12,7 @@ Execute `npm run dev` e abra [o jogo](http://127.0.0.1:4173). A exportação web
 - Corridas concluídas rendem adesivos e liberam cores. Dupla recebe participação/coleta, sem prêmios competitivos ou de Sozinho. Álbum e duas aparências ficam salvos neste navegador; a corrida em andamento não fica salva.
 - Use pausa/reinício no topo ou escolha outra corrida na pausa/chegada. Perder o foco ou ocultar a aba limpa os controles e pausa; toque em **Continuar** ao voltar.
 
-[Novo cenário da Floresta](art/forest-polish-validation.md) · [Validação do Vulcão](art/volcano-validation.md) · [Calibração da Dupla](art/coop-validation.md) · [Changelog](changelog.md).
+[Acabamento das quatro pistas](art/scenery-refinement-validation.md) · [Validação do Vulcão](art/volcano-validation.md) · [Calibração da Dupla](art/coop-validation.md) · [Changelog](changelog.md).
 
 Feature futura: [versões nativas para Windows, Linux e macOS](docs/briefs/0003-portabilidade-desktop.md).
 

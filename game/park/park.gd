@@ -199,6 +199,8 @@ func _web_command(arguments: Array) -> void:
 			return
 
 func restart() -> void:
+	elapsed = 0
+	forest.animate(0.0)
 	companion.reset()
 	step_distance = 0
 	ambience_elapsed = 0
@@ -271,6 +273,7 @@ func _process(delta: float) -> void:
 	if dinosaur == null:
 		return
 	elapsed += delta
+	forest.animate(elapsed)
 	while not route.is_empty() and dinosaur.position.distance_to(route[0]) < 0.02:
 		route.remove_at(0)
 	var waypoint: Vector3 = route[0] if not route.is_empty() else target

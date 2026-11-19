@@ -1,5 +1,6 @@
 extends Node3D
 
+const SCENERY_MESHES := preload("res://world/scenery_meshes.gd")
 const TREE_SHADER := preload("res://world/tree.gdshader")
 const GROUND_SHADER := preload("res://world/forest_ground.gdshader")
 const VALLEY_CENTER: Vector2 = preload("res://race/race_state.gd").VALLEY_CENTER
@@ -17,6 +18,7 @@ var trees: Array[Dictionary] = []
 var race_track: Curve2D
 var theme := "forest"
 var lava_material: ShaderMaterial
+var water_material: ShaderMaterial
 
 func height_at(x: float, z: float) -> float:
 	if theme == "volcano":
@@ -114,19 +116,10 @@ func _ready() -> void:
 	var terrain := MeshInstance3D.new()
 	terrain.name = "Terrain"
 	terrain.mesh = surface.commit()
-	terrain.material_override = ShaderMaterial.new()
-	terrain.material_override.shader = GROUND_SHADER
-	terrain.material_override.set_shader_parameter("soil_color", Color("bba98c").srgb_to_linear())
-	terrain.material_override.set_shader_parameter("path_width", 2.8 if race_track else 0.85)
+	terrain.material_override = _ground_material("bba98c", 2.8 if race_track else 0.85)
 	terrain.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(terrain)
-	blob(Vector3(POND.x, 0.025, POND.y), Vector3(POND_SIZE.x, 0.07, POND_SIZE.y), "30aeb0")
-	for i in range(5):
-		var ripple := TorusMesh.new()
-		ripple.inner_radius = 0.22 + i * 0.13
-		ripple.outer_radius = ripple.inner_radius + 0.012
-		var water := place(ripple, Vector3(POND.x - 0.2, 0.09, POND.y - 0.1), "9ae2cc")
-		water.scale = Vector3(1.3, 0.03, 0.65)
+	_pond()
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 21403
 	for area_index in range(AREAS.size()):
@@ -157,7 +150,7 @@ func _ready() -> void:
 	for i in range(18):
 		var angle := i * TAU / 18
 		var p := POND + Vector2(cos(angle), sin(angle)) * (POND_SIZE + Vector2.ONE * 0.22)
-		blob(point(p.x, p.y), Vector3(0.20, 0.19, 0.16), "99a18b", true)
+		rock(point(p.x, p.y), Vector3(0.20, 0.19, 0.16), "99a18b", true)
 	var leaves := SurfaceTool.new()
 	leaves.begin(Mesh.PRIMITIVE_TRIANGLES)
 	for i in range(1200):
@@ -186,14 +179,8 @@ func _ready() -> void:
 	add_child(plants)
 
 	_expanded_landscape()
-	_forest_border()
-	for i in range(12):
-		var angle := i * TAU / 12
-		var hill := Vector3(cos(angle) * 64 - 1, -1.5, sin(angle) * 64 - 5)
-		var first := get_child_count()
-		blob(hill, Vector3(24, 7 + i % 3 * 2, 18), ["88ad98", "9bbba2", "a7c7ae"][i % 3])
-		get_child(first).cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-		get_child(first).material_override.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	_track_border()
+	_hills(Vector2(-1, -5), 64)
 
 func place(mesh: Mesh, position_3d: Vector3, color: String) -> MeshInstance3D:
 	var node := MeshInstance3D.new()
@@ -235,68 +222,119 @@ func _solid(position_3d: Vector3, radius: float, height: float) -> void:
 func tree(p: Vector2, size: float, variant: int) -> void:
 	if race_track and distance_to_trail(p) < 3.6:
 		return
-	var first := get_child_count()
 	var base := point(p.x, p.y)
-	var trunk := CylinderMesh.new()
-	trunk.bottom_radius = 0.22 * size
-	trunk.top_radius = 0.12 * size
-	trunk.height = 1.8 * size
-	if theme == "forest":
-		trunk.radial_segments = 10
-	place(trunk, base + Vector3.UP * trunk.height / 2, "987044")
-	for j in range(5):
-		var angle := j * TAU / 5 + (variant * 0.73 if theme == "forest" else 0.0)
-		var canopy := base + Vector3(cos(angle) * 0.5, 1.8 + float(j % 2) * 0.35, sin(angle) * 0.5) * size
-		if theme == "beach":
-			var leaf_count := get_child_count()
-			blob(canopy, Vector3(0.95, 0.12, 0.3) * size, ["448655", "64a75c", "548d38"][j % 3])
-			get_child(leaf_count).rotation.y = -angle
-		elif theme == "forest":
-			canopy.y += sin(variant * 1.7 + j) * 0.16 * size
-			var crown_size := Vector3(0.76 + float(variant % 3) * 0.06, 0.72 + float((variant + j) % 3) * 0.09, 0.76)
-			blob(canopy, crown_size * size, (["376d53", "4d8258", "639463"] if variant >= 100 else ["578b49", "6d9b50", "8bad59"])[(j + variant) % 3])
-		else:
-			blob(canopy, Vector3(0.8, 0.62, 0.78) * size, (["306b47", "448655", "64a75c"] if variant >= 100 else ["548d38", "71a33c", "8db648"])[(j + variant) % 3])
-
-	for i in range(first + 1, get_child_count()):
-		get_child(i).cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	var meshes: Array[Node] = []
-	for i in range(first, get_child_count()):
-		meshes.append(get_child(i))
-	var merged := SurfaceTool.new()
-	merged.begin(Mesh.PRIMITIVE_TRIANGLES)
-	for source in meshes:
-		var arrays: Array = source.mesh.surface_get_arrays(0)
-		var vertices: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
-		var normals: PackedVector3Array = arrays[Mesh.ARRAY_NORMAL]
-		var indices: PackedInt32Array = arrays[Mesh.ARRAY_INDEX]
-		var color: Color = source.material_override.albedo_color.srgb_to_linear()
-		color.a = 0.0 if source.mesh is CylinderMesh else 1.0
-		merged.set_color(color)
-		var normal_basis: Basis = source.transform.basis.inverse().transposed()
-		for index in indices:
-			merged.set_normal((normal_basis * normals[index]).normalized())
-			merged.add_vertex(source.transform * vertices[index])
-		source.queue_free()
-	merged.index()
 	var tree_mesh := MeshInstance3D.new()
-	tree_mesh.mesh = merged.commit()
+	tree_mesh.mesh = SCENERY_MESHES.tree(size, variant, theme == "beach")
+	tree_mesh.position = base
 	tree_mesh.material_override = ShaderMaterial.new()
 	tree_mesh.material_override.shader = TREE_SHADER
-	tree_mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON if theme == "forest" else GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(tree_mesh)
-	trees.append({"position": p, "radius": size * 1.4, "trunk_radius": size * 0.22, "node": tree_mesh, "canopy_alpha": 1.0, "trunk_alpha": 1.0})
+	trees.append({"position": p, "radius": size * 1.5, "trunk_radius": size * 0.22, "node": tree_mesh, "canopy_alpha": 1.0, "trunk_alpha": 1.0})
 	_solid(base + Vector3.UP * 0.9 * size, 0.22 * size, 1.8 * size)
 
-func _forest_border() -> void:
+func rock(position_3d: Vector3, size: Vector3, color: String, solid: bool = false) -> void:
+	var seed_value := int(position_3d.x * 19 + position_3d.z * 31)
+	var node := place(SCENERY_MESHES.rock(size, seed_value, theme in ["forest", "valley"]), position_3d, color)
+	node.name = "Rock"
+	node.material_override = node.material_override.duplicate()
+	node.material_override.vertex_color_use_as_albedo = true
+	if solid:
+		_solid(position_3d, maxf(size.x, size.z), size.y * 2)
+
+func _hills(center: Vector2, radius: float) -> void:
+	for i in range(12):
+		var angle := i * TAU / 12
+		var hill := Vector3(center.x + cos(angle) * radius, -1.5, center.y + sin(angle) * radius)
+		var first := get_child_count()
+		blob(hill, Vector3(24, 7 + i % 3 * 2, 18), ["88ad98", "9bbba2", "a7c7ae"][i % 3])
+		get_child(first).cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		get_child(first).material_override.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+
+func animate(time: float) -> void:
+	for material in [water_material, lava_material]:
+		if material != null:
+			material.set_shader_parameter("animation_time", time)
+
+func _water(center: Vector2, radius: Vector2, ocean: bool = false) -> ShaderMaterial:
+	var material := ShaderMaterial.new()
+	material.shader = preload("res://world/water.gdshader")
+	material.set_shader_parameter("water_center", center)
+	material.set_shader_parameter("water_radius", radius)
+	material.set_shader_parameter("ocean", ocean)
+	if ocean:
+		material.set_shader_parameter("deep_color", Color("348ba5"))
+		material.set_shader_parameter("shallow_color", Color("79c4b9"))
+	return material
+
+func _pond() -> void:
+	var water := SurfaceTool.new()
+	var bank := SurfaceTool.new()
+	water.begin(Mesh.PRIMITIVE_TRIANGLES)
+	bank.begin(Mesh.PRIMITIVE_TRIANGLES)
+	for i in range(64):
+		for corner in [Vector2.ZERO, Vector2(1, 0), Vector2(1, 1)]:
+			var angle: float = (i + corner.y) * TAU / 64
+			var radius: float = corner.x * (0.97 + sin(angle * 3) * 0.025)
+			var p: Vector2 = POND + Vector2(cos(angle), sin(angle)) * POND_SIZE * radius
+			water.add_vertex(Vector3(p.x, 0.07, p.y))
+		for corner in [Vector2(0, 0), Vector2(1, 0), Vector2(0, 1), Vector2(0, 1), Vector2(1, 0), Vector2(1, 1)]:
+			var angle: float = (i + corner.y) * TAU / 64
+			var radius := lerpf(0.95, 1.4, corner.x) + sin(angle * 3) * 0.025
+			var p: Vector2 = POND + Vector2(cos(angle), sin(angle)) * POND_SIZE * radius
+			bank.set_color(Color("a6ae82").lerp(Color("7e9a58"), corner.x).srgb_to_linear())
+			bank.add_vertex(point(p.x, p.y) + Vector3.UP * 0.012)
+	water.generate_normals()
+	bank.generate_normals()
+	water_material = _water(POND, POND_SIZE)
+	var pond := place(water.commit(), Vector3.ZERO, "ffffff")
+	pond.name = "PondWater"
+	pond.material_override = water_material
+	pond.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	var shore := place(bank.commit(), Vector3.ZERO, "ffffff")
+	shore.name = "PondBank"
+	shore.material_override = StandardMaterial3D.new()
+	shore.material_override.vertex_color_use_as_albedo = true
+	shore.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	var reeds := SurfaceTool.new()
+	reeds.begin(Mesh.PRIMITIVE_TRIANGLES)
+	for i in range(16):
+		var angle := i * TAU / 16
+		var p := POND + Vector2(cos(angle), sin(angle)) * (POND_SIZE + Vector2.ONE * 0.28)
+		if angle < 1.0 or angle > 4.8:
+			continue
+		var base := point(p.x, p.y)
+		for j in range(5):
+			var direction := Vector3(cos(j * 2.4 + angle), 0, sin(j * 2.4 + angle))
+			var side := Vector3(-direction.z, 0, direction.x) * 0.035
+			var tip := base + Vector3.UP * (0.4 + j * 0.07) + direction * 0.18
+			reeds.set_color(Color("668757").lerp(Color("a9b974"), j / 5.0).srgb_to_linear())
+			for vertex in [base - side, base + side, tip]:
+				reeds.add_vertex(vertex)
+	reeds.generate_normals()
+	var rushes := place(reeds.commit(), Vector3.ZERO, "ffffff")
+	rushes.name = "PondReeds"
+	rushes.material_override = StandardMaterial3D.new()
+	rushes.material_override.vertex_color_use_as_albedo = true
+	rushes.material_override.cull_mode = BaseMaterial3D.CULL_DISABLED
+	rushes.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+
+func _ground_material(soil: String, width: float = 2.8) -> ShaderMaterial:
+	var material := ShaderMaterial.new()
+	material.shader = GROUND_SHADER
+	material.set_shader_parameter("soil_color", Color(soil).srgb_to_linear())
+	material.set_shader_parameter("path_width", width)
+	return material
+
+func _track_border() -> void:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 81173
 	var placements: Array[Transform3D] = []
 	var colors: Array[Color] = []
 	var width := 2.8 if race_track else 0.85
 	for path in trails:
-		for i in range(72):
-			var distance := path.get_baked_length() * i / 72.0
+		var count := 120 if theme == "valley" else 72
+		for i in range(count):
+			var distance := path.get_baked_length() * i / count
 			var p := path.sample_baked(distance)
 			var direction := (path.sample_baked(fmod(distance + 0.15, path.get_baked_length())) - p).normalized()
 			p += Vector2(-direction.y, direction.x) * (width + rng.randf_range(0.9, 1.8)) * (-1 if i % 2 else 1)
@@ -307,8 +345,13 @@ func _forest_border() -> void:
 				var offset := Vector3(rng.randf_range(-0.3, 0.3), 0.15, rng.randf_range(-0.3, 0.3))
 				var dimensions := Vector3(0.30, rng.randf_range(0.22, 0.38), 0.26)
 				placements.append(Transform3D(Basis.from_scale(dimensions), base + offset))
-				colors.append(Color(["548257", "71974f", "8da75c"][j]))
-			if i % 3 == 0:
+				var palette := ["548257", "71974f", "8da75c"]
+				if theme == "beach":
+					palette = ["73956a", "93aa70", "afbd7f"]
+				elif theme == "volcano":
+					palette = ["71616b", "957669", "a58a76"]
+				colors.append(Color(palette[j]))
+			if theme in ["forest", "valley"] and i % 3 == 0:
 				for j in range(5):
 					var angle := j * TAU / 5
 					var petal := base + Vector3(cos(angle) * 0.11, 0.48, sin(angle) * 0.11)
@@ -325,11 +368,11 @@ func _forest_border() -> void:
 	mesh.radius = 1
 	mesh.height = 2
 	var border := MultiMeshInstance3D.new()
-	border.name = "ForestBorder"
+	border.name = "ForestBorder" if theme == "forest" else "TrackBorder"
 	border.multimesh = MultiMesh.new()
 	border.multimesh.transform_format = MultiMesh.TRANSFORM_3D
 	border.multimesh.use_colors = true
-	border.multimesh.mesh = mesh
+	border.multimesh.mesh = SCENERY_MESHES.rock(Vector3.ONE, 4, false) if theme == "volcano" else mesh
 	border.multimesh.instance_count = placements.size()
 	border.material_override = StandardMaterial3D.new()
 	border.material_override.vertex_color_use_as_albedo = true
@@ -343,7 +386,11 @@ func _forest_border() -> void:
 func _beach() -> void:
 	var water := PlaneMesh.new()
 	water.size = Vector2.ONE * 200
-	place(water, Vector3(0, -0.35, 0), "55c4cd").cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	water_material = _water(Vector2(-1, -5), Vector2(21, 17.5), true)
+	var ocean := place(water, Vector3(0, -0.35, 0), "55c4cd")
+	ocean.name = "OceanWater"
+	ocean.material_override = water_material
+	ocean.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	var surface := SurfaceTool.new()
 	surface.begin(Mesh.PRIMITIVE_TRIANGLES)
 	for x in range(-47, 44):
@@ -351,49 +398,49 @@ func _beach() -> void:
 			for offset in [Vector2(0, 0), Vector2(1, 0), Vector2(0, 1), Vector2(1, 0), Vector2(1, 1), Vector2(0, 1)]:
 				var p := Vector2(x + offset.x, z + offset.y) * 0.5
 				var coast := ((p - Vector2(-1, -5)) / Vector2(21, 17.5)).length()
-				var color := Color("efd7a0").lerp(Color("c5dc88"), 1 - smoothstep(0.3, 0.65, coast))
-				color = color.lerp(Color("c9b582"), (1 - smoothstep(2.5, 2.8, distance_to_trail(p))) * 0.25)
+				var color := Color("c2bda6").lerp(Color("8aa272"), 1 - smoothstep(0.3, 0.65, coast))
+
 				surface.set_color(color.srgb_to_linear())
+				surface.set_uv(Vector2(distance_to_trail(p), 0))
 				surface.add_vertex(point(p.x, p.y))
 	surface.generate_normals()
 	var terrain := MeshInstance3D.new()
+	terrain.name = "Terrain"
 	terrain.mesh = surface.commit()
-	terrain.material_override = StandardMaterial3D.new()
-	terrain.material_override.vertex_color_use_as_albedo = true
-	terrain.material_override.roughness = 1
+	terrain.material_override = _ground_material("c8bfa8")
 	terrain.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(terrain)
 	for i in range(16):
 		var angle := i * TAU / 16
 		var p := Vector2(-1, -5) + Vector2(cos(angle) * 8, sin(angle) * 5)
 		tree(p, 1.3 + (i % 3) * 0.15, i)
-		blob(point(p.x + 0.8, p.y + 0.6), Vector3(0.35, 0.22, 0.3), "b3b5a1", true)
-	for i in range(40):
-		var angle := i * TAU / 40
-		var p := Vector2(-1, -5) + Vector2(cos(angle) * 20, sin(angle) * 16.7)
-		blob(Vector3(p.x, -0.31, p.y), Vector3(0.65, 0.025, 0.18), "daf2e2")
+		rock(point(p.x + 0.8, p.y + 0.6), Vector3(0.35, 0.22, 0.3), "b3b5a1", true)
+	_track_border()
+	for island in [Vector3(-45, -1.0, -34), Vector3(35, -1.0, -46), Vector3(-42, -1.0, 36)]:
+		rock(island, Vector3(8, 3.5, 6), "9faaa1")
 
 func _valley() -> void:
 	var backdrop := PlaneMesh.new()
 	backdrop.size = Vector2.ONE * 240
-	place(backdrop, Vector3(VALLEY_CENTER.x, -0.45, VALLEY_CENTER.y), "86b84c").cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	var horizon := place(backdrop, Vector3(VALLEY_CENTER.x, -0.45, VALLEY_CENTER.y), "6b8f66")
+	horizon.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	horizon.material_override.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	var surface := SurfaceTool.new()
 	surface.begin(Mesh.PRIMITIVE_TRIANGLES)
 	for x in range(-40, 40):
 		for z in range(-60, 60):
 			for offset in [Vector2(0, 0), Vector2(1, 0), Vector2(0, 1), Vector2(1, 0), Vector2(1, 1), Vector2(0, 1)]:
 				var p := VALLEY_CENTER + Vector2(x + offset.x, z + offset.y)
-				var color := Color("9cc45a").lerp(Color("86b84c"), (sin(p.x * 0.7) * cos(p.y * 0.5) + 1) * 0.5)
-				color = color.lerp(Color("e8c483"), 1 - smoothstep(2.3, 3.3, distance_to_trail(p)))
+				var color := Color("7ca66b").lerp(Color("66865d"), (sin(p.x * 0.7) * cos(p.y * 0.5) + 1) * 0.5)
+
 				surface.set_color(color.srgb_to_linear())
+				surface.set_uv(Vector2(distance_to_trail(p), 0))
 				surface.add_vertex(point(p.x, p.y))
 	surface.generate_normals()
 	var terrain := MeshInstance3D.new()
 	terrain.name = "Terrain"
 	terrain.mesh = surface.commit()
-	terrain.material_override = StandardMaterial3D.new()
-	terrain.material_override.vertex_color_use_as_albedo = true
-	terrain.material_override.roughness = 1
+	terrain.material_override = _ground_material("bba98c")
 	terrain.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(terrain)
 	var rng := RandomNumberGenerator.new()
@@ -403,10 +450,15 @@ func _valley() -> void:
 		if distance_to_trail(p) > 7 and not trees.any(func(item): return item.position.distance_to(p) < 4.0):
 			tree(p, rng.randf_range(1.4, 2.0), i)
 
+	_track_border()
+	_hills(VALLEY_CENTER, 100)
+
 func _volcano() -> void:
 	var backdrop := PlaneMesh.new()
 	backdrop.size = Vector2.ONE * 200
-	place(backdrop, Vector3(0, -0.55, 0), "77635d").cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	var horizon := place(backdrop, Vector3(0, -0.55, 0), "78665f")
+	horizon.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	horizon.material_override.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	var surface := SurfaceTool.new()
 	surface.begin(Mesh.PRIMITIVE_TRIANGLES)
 	for x in range(-32, 31):
@@ -415,13 +467,14 @@ func _volcano() -> void:
 				var p: Vector2 = Vector2(x, z) + offset
 				var grain := (sin(p.x * 0.9) * cos(p.y * 1.3) + 1) * 0.5
 				var color := Color("65555b").lerp(Color("92786b"), grain)
-				color = color.lerp(Color("e4c59c"), 1 - smoothstep(2.5, 3.1, distance_to_trail(p)))
+
 				surface.set_color(color.srgb_to_linear())
+				surface.set_uv(Vector2(distance_to_trail(p), 0))
 				surface.add_vertex(point(p.x, p.y))
 	surface.generate_normals()
 	var terrain := place(surface.commit(), Vector3.ZERO, "ffffff")
 	terrain.name = "Terrain"
-	terrain.material_override.vertex_color_use_as_albedo = true
+	terrain.material_override = _ground_material("b3a28d")
 	terrain.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	var lava := Node3D.new()
 	lava.name = "Lava"
@@ -445,9 +498,11 @@ func _volcano() -> void:
 		var p := Vector2(-1, -5) + Vector2(cos(angle), sin(angle)) * radius
 		if distance_to_trail(p) > 4.3:
 			var size := 0.35 + float(i % 4) * 0.14
-			blob(point(p.x, p.y) + Vector3.UP * size * 0.2, Vector3(size, size * 0.65, size * 0.8), "4e4650" if i % 3 else "a86e58", true)
+			rock(point(p.x, p.y) + Vector3.UP * size * 0.2, Vector3(size, size * 0.65, size * 0.8), "4e4650" if i % 3 else "a86e58", true)
 	for peak in [Vector3(-30, 6, -31), Vector3(22, 8, -38), Vector3(-26, 5, 23)]:
 		_volcanic_peak(Vector3(peak.x, -0.5, peak.z), peak.y * 1.3, peak.y, lava)
+
+	_track_border()
 
 func _volcanic_peak(base: Vector3, radius: float, height: float, lava: Node3D) -> void:
 	var top := radius * 0.31
@@ -593,7 +648,7 @@ func _expanded_landscape() -> void:
 		var angle := i * TAU / 10
 		var p := Vector2(0, -20) + Vector2(cos(angle), sin(angle)) * 5.5
 		if distance_to_trail(p) > (3.7 if race_track else 1.8):
-			blob(point(p.x, p.y) + Vector3.UP * 0.15, Vector3(0.65, 0.4, 0.55), "929b83", true)
+			rock(point(p.x, p.y) + Vector3.UP * 0.15, Vector3(0.65, 0.4, 0.55), "929b83", true)
 	for i in range(14):
 		var angle := i * TAU / 14
 		var p := Vector2(6, -12) + Vector2(cos(angle), sin(angle)) * (2.4 + float(i % 3) * 0.6)
