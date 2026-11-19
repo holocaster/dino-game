@@ -11,7 +11,7 @@ Percurso do início (contagem regressiva) até a condição de chegada do modo: 
 _Avoid_: partida, jogo
 
 **Pista**:
-O circuito fechado onde a corrida acontece: Floresta, Praia, Vale ou Vulcão.
+O circuito fechado onde a corrida acontece: Floresta, Praia, Vale, Vulcão ou Caverna dos Cristais.
 _Avoid_: mapa, fase, circuito
 
 **Vale**:
@@ -19,12 +19,20 @@ Pista longa em formato de estádio, com retas compridas e curvas abertas, corrid
 _Avoid_: estádio, grande circuito, pista longa
 
 **Volta**:
-Uma passagem completa pela pista; Floresta, Praia e Vulcão têm uma volta, o Vale tem três.
+Uma passagem completa pela pista; Floresta, Praia e Caverna dos Cristais têm uma volta, Vale e Vulcão têm três.
 _Avoid_: lap
 
 **Vulcão**:
 Pista curta em ambiente vulcânico, com cratera e lava animada fora do caminho, sem dano ou alteração dos controles.
 _Avoid_: fase de lava
+
+**Caverna dos Cristais**:
+Pista clara e ampla de uma volta, com cristais nas laterais que respondem à passagem com luz e notas musicais opcionais.
+_Avoid_: fase escura, jogo de ritmo
+
+**Encontro de cristais**:
+Trecho da Caverna dos Cristais em que escolher um lado pode provocar uma resposta dos cristais; não é necessário ativá-lo para terminar a corrida.
+_Avoid_: desafio obrigatório, sequência obrigatória
 
 **Corredor**:
 Dino que participa da corrida, controlado por uma pessoa ou pelo jogo.
