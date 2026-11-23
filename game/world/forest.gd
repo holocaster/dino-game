@@ -159,9 +159,9 @@ func _ready() -> void:
 		rock(point(p.x, p.y), Vector3(0.20, 0.19, 0.16), "99a18b", true)
 	var leaves := SurfaceTool.new()
 	leaves.begin(Mesh.PRIMITIVE_TRIANGLES)
-	for i in range(1200):
+	for i in range(600):
 		var p := Vector2(rng.randf_range(-20, 15), rng.randf_range(-26, 8))
-		if not blocked(p) or distance_to_trail(p) < 1.25:
+		if not blocked(p) or distance_to_trail(p) < (3.4 if race_track else 1.25):
 			continue
 		if ((p - POND) / (POND_SIZE + Vector2.ONE * 0.1)).length() < 1:
 			continue
@@ -169,14 +169,18 @@ func _ready() -> void:
 		for j in range(7):
 			var angle := j * TAU / 7 + i
 			var direction := Vector3(cos(angle), 0, sin(angle))
-			var side := Vector3(-sin(angle), 0, cos(angle)) * 0.065
-			var end := base + direction * rng.randf_range(0.28, 0.48) + Vector3.UP * 0.14
-			var middle := base.lerp(end, 0.5) + Vector3.UP * 0.22
-			leaves.set_color((Color("578d50") if j % 2 else Color("8bad59")).srgb_to_linear())
-			for v in [base, middle + side, end, base, end, middle - side]:
-				leaves.add_vertex(v)
+			var side := Vector3(-sin(angle), 0, cos(angle))
+			var length := rng.randf_range(0.36, 0.58)
+			for step in range(4):
+				for corner in [Vector2(0, -1), Vector2(1, -1), Vector2(0, 1), Vector2(0, 1), Vector2(1, -1), Vector2(1, 1)]:
+					var t: float = (step + corner.x) / 4.0
+					var center := base + direction * length * t + Vector3.UP * (sin(t * PI) * 0.25 + t * 0.12)
+					var tint := Color("4f8956").lerp(Color("a3bf68") if j % 2 else Color("79ad67"), t)
+					leaves.set_color(tint.srgb_to_linear())
+					leaves.add_vertex(center + side * sin(t * PI) * corner.y * 0.10)
 	leaves.generate_normals()
 	var plants := MeshInstance3D.new()
+	plants.name = "ForestPlants"
 	plants.mesh = leaves.commit()
 	plants.material_override = StandardMaterial3D.new()
 	plants.material_override.vertex_color_use_as_albedo = true

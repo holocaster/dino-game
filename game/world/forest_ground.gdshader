@@ -23,8 +23,15 @@ void fragment() {
 	float grain = noise(ground_position * 5.0);
 	float edge = path_width + (patches - 0.5) * 0.22;
 	float grass = smoothstep(edge - 0.25, edge + 0.08, UV.x);
-	vec3 soil = soil_color.rgb * (0.93 + patches * 0.12 + grain * 0.05);
-	vec3 meadow = COLOR.rgb * (0.86 + patches * 0.24 + grain * 0.07);
+	float flecks = smoothstep(0.62, 0.85, grain);
+	vec3 soil = soil_color.rgb * (0.92 + patches * 0.12 + grain * 0.06 + flecks * 0.06);
+	vec3 meadow = COLOR.rgb * (0.88 + patches * 0.20 + grain * 0.08);
 	ALBEDO = mix(soil, meadow, grass);
+	float relief = mix(grain * 0.006, patches * 0.014 + grain * 0.004, grass);
+	vec3 tangent = cross(dFdy(VERTEX), NORMAL);
+	vec3 bitangent = cross(NORMAL, dFdx(VERTEX));
+	float determinant = dot(dFdx(VERTEX), tangent);
+	vec3 gradient = sign(determinant) * (dFdx(relief) * tangent + dFdy(relief) * bitangent);
+	NORMAL = normalize(max(abs(determinant), 0.000001) * NORMAL - gradient);
 	ROUGHNESS = 1.0;
 }

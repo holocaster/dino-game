@@ -1,24 +1,27 @@
 extends SceneTree
 
 func _initialize() -> void:
-	create_timer(90).timeout.connect(func(): quit(1))
+	create_timer(120).timeout.connect(func(): quit(1))
 	_run.call_deferred()
 
 func _capture(name: String) -> void:
 	await process_frame
 	await RenderingServer.frame_post_draw
-	var path := ProjectSettings.globalize_path("res://") + "../art/previews/" + name + ".png"
+	var directory := OS.get_cmdline_user_args()[0] if not OS.get_cmdline_user_args().is_empty() else ProjectSettings.globalize_path("res://") + "../art/previews"
+	var path := directory.path_join(name + ".png")
 	assert(root.get_texture().get_image().save_png(path) == OK)
 	print("Captured ", name)
 
 func _run() -> void:
-	for circuit in ["forest", "beach", "valley", "volcano"]:
+	for circuit in ["forest", "beach", "valley", "volcano", "cave"]:
 		root.size = Vector2i(1114, 660)
 		set_meta("race_selection", ["triceratops", circuit, "coop", "raptor"])
 		var game: Node3D = load("res://race/race.tscn").instantiate()
 		root.add_child(game)
 		game.set_physics_process(false)
 		game.set_process(false)
+		game.race.rng.seed = 81173
+		game.reset_race()
 		game.race.stage = "racing"
 		game.race.distance = game.race.lap_length * 0.23
 		game.race.rival_distance = game.race.distance

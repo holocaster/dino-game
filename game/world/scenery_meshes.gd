@@ -18,12 +18,13 @@ static func _append(surface: SurfaceTool, mesh: Mesh, transform: Transform3D, co
 	for index in indices:
 		var vertex := vertices[index]
 		if foliage:
-			var scallop := 1.0 + 0.11 * sin(atan2(vertex.z, vertex.x) * 5.0 + vertex.y * 3.0)
+			var scallop := 1.0 + 0.13 * sin(atan2(vertex.z, vertex.x) * 5.0 + vertex.y * 3.0)
 			vertex.x *= scallop
 			vertex.z *= scallop
-		var tint := color.lightened(maxf(normals[index].y, 0) * (0.18 if foliage else 0.06)).srgb_to_linear()
+		var tint := color.darkened(maxf(-vertex.y, 0) * (0.12 if foliage else 0.0)).lightened(maxf(normals[index].y, 0) * (0.22 if foliage else 0.06)).srgb_to_linear()
 		tint.a = 1.0 if foliage else 0.0
 		surface.set_color(tint)
+		surface.set_smooth_group(0 if foliage else (1 if absf(normals[index].y) < 0.5 else 2))
 		surface.set_normal((normal_basis * normals[index]).normalized())
 		surface.add_vertex(transform * vertex)
 
@@ -52,26 +53,32 @@ static func tree(size: float, variant: int, palm: bool) -> ArrayMesh:
 					var tint := Color("52945e").lerp(Color("a2bd63"), t).srgb_to_linear()
 					tint.a = 1
 					surface.set_color(tint)
+					surface.set_smooth_group(0)
 					surface.set_normal((Vector3.UP + side * corner.y * 0.4).normalized())
 					surface.add_vertex(crown + (center + side * width * corner.y) * size)
 	else:
 		var leaf := SphereMesh.new()
 		leaf.radius = 1
 		leaf.height = 2
-		leaf.radial_segments = 14
-		leaf.rings = 7
+		leaf.radial_segments = 12
+		leaf.rings = 6
 		var slender := variant % 4 == 2
 		for i in range(6):
 			var angle := turn + i * TAU / 6
-			var reach := 0.36 if slender else 0.62
-			var tip := crown + Vector3(cos(angle) * reach, 0.12 + float(i % 2) * 0.3, sin(angle) * reach) * size
+			var reach := (0.36 if slender else 0.62) * (0.88 + 0.12 * sin(variant + i * 2.4))
+			var tip := crown + Vector3(cos(angle) * reach, 0.12 + float((i + variant) % 3) * 0.19, sin(angle) * reach) * size
 			_branch(surface, crown * 0.62, tip, 0.08 * size, 0.025 * size, Color("927052"))
-			var dimensions := Vector3(0.52, 0.88, 0.52) if slender else Vector3(0.65, 0.52 + float(i % 3) * 0.1, 0.61)
-			var tint := Color(["669a53", "7da85a", "5c9257"][i % 3])
+			var dimensions := Vector3(0.49, 0.81, 0.49) if slender else Vector3(0.62, 0.45 + float(i % 3) * 0.1, 0.57)
+			var tint := Color(["75a65b", "91b968", "659e63"][(i + variant) % 3])
 			if variant >= 100:
 				tint = tint.lerp(Color("458574"), 0.35)
-			_append(surface, leaf, Transform3D(Basis.from_scale(dimensions * size), tip), tint, true)
+			var rotation := Basis.from_euler(Vector3(sin(angle) * 0.2, angle, cos(angle) * 0.2))
+			_append(surface, leaf, Transform3D(rotation.scaled(dimensions * size), tip), tint, true)
+			if i % 2 == 0:
+				var upper := tip + Vector3(-cos(angle) * 0.13, 0.44, -sin(angle) * 0.13) * size
+				_append(surface, leaf, Transform3D(rotation.scaled(dimensions * size * 0.7), upper), tint.lightened(0.06), true)
 		_append(surface, leaf, Transform3D(Basis.from_scale(Vector3(0.6, 0.64 if slender else 0.48, 0.57) * size), crown + Vector3.UP * (1.0 if slender else 0.6) * size), Color("8bb465"), true)
+	surface.generate_normals()
 	surface.index()
 	return surface.commit()
 

@@ -44,16 +44,16 @@ func _ready() -> void:
 	environment.ambient_light_energy = 0.4
 	if race.track_id == "forest":
 		environment.background_color = Color("bdddde")
-		environment.ambient_light_color = Color("e5efdf")
-		environment.ambient_light_energy = 0.65
+		environment.ambient_light_color = Color("dce9f0")
+		environment.ambient_light_energy = 0.55
 	elif race.track_id == "beach":
 		environment.background_color = Color("b7dce6")
 		environment.ambient_light_color = Color("e4ece7")
-		environment.ambient_light_energy = 0.58
+		environment.ambient_light_energy = 0.50
 	elif race.track_id == "valley":
 		environment.background_color = Color("c7dfda")
-		environment.ambient_light_color = Color("e8efdc")
-		environment.ambient_light_energy = 0.62
+		environment.ambient_light_color = Color("dfe9ee")
+		environment.ambient_light_energy = 0.52
 	elif race.track_id == "volcano":
 		environment.background_color = Color("ead5c5")
 		environment.ambient_light_color = Color("eadbce")
@@ -68,10 +68,13 @@ func _ready() -> void:
 	var light := DirectionalLight3D.new()
 	light.rotation_degrees = Vector3(-55, -30, 0)
 	light.light_color = Color("fff3db")
-	light.light_energy = 0.6
+	light.light_energy = 0.8
 	light.shadow_enabled = true
+	light.shadow_opacity = 0.82
+	light.shadow_blur = 1.5
 	light.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_2_SPLITS
-	light.directional_shadow_max_distance = 40
+	light.directional_shadow_blend_splits = true
+	light.directional_shadow_max_distance = 28
 	add_child(light)
 	camera = Camera3D.new()
 	add_child(camera)

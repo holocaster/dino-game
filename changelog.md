@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.33.0 — 2026-11-23
+
+- Acabamento cartoon das cinco pistas: contornos com MSAA 2×, iluminação com mais volume e sombras mais suaves perto dos corredores.
+- Copas com agrupamentos e cores variados, normais recalculadas e luz atravessando as folhas. Vegetação baixa da Floresta com folhas curvas, em uma malha e fora da faixa de corrida.
+- Chão com granulação e relevo visual suave; lago e mar com ondas, brilhos e detalhes rasos animados, preservando pausa e reinício.
+- Exportação web e cache atualizados. [Comparação antes/depois, verificações e limites](art/graphics-validation.md).
+
 ## 0.32.0 — 2026-11-19
 
 - Caverna dos Cristais: quinta pista, curta e de uma volta, em Rival, Sozinho e Dupla, com paredes claras, arcos altos e largada de pedra.
