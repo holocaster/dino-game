@@ -1,0 +1,26 @@
+{
+  "endpoint_id": "tripo3d/h3.1/text-to-3d",
+  "request_id": "01a20cf3-38e7-7a00-a67c-ef1b3020587b",
+  "input": {
+    "prompt": "One friendly baby pteranodon pterosaur, premium textured cartoon 3D game character for children age 3-5. Warm golden orange skin, pale cream belly, coral orange wing membranes with subtle painted gradients and freckles. Big expressive eyes, white sclera, dark pupils, friendly closed beak. Long smooth rounded toothless beak and swept-back head crest. Small rounded torso, two short separated legs with small feet, short tail. Exactly TWO broad batlike membrane wings fully extended horizontally to both sides in a symmetrical T-shaped neutral bind pose, straight wing shoulders, wings clearly separated from head and body. Wings have a solid thickness and rounded edges. Face forward, upright chest, legs hanging below body. Organic sculpted anatomy, continuous connected mesh, UV painted matte texture, like a high quality preschool animated movie character. Full body unobstructed, no props, no base.",
+    "negative_prompt": "scary, teeth, feathered wings, bird, extra wings, folded wings, wings touching head, fused limbs, pedestal, props, clothing, disconnected parts",
+    "face_limit": 12000,
+    "texture": true,
+    "pbr": false,
+    "texture_quality": "detailed",
+    "geometry_quality": "standard",
+    "quad": false,
+    "model_seed": 73149,
+    "image_seed": 73149,
+    "texture_seed": 73149
+  },
+  "model_url": "https://v3b.fal.media/files/b/0ab3bc8b/Lonfw3WiQ8U1xkFf0L8E__model.glb",
+  "preview_url": "https://v3b.fal.media/files/b/0ab3bc8b/lNztaed86q-ltNyWCG8FK_preview.png",
+  "source_file": "art/fal/pteranodon-source.glb",
+  "rigged_file": "game/assets/pteranodon.glb",
+  "rig_builder": "scripts/rig_pteranodon.py",
+  "vertices": 7320,
+  "bones": 10,
+  "triangles": 11846,
+  "rig_revision": "0.34.1: horizontal torso, independent tucked legs and trailing tail, wings compensated for body pitch"
+}

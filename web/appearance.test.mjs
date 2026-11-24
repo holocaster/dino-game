@@ -50,3 +50,13 @@ test('JSON corrompido e storage bloqueado não impedem jogar', () => {
     assert.doesNotThrow(() => saveAppearances(unavailable, defaults, rewards));
   }
 });
+
+
+test('pteranodon appearance persists for both players without changing rewards', () => {
+  const memory = storage();
+  const rewards = { stickers: [], color: 'natural' };
+  const chosen = ['cap', 'glasses'].map(accessory => ({ species: 'pteranodon', color: 'natural', accessory }));
+  saveAppearances(memory, chosen, rewards);
+  assert.deepEqual(loadAppearances(memory, rewards), chosen);
+  assert.deepEqual(rewards, { stickers: [], color: 'natural' });
+});

@@ -1,6 +1,6 @@
 const inRange = (value, min, max) => Number.isFinite(value) && value >= min && value <= max;
 const count = value => Number.isSafeInteger(value) && inRange(value, 0, 10000);
-const species = value => ['triceratops', 'trex', 'raptor'].includes(value);
+const species = value => ['triceratops', 'trex', 'raptor', 'pteranodon'].includes(value);
 
 function validPlayers(data) {
   return Array.isArray(data.players) && data.players.length === (data.mode === 'coop' ? 2 : 1)

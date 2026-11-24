@@ -38,6 +38,10 @@ _Avoid_: desafio obrigatório, sequência obrigatória
 Dino que participa da corrida, controlado por uma pessoa ou pelo jogo.
 _Avoid_: piloto, competidor
 
+**Pteranodonte**:
+Personagem alado que voa baixo automaticamente pela pista, com os mesmos controles, frutas e colisões dos outros corredores.
+_Avoid_: voo livre, controle de altura
+
 **Rival**:
 O dino controlado pelo jogo, com uma personalidade (Dorminhoco, Brincalhão, Rapidinho); ausente no modo Sozinho.
 _Avoid_: amigo, oponente, bot, friend

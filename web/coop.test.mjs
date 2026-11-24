@@ -104,3 +104,14 @@ test('cave reports keep one lap and require both humans at the finish', () => {
     }
   }
 });
+
+
+test('pteranodon reports work in either coop slot and solo rewards', () => {
+  const coop = { ...report(), dino: 'pteranodon', players: [player(), player(5)].map(value => ({ ...value, species: 'pteranodon' })) };
+  assert.equal(validRaceReport(coop), true);
+  assert.deepEqual(award([], coop), ['first-lap', 'forest']);
+  assert.equal(validRaceReport({ ...coop, players: [coop.players[0], player(5)] }), true);
+  const solo = { ...coop, mode: 'solo', players: [{ ...player(9), species: 'pteranodon' }] };
+  assert.equal(validRaceReport(solo), true);
+  assert.deepEqual(award([], solo), ['first-lap', 'forest', 'calm']);
+});

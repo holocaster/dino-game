@@ -1,6 +1,6 @@
 extends Node3D
 
-const DINO_COLORS := {"triceratops": Color("df9865"), "trex": Color("aa85c5"), "raptor": Color("4dafa2")}
+const DINO_COLORS := {"triceratops": Color("df9865"), "trex": Color("aa85c5"), "raptor": Color("4dafa2"), "pteranodon": Color("e7a349")}
 
 var game: Node3D
 var runners: Array[Dictionary] = []
@@ -45,7 +45,10 @@ func advance() -> void:
 	for index in range(runners.size()):
 		var current := level(index)
 		var effects: Dictionary = runners[index]
-		effects.dust.emitting = current >= 1
+		var runner: Node3D = game.dinosaur if index == 0 else game.friend
+		var flying: bool = runner.get_node("Model").get_meta("flying", false)
+		effects.dust.emitting = current >= 1 and not flying
+		effects.trail.position.y = 1.1 if flying else 0.7
 		effects.trail.emitting = current >= 2
 		effects.sparks.emitting = current >= 3
 		for emitter in effects.values():

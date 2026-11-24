@@ -85,7 +85,7 @@ func _initialize() -> void:
 func _run() -> void:
 	var runs := 0
 	var mismatches: Array[String] = []
-	for dino in Race.DINOS:
+	for dino in ["triceratops", "trex", "raptor"]:
 		for circuit in ["forest", "beach"]:
 			for rival in ["sleepy", "playful", "speedy", "none"]:
 				for bot in ["good", "medium", "idle"]:

@@ -33,6 +33,8 @@ iframe { width: 100%; height: 100%; border: 0; display: block; }
 .dino-triceratops { color: #df9865; }
 .dino-trex { color: #aa85c5; }
 .dino-raptor { color: #4dafa2; }
+.dino-pteranodon { color: #e7a349; }
+#dino-choices, #dino2-choices { grid-template-columns: repeat(2, 1fr); }
 .rival-choices, .color-choices { grid-template-columns: repeat(4, 1fr); }
 .rival-choices .choice svg { width: 56px; height: 34px; }
 .rival-sleepy { color: #a99be0; }

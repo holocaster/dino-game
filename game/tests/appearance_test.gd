@@ -77,5 +77,5 @@ func _run() -> void:
 	remove_meta("race_selection")
 	remove_meta("race_color")
 	remove_meta("race_appearances")
-	print("Appearance models passed: three species, three accessories, animated head and no physical bodies.")
+	print("Appearance models passed: four species, three accessories, animated head and no physical bodies.")
 	quit()

@@ -175,7 +175,7 @@ func _runner(green: bool) -> Node3D:
 		var label := Label3D.new()
 		label.name = "PlayerLabel"
 		label.text = "Jogador 2" if green else "Jogador 1"
-		label.position.y = 1.9
+		label.position.y = 2.35 if species == "pteranodon" else 1.9
 		label.font_size = 40
 		label.pixel_size = 0.005
 		label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
@@ -499,6 +499,8 @@ func _apply_appearance(slot: int, appearance: Dictionary) -> void:
 	model.name = "Model"
 	runner.add_child(model)
 	var animation: AnimationPlayer = model.get_node("AnimationPlayer")
+	if runner.has_node("PlayerLabel"):
+		runner.get_node("PlayerLabel").position.y = 2.35 if appearance.species == "pteranodon" else 1.9
 	animation.callback_mode_process = AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_PHYSICS
 	if slot == 1:
 		dinosaur_animation = animation
@@ -628,6 +630,8 @@ func _animate_runner(runner: Node3D, animation: AnimationPlayer, speed: float) -
 	var model: Node3D = runner.get_node("Model")
 	var cycle_distance: float = model.get_meta("run_cycle_distance", RUN_CYCLE_DISTANCE)
 	animation.speed_scale = speed / (cycle_distance / 0.8 * model.scale.x) if speed > 0 else 1.0
+	if model.get_meta("flying", false):
+		animation.speed_scale = clampf(speed / race.BASE_SPEED, 0.8, 1.6) if speed > 0 else 1.0
 	if race.paused:
 		animation.speed_scale = 0
 
@@ -669,7 +673,7 @@ func _process(delta: float) -> void:
 		_update_camera(1.0 - exp(-delta * 5), delta)
 		var rush := clampf((race.speed - race.base_speed) / race.RECOVERY_BOOST, 0, 1) if race.stage == "racing" else 0.0
 		camera.fov = lerpf(camera.fov, base_fov + FOV_RUSH * rush, 1 - exp(-delta * 2.5))
-		_update_audio(previous.distance_to(dinosaur.position), delta, dinosaur.get_node("Model").get_meta("run_cycle_distance", RUN_CYCLE_DISTANCE) / 2)
+		_update_audio(0.0 if race.dino_id == "pteranodon" else previous.distance_to(dinosaur.position), delta, dinosaur.get_node("Model").get_meta("run_cycle_distance", RUN_CYCLE_DISTANCE) / 2)
 	for i in range(fruit_nodes.size()):
 		fruit_nodes[i].visible = race.fruits[i].owner.is_empty()
 		fruit_nodes[i].get_child(0).position.y = 0.42 + sin(elapsed * 3 + i) * 0.06

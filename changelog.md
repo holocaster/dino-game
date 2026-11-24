@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.34.1 — 2026-11-24
+
+- Corrigida a postura do pteranodonte: tronco horizontal, cabeça alinhada, cauda para trás e pernas recolhidas. Os pés não recebem mais influência da batida de asas.
+- Rig local ampliado para dez ossos, com compensação da inclinação nas asas e teste de regressão de postura e estabilidade dos pés. Modelo existente reutilizado, sem nova geração no fal.ai.
+- Capturas, exportação web e cache atualizados. [Antes/depois e validação](art/flight-validation.md).
+
+## 0.34.0 — 2026-11-24
+
+- Pteranodonte selecionável nos dois jogadores, com modelo texturizado gerado pelo fal.ai e animações locais de voo baixo e flutuação.
+- Mesmos controles, frutas, colisões e atributos do tricerátopo; cores, boné, óculos e progresso salvo integrados. Sem passos ou poeira no chão para o voador.
+- Seleção com quatro personagens, validação de relatórios, testes de voo e exportação/cache atualizados. [Capturas e verificações](art/flight-validation.md).
+
 ## 0.33.0 — 2026-11-23
 
 - Acabamento cartoon das cinco pistas: contornos com MSAA 2×, iluminação com mais volume e sombras mais suaves perto dos corredores.

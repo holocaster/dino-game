@@ -129,7 +129,8 @@ var valley: bool:
 const DINOS := {
 	"triceratops": {"speed": 2.2, "steer": 2.4},
 	"trex": {"speed": 2.27, "steer": 2.2},
-	"raptor": {"speed": 2.13, "steer": 2.7}
+	"raptor": {"speed": 2.13, "steer": 2.7},
+	"pteranodon": {"speed": 2.2, "steer": 2.4}
 }
 const TRACKS := ["forest", "beach", "valley", "volcano", "cave"]
 const SPEED_LEVELS := [0.3, 0.6, 1.0]
