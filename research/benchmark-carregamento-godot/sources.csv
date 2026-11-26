@@ -1,0 +1,12 @@
+id,tipo,credibilidade,recencia,independencia,url,arquivo
+01,pagina_do_autor,5,5,3,https://zynaptic-surge.itch.io/turbo-tortoise,sources/01_turbo-tortoise.md
+02,pagina_do_autor,5,5,3,https://andrew-perry.itch.io/mud-racers,sources/02_mud-racers.md
+03,pagina_do_autor,5,3,4,https://shikamounty.itch.io/llll-racing,sources/03_llll-racing.md
+04,build_publica,5,5,2,https://dinos.prsites.com.br/,sources/04_corrida-dos-dinos.md
+05,benchmark_do_autor,4,5,3,https://dev.to/cgtrocketx_dev/our-godot-web-build-drew-its-first-frame-at-15-s-but-showed-a-usable-screen-at-103-s-heres-14lj,sources/05_cgt-rocket-x.md
+06,benchmark_do_autor,4,5,2,https://evafan1337.itch.io/voxelroutes-godot/devlog/1716367/voxel-routes-devlog-making-a-3d-voxel-tycoon-fly-in-a-phone-browser,sources/06_voxel-routes.md
+07,guia_da_plataforma,5,4,4,https://docs.crazygames.com/resources/getting-to-the-first-frame/,sources/07_crazygames.md
+08,estudo_academico,5,3,4,https://web.cs.wpi.edu/~claypool/papers/game-load-fdg-24/paper.pdf,sources/08_waiting-to-play.md
+09,documentacao_da_engine,5,5,4,https://docs.godotengine.org/en/4.7/tutorials/export/exporting_for_web.html#serving-the-files,sources/09_godot-export-web.md
+10,anuncio_do_autor,4,5,3,https://www.reddit.com/r/aigamedev/comments/1ww3klt/four_days_into_the_alpha_i_moved_my_tinycar/,sources/10_speedorama.md
+11,guia_da_plataforma,5,5,4,https://docs.crazygames.com/resources/basic-launch-metrics/#3-conversion,sources/11_crazygames-basic-launch.md
