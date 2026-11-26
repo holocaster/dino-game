@@ -105,11 +105,14 @@ func _ready() -> void:
 	horizon.material_override.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	var surface := SurfaceTool.new()
 	surface.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var distances: Dictionary[Vector2, float] = {}
 	for x in range(-48, 41):
 		for z in range(-74, 29):
 			for offset in [Vector2(0, 0), Vector2(1, 0), Vector2(0, 1), Vector2(1, 0), Vector2(1, 1), Vector2(0, 1)]:
 				var p := Vector2(x + offset.x, z + offset.y) * 0.5
-				var distance := distance_to_trail(p)
+				if not distances.has(p):
+					distances[p] = distance_to_trail(p)
+				var distance := distances[p]
 				var color := Color("7ba45a").lerp(Color("638e50"), (sin(p.x * 0.55) * cos(p.y * 0.45) + 1) * 0.3)
 				color = color.lerp(Color("61994c"), 1 - smoothstep(1.8, 4.2, p.distance_to(Vector2(0, -6.8))))
 				color = color.lerp(Color("4e8961"), 1 - smoothstep(2.5, 5.5, p.distance_to(Vector2(-11, -8))))
@@ -403,6 +406,7 @@ func _beach() -> void:
 	ocean.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	var surface := SurfaceTool.new()
 	surface.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var distances: Dictionary[Vector2, float] = {}
 	for x in range(-47, 44):
 		for z in range(-49, 30):
 			for offset in [Vector2(0, 0), Vector2(1, 0), Vector2(0, 1), Vector2(1, 0), Vector2(1, 1), Vector2(0, 1)]:
@@ -411,7 +415,9 @@ func _beach() -> void:
 				var color := Color("c2bda6").lerp(Color("8aa272"), 1 - smoothstep(0.3, 0.65, coast))
 
 				surface.set_color(color.srgb_to_linear())
-				surface.set_uv(Vector2(distance_to_trail(p), 0))
+				if not distances.has(p):
+					distances[p] = distance_to_trail(p)
+				surface.set_uv(Vector2(distances[p], 0))
 				surface.add_vertex(point(p.x, p.y))
 	surface.generate_normals()
 	var terrain := MeshInstance3D.new()
@@ -437,6 +443,7 @@ func _valley() -> void:
 	horizon.material_override.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	var surface := SurfaceTool.new()
 	surface.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var distances: Dictionary[Vector2, float] = {}
 	for x in range(-40, 40):
 		for z in range(-60, 60):
 			for offset in [Vector2(0, 0), Vector2(1, 0), Vector2(0, 1), Vector2(1, 0), Vector2(1, 1), Vector2(0, 1)]:
@@ -444,7 +451,9 @@ func _valley() -> void:
 				var color := Color("7ca66b").lerp(Color("66865d"), (sin(p.x * 0.7) * cos(p.y * 0.5) + 1) * 0.5)
 
 				surface.set_color(color.srgb_to_linear())
-				surface.set_uv(Vector2(distance_to_trail(p), 0))
+				if not distances.has(p):
+					distances[p] = distance_to_trail(p)
+				surface.set_uv(Vector2(distances[p], 0))
 				surface.add_vertex(point(p.x, p.y))
 	surface.generate_normals()
 	var terrain := MeshInstance3D.new()
@@ -469,12 +478,15 @@ func _cave() -> void:
 	place(backdrop, Vector3(0, -0.3, 0), "c6bec7").cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	var surface := SurfaceTool.new()
 	surface.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var distances: Dictionary[Vector2, float] = {}
 	for x in range(-38, 38):
 		for z in range(-42, 33):
 			for offset in [Vector2(0, 0), Vector2(1, 0), Vector2(0, 1), Vector2(1, 0), Vector2(1, 1), Vector2(0, 1)]:
 				var p: Vector2 = Vector2(x, z) + offset
 				surface.set_color(Color("a59aac").lerp(Color("c8bfc8"), (sin(p.x * 0.4) * cos(p.y * 0.5) + 1) * 0.5).srgb_to_linear())
-				surface.set_uv(Vector2(distance_to_trail(p), 0))
+				if not distances.has(p):
+					distances[p] = distance_to_trail(p)
+				surface.set_uv(Vector2(distances[p], 0))
 				surface.add_vertex(point(p.x, p.y))
 	surface.generate_normals()
 	var terrain := place(surface.commit(), Vector3.ZERO, "ffffff")
@@ -522,6 +534,7 @@ func _volcano() -> void:
 	horizon.material_override.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	var surface := SurfaceTool.new()
 	surface.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var distances: Dictionary[Vector2, float] = {}
 	for x in range(-32, 31):
 		for z in range(-36, 27):
 			for offset in [Vector2(0, 0), Vector2(1, 0), Vector2(0, 1), Vector2(1, 0), Vector2(1, 1), Vector2(0, 1)]:
@@ -530,7 +543,9 @@ func _volcano() -> void:
 				var color := Color("65555b").lerp(Color("92786b"), grain)
 
 				surface.set_color(color.srgb_to_linear())
-				surface.set_uv(Vector2(distance_to_trail(p), 0))
+				if not distances.has(p):
+					distances[p] = distance_to_trail(p)
+				surface.set_uv(Vector2(distances[p], 0))
 				surface.add_vertex(point(p.x, p.y))
 	surface.generate_normals()
 	var terrain := place(surface.commit(), Vector3.ZERO, "ffffff")

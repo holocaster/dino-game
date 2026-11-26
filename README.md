@@ -1,6 +1,6 @@
 # Corrida dos dinos
 
-Corrida infantil em **Godot + GDScript**, versão **0.34.1**: tricerátopo, T-rex, velociraptor e pteranodonte na Floresta, Praia, Vale, Vulcão ou Caverna dos Cristais. Cristais respondem com luz e notas curtas opcionais na Caverna. Avanço automático, frutas e Setas de impulso, poças, caminhos com efeitos diferentes e um Filhote que comemora na chegada, mesmo sem frutas.
+Corrida infantil em **Godot + GDScript**, versão **0.34.3**: tricerátopo, T-rex, velociraptor e pteranodonte na Floresta, Praia, Vale, Vulcão ou Caverna dos Cristais. Cristais respondem com luz e notas curtas opcionais na Caverna. Avanço automático, frutas e Setas de impulso, poças, caminhos com efeitos diferentes e um Filhote que comemora na chegada, mesmo sem frutas.
 
 Execute `npm run dev` e abra [o jogo](http://127.0.0.1:4173). A exportação web está incluída; jogar não exige Godot nem instalar dependências.
 
@@ -33,4 +33,4 @@ A exportação completa exige templates Web 4.7.2. Nesta entrega, `godot --headl
 
 ## Arte
 
-Modelos gerados pela fal.ai; fontes/parâmetros em `art/fal/`, texturas 2K. `python3 scripts/rig_triceratops.py` recria o rig do tricerátopo; `python3 scripts/rig_bipeds.py`, os bípedes; `python3 scripts/rig_pteranodon.py`, o voador. `npm run fal -- MODELO entrada.json` exige Node.js 24+ e `FAL_KEY` em `.env`; gerações consomem créditos.
+Modelos gerados pela fal.ai; fontes/parâmetros em `art/fal/`, texturas importadas em até 2K. `python3 scripts/rig_triceratops.py` recria o rig do tricerátopo; `python3 scripts/rig_bipeds.py`, os bípedes; `python3 scripts/rig_pteranodon.py`, o voador. `npm run fal -- MODELO entrada.json` exige Node.js 24+ e `FAL_KEY` em `.env`; gerações consomem créditos.

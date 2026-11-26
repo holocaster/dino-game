@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.34.3
+
+- Praia, Vale, Vulcão e Caverna reaproveitam os cálculos de distância ao montar o terreno, reduzindo a espera ao trocar de pista.
+
+## 0.34.2
+
+- A Floresta reaproveita os cálculos de distância à pista ao montar o terreno.
+- A textura importada do pteranodonte tem limite de 1024 px, reduzindo o download inicial da versão web.
+
 ## 0.34.1 — 2026-11-24
 
 - Corrigida a postura do pteranodonte: tronco horizontal, cabeça alinhada, cauda para trás e pernas recolhidas. Os pés não recebem mais influência da batida de asas.
