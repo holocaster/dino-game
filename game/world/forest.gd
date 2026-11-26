@@ -17,6 +17,7 @@ var materials: Dictionary = {}
 var trees: Array[Dictionary] = []
 var race_track: Curve2D
 var theme := "forest"
+var valley_terrain: ArrayMesh
 var lava_material: ShaderMaterial
 var water_material: ShaderMaterial
 var cave_stones: Array[MeshInstance3D] = []
@@ -441,6 +442,23 @@ func _valley() -> void:
 	var horizon := place(backdrop, Vector3(VALLEY_CENTER.x, -0.45, VALLEY_CENTER.y), "6b8f66")
 	horizon.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	horizon.material_override.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var terrain := MeshInstance3D.new()
+	terrain.name = "Terrain"
+	terrain.mesh = valley_terrain if valley_terrain else _valley_mesh()
+	terrain.material_override = _ground_material("bba98c")
+	terrain.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	add_child(terrain)
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 7301
+	for i in range(70):
+		var p := VALLEY_CENTER + Vector2(rng.randf_range(-32, 32), rng.randf_range(-50, 50))
+		if distance_to_trail(p) > 7 and not trees.any(func(item): return item.position.distance_to(p) < 4.0):
+			tree(p, rng.randf_range(1.4, 2.0), i)
+
+	_track_border()
+	_hills(VALLEY_CENTER, 100)
+
+func _valley_mesh() -> ArrayMesh:
 	var surface := SurfaceTool.new()
 	surface.begin(Mesh.PRIMITIVE_TRIANGLES)
 	var distances: Dictionary[Vector2, float] = {}
@@ -456,21 +474,7 @@ func _valley() -> void:
 				surface.set_uv(Vector2(distances[p], 0))
 				surface.add_vertex(point(p.x, p.y))
 	surface.generate_normals()
-	var terrain := MeshInstance3D.new()
-	terrain.name = "Terrain"
-	terrain.mesh = surface.commit()
-	terrain.material_override = _ground_material("bba98c")
-	terrain.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	add_child(terrain)
-	var rng := RandomNumberGenerator.new()
-	rng.seed = 7301
-	for i in range(70):
-		var p := VALLEY_CENTER + Vector2(rng.randf_range(-32, 32), rng.randf_range(-50, 50))
-		if distance_to_trail(p) > 7 and not trees.any(func(item): return item.position.distance_to(p) < 4.0):
-			tree(p, rng.randf_range(1.4, 2.0), i)
-
-	_track_border()
-	_hills(VALLEY_CENTER, 100)
+	return surface.commit()
 
 func _cave() -> void:
 	var backdrop := PlaneMesh.new()

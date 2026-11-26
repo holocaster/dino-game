@@ -84,6 +84,8 @@ func _ready() -> void:
 	forest = preload("res://world/forest.gd").new()
 	forest.race_track = race.track
 	forest.theme = race.track_id
+	if race.track_id == "valley":
+		forest.valley_terrain = load("res://world/valley_terrain.res")
 	add_child(forest)
 	dinosaur = _runner(false)
 	friend = _runner(true)

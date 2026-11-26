@@ -19,6 +19,8 @@ h1 { font-family: Georgia, serif; font-size: 27px; font-weight: 500; letter-spac
 .round-button:hover:enabled { background: #e8eedb; }
 .park { position: relative; flex: 1; min-height: 0; max-height: 760px; border: 1px solid #d7e1c8; border-radius: 30px; overflow: hidden; background: #e8f2ed; box-shadow: 0 12px 50px #4d633a0a; }
 iframe { width: 100%; height: 100%; border: 0; display: block; }
+.selection-loading { position: absolute; inset: 0 0 66%; z-index: 3; display: grid; place-items: center; pointer-events: none; }
+.selection-loading span { margin: 10px; padding: 14px 20px; border-radius: 18px; background: var(--cream); box-shadow: 0 4px 20px #304b3926; font-weight: 700; text-align: center; }
 .welcome { position: absolute; inset: 0; z-index: 2; display: grid; place-items: center; padding: 15px; background: #edf3e954; backdrop-filter: blur(3px); }
 .welcome-card { width: min(460px, 100%); max-height: 100%; overflow-y: auto; text-align: center; padding: 18px 22px 16px; background: #fffdf1f5; border: 1px solid #fffefb; border-radius: 30px; box-shadow: 0 15px 60px #36533714; }
 .choices { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; border: 0; padding: 0; margin: 16px 0; min-width: 0; }
@@ -197,6 +199,7 @@ progress::-moz-progress-bar { background: #df9865; border-radius: 8px; }
 .park[data-finished] #race-panel .secondary { margin-top: 4px; }
 @media (max-height: 500px) and (orientation: landscape) {
   .park[data-preview] iframe { width: 34%; height: 100%; }
+  .selection-loading { inset: 0 66% 0 0; }
   .park[data-preview] #welcome { top: 0; left: 34%; }
   #welcome .menu-columns { display: block; }
 }

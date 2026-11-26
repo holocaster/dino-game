@@ -13,9 +13,10 @@
   <script src="$GODOT_URL"></script>
   <script>
     const config = $GODOT_CONFIG;
-    const pack = 'index.pck?v=0.34.3';
+    const pack = 'index.pck?v=0.34.4';
     config.fileSizes[pack] = config.fileSizes['index.pck'];
     const engine = new Engine(config);
+    const progress = document.querySelector('#progress');
     for (const type of ['keydown', 'keyup']) {
       window.addEventListener(type, event => {
         if (typeof window.parkCommand !== 'function') return;
@@ -43,10 +44,10 @@
     });
     engine.startGame({ mainPack: pack, args: ['--audio-driver', 'Dummy'], onProgress(current, total) {
       const message = total > 0 ? `Preparando a pista... ${Math.round(current / total * 100)}%` : 'Preparando a pista...';
-      document.querySelector('#progress').textContent = message;
-    }}).then(() => document.querySelector('#progress').remove()).catch(error => {
+      progress.textContent = message;
+    }}).then(() => progress.remove()).catch(error => {
       const message = 'Não foi possível abrir o Godot neste navegador. Verifique o suporte a WebGL 2.';
-      document.querySelector('#progress').textContent = message;
+      progress.textContent = message;
       window.parent.postMessage({ type: 'park-error', message }, location.origin);
       console.error(error);
     });

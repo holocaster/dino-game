@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.34.4
+
+- O Vale carrega a malha do chão já calculada, reduzindo o tempo de preparação da pista.
+- O menu exibe um aviso de carregamento ao mudar de pista, dino, acessório ou modo de corrida.
+
 ## 0.34.3
 
 - Praia, Vale, Vulcão e Caverna reaproveitam os cálculos de distância ao montar o terreno, reduzindo a espera ao trocar de pista.

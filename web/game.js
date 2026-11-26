@@ -1,12 +1,14 @@
-import { SteeringInputs, keyDirection } from './controls.mjs?v=0.34.3';
-import { validRaceReport } from './race-report.mjs?v=0.34.3';
-import { ParkAudio } from './audio.mjs?v=0.34.3';
-import { loadAppearances, saveAppearances } from './appearance.mjs?v=0.34.3';
-import { STICKERS, COLORS, award, unlocked, prizeText, loadRewards, saveRewards } from './rewards.mjs?v=0.34.3';
+import { SteeringInputs, keyDirection } from './controls.mjs?v=0.34.4';
+import { validRaceReport } from './race-report.mjs?v=0.34.4';
+import { ParkAudio } from './audio.mjs?v=0.34.4';
+import { loadAppearances, saveAppearances } from './appearance.mjs?v=0.34.4';
+import { STICKERS, COLORS, award, unlocked, prizeText, loadRewards, saveRewards } from './rewards.mjs?v=0.34.4';
 
 const frame = document.querySelector('#game');
 const welcome = document.querySelector('#welcome');
 const play = document.querySelector('#play');
+const loadStatus = document.querySelector('#load-status');
+const selectionLoading = document.querySelector('#selection-loading');
 const restart = document.querySelector('#restart');
 const pause = document.querySelector('#pause');
 const message = document.querySelector('#message');
@@ -21,6 +23,7 @@ const lapBanner = document.querySelector('#lap-banner');
 let shownLap = 1;
 const controls = [...document.querySelectorAll('[data-direction]')];
 const choices = [...document.querySelectorAll('.choices')];
+let selectionFocus = null;
 let sound = null;
 let muted = false;
 let environment = { lake: 0, grove: 0 };
@@ -247,20 +250,48 @@ play.addEventListener('click', () => {
   frame.focus();
 });
 
+function afterPaint() {
+  return new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+}
+
+function showSelectionLoading(text) {
+  selectionFocus = document.activeElement;
+  selectionLoading.firstElementChild.textContent = text;
+  selectionLoading.hidden = false;
+  loadStatus.textContent = text;
+  play.disabled = true;
+  for (const group of choices) group.disabled = true;
+  return afterPaint();
+}
+
+function finishSelectionLoading() {
+  selectionLoading.hidden = true;
+  play.disabled = false;
+  for (const group of choices) group.disabled = false;
+  play.querySelector('span').textContent = 'Vamos correr';
+  loadStatus.textContent = 'Toque ou clique para começar.';
+  if (document.activeElement === document.body) selectionFocus?.focus({ preventScroll: true });
+  selectionFocus = null;
+}
+
 for (const [index, suffix] of ['', '2'].entries()) {
   for (const input of document.querySelectorAll(`[name="dino${suffix}"], [name="accessory${suffix}"]`)) {
-    input.addEventListener('change', () => {
-      appearances[index].species = document.querySelector(`[name="dino${suffix}"]:checked`).value;
+    input.addEventListener('change', async () => {
+      const dino = document.querySelector(`[name="dino${suffix}"]:checked`);
+      appearances[index].species = dino.value;
       appearances[index].accessory = document.querySelector(`[name="accessory${suffix}"]:checked`).value;
       saveAppearances(storage, appearances, rewards);
+      await showSelectionLoading(`Preparando ${dino.labels[0].querySelector('strong').textContent}...`);
       sendAppearance(index + 1);
+      await afterPaint();
+      finishSelectionLoading();
     });
   }
 }
 
-function configureRace() {
+async function configureRace(event) {
   releaseDirections();
-  const track = document.querySelector('[name="track"]:checked').value;
+  const track = document.querySelector('[name="track"]:checked');
   const rival = document.querySelector('[name="rival"]:checked').value;
   const coop = rival === 'coop';
   document.body.dataset.mode = coop ? 'coop' : rival === 'none' ? 'solo' : 'competitive';
@@ -268,11 +299,9 @@ function configureRace() {
   document.querySelector('[data-slot="2"]').hidden = !coop;
   document.querySelector('#control-hint').textContent = coop ? 'Jogador 1: A/D. Jogador 2: setas. Juntem as frutinhas!' : 'Segure as setas para mudar de lado e pegar frutas.';
   frame.title = coop ? 'Corrida em dupla: jogador 1 usa A/D; jogador 2 usa as setas' : 'Corrida: use as setas esquerda e direita para pegar frutas';
-  play.disabled = true;
-  for (const group of choices) group.disabled = true;
-  play.querySelector('span').textContent = 'Preparando a pista...';
-  document.querySelector('#load-status').textContent = 'Seus dinos já estão chegando.';
-  command(coop ? `select-coop:${appearances[0].species}:${appearances[1].species}:${track}` : `select:${appearances[0].species}:${track}:${rival}`);
+  const loadingText = event.target === track ? `Mudando para ${track.labels[0].querySelector('strong').textContent}...` : 'Preparando a corrida...';
+  await showSelectionLoading(loadingText);
+  command(coop ? `select-coop:${appearances[0].species}:${appearances[1].species}:${track.value}` : `select:${appearances[0].species}:${track.value}:${rival}`);
 }
 
 for (const input of document.querySelectorAll('[name="track"], [name="rival"]')) input.addEventListener('change', configureRace);
@@ -386,13 +415,11 @@ window.addEventListener('message', event => {
   if (data?.type === 'park-ready') {
     sendAppearance(1);
     sendAppearance(2);
-    play.disabled = false;
-    for (const group of choices) group.disabled = false;
-    play.querySelector('span').textContent = 'Vamos correr';
-    document.querySelector('#load-status').textContent = 'Toque ou clique para começar.';
+    finishSelectionLoading();
   }
   if (data?.type === 'park-error') {
-    document.querySelector('#load-status').textContent = 'Não foi possível abrir a corrida. Tente um navegador com WebGL 2.';
+    selectionLoading.hidden = true;
+    loadStatus.textContent = data.message || 'Não foi possível preparar a corrida. Recarregue a página para tentar de novo.';
     play.disabled = true;
   }
   if (data?.type === 'park-blur') {

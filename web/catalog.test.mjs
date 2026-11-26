@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, statSync } from 'node:fs';
+import { runInNewContext } from 'node:vm';
 import { COLORS } from './rewards.mjs';
 import { SPECIES, ACCESSORIES } from './appearance.mjs';
 
@@ -69,5 +70,28 @@ test('exportação anuncia os tamanhos reais do pack e runtime', () => {
   const config = JSON.parse(read('./godot/index.html').match(/const config = (.*);/)[1]);
   for (const file of ['index.pck', 'index.wasm']) {
     assert.equal(config.fileSizes[file], statSync(new URL(`./godot/${file}`, import.meta.url)).size, file);
+  }
+});
+
+test('aceita uma atualização de progresso após iniciar o jogo', async () => {
+  for (const file of ['../game/shell.html', './godot/index.html']) {
+    const script = read(file).match(/<script>([\s\S]*?)<\/script>/)[1]
+      .replace('$GODOT_CONFIG', '{fileSizes: {"index.pck": 1}}');
+    let onProgress;
+    let removed = false;
+    const progress = { remove() { removed = true; } };
+    runInNewContext(script, {
+      Engine: class {
+        startGame(config) {
+          onProgress = config.onProgress;
+          return Promise.resolve();
+        }
+      },
+      window: { addEventListener() {} },
+      document: { addEventListener() {}, querySelector: () => removed ? null : progress },
+    });
+    await Promise.resolve();
+    assert.equal(removed, true, file);
+    assert.doesNotThrow(() => onProgress(1, 1), file);
   }
 });

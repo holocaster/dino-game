@@ -412,7 +412,11 @@ func _scene(dino: String) -> void:
 	await physics_frame
 	await physics_frame
 	assert(game.forest.theme == "valley" and game.race.track_id == "valley")
-	var terrain: AABB = game.forest.get_node("Terrain").get_aabb()
+	var ground := game.forest.get_node("Terrain") as MeshInstance3D
+	assert(ground.mesh.resource_path == "res://world/valley_terrain.res")
+	if dino == "triceratops":
+		assert(ground.mesh.surface_get_arrays(0) == game.forest._valley_mesh().surface_get_arrays(0))
+	var terrain := ground.get_aabb()
 	for i in range(int(game.race.lap_length * 2)):
 		for side in [-1, 0, 1]:
 			var p: Vector2 = game.race.sample(i * 0.5, side * game.race.LATERAL_LIMIT).origin
