@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.34.5
+
+- O menu aceita escolhas enquanto o Godot carrega e prepara a pista escolhida.
+- O pacote Web usa texturas mais leves e exclui um modelo de dino sem uso na corrida.
+- Trocar o rival ou o modo mantém o cenário. Floresta e Vale reaproveitam as malhas das árvores de beira de pista.
+
 ## 0.34.4
 
 - O Vale carrega a malha do chão já calculada, reduzindo o tempo de preparação da pista.

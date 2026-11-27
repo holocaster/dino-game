@@ -79,6 +79,7 @@ test('aceita uma atualização de progresso após iniciar o jogo', async () => {
       .replace('$GODOT_CONFIG', '{fileSizes: {"index.pck": 1}}');
     let onProgress;
     let removed = false;
+    const marks = [];
     const progress = { remove() { removed = true; } };
     runInNewContext(script, {
       Engine: class {
@@ -86,12 +87,15 @@ test('aceita uma atualização de progresso após iniciar o jogo', async () => {
           onProgress = config.onProgress;
           return Promise.resolve();
         }
+        init() { return Promise.resolve(); }
       },
+      performance: { mark: name => marks.push(name) },
       window: { addEventListener() {} },
       document: { addEventListener() {}, querySelector: () => removed ? null : progress },
     });
     await Promise.resolve();
     assert.equal(removed, true, file);
+    assert.deepEqual(marks, ['godot:init'], file);
     assert.doesNotThrow(() => onProgress(1, 1), file);
   }
 });

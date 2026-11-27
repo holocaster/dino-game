@@ -25,11 +25,14 @@ const RIVAL_COLORS := {"sleepy": Color(0.72, 0.66, 1.0), "playful": Color(0.5, 0
 const PLAYER_COLORS := {"natural": Color.WHITE, "sunset": Color(1.0, 0.5, 0.38), "ocean": Color(0.42, 0.68, 1.0), "candy": Color(1.0, 0.58, 0.85)}
 
 func _ready() -> void:
+	var started_at := Time.get_ticks_usec()
 	var selection: Array = get_tree().get_meta("race_selection", ["triceratops", "forest"])
-	if selection.size() == 4 and selection[2] == "coop":
-		race.configure_coop(selection[0], selection[3], selection[1])
-	else:
-		race.configure(selection[0], selection[1], selection[2] if selection.size() > 2 else "playful")
+	if OS.has_feature("web") and not get_tree().has_meta("race_selection"):
+		var pending: Variant = JSON.parse_string(JavaScriptBridge.eval("window.frameElement?.dataset.raceSelection || 'null'", true))
+		if pending is Array and pending.size() in [3, 4] and pending.all(func(value): return value is String):
+			selection = pending
+	if not _configure_selection(selection):
+		race.configure("triceratops", "forest")
 	var appearance := _appearance(1).duplicate()
 	appearance.species = race.dino_id
 	appearance.color = get_tree().get_meta("race_color", "natural")
@@ -87,15 +90,7 @@ func _ready() -> void:
 	if race.track_id == "valley":
 		forest.valley_terrain = load("res://world/valley_terrain.res")
 	add_child(forest)
-	dinosaur = _runner(false)
-	friend = _runner(true)
-	dinosaur_animation = dinosaur.get_node("Model/AnimationPlayer")
-	friend_animation = friend.get_node("Model/AnimationPlayer")
-	_tint(dinosaur, PLAYER_COLORS.get(get_tree().get_meta("race_color", "natural"), Color.WHITE))
-	if race.solo:
-		friend.visible = false
-		friend.collision_layer = 0
-		friend.collision_mask = 0
+	_create_runners()
 	for index in range(race.fruits.size()):
 		fruit_nodes.append(_create_fruit("e88a63"))
 	for arrow in race.arrows:
@@ -109,21 +104,23 @@ func _ready() -> void:
 	scenery = preload("res://race/race_scenery.gd").new()
 	add_child(scenery)
 	scenery.setup(self)
-	speed_effects = preload("res://race/speed_effects.gd").new()
-	add_child(speed_effects)
-	speed_effects.setup(self)
-	speed_effects.paint(0, _trail_color())
-	if race.mode == "coop":
-		speed_effects.paint(1, _partner_trail_color())
 	race.resolve_motion = _resolve_motion
 	race.pickup_contact = _pickup_contact
 	if OS.has_feature("web"):
 		web_callback = JavaScriptBridge.create_callback(_web_command)
 		JavaScriptBridge.get_interface("window").parkCommand = web_callback
 	reset_race()
-	_notify({"type": "park-ready"})
+	_notify_ready(started_at)
 	set_process(false)
 	set_physics_process(true)
+
+func _configure_selection(selection: Array) -> bool:
+	if selection.size() == 4 and selection[2] == "coop":
+		return race.configure_coop(selection[0], selection[3], selection[1])
+	return race.configure(selection[0], selection[1], selection[2] if selection.size() > 2 else "playful")
+
+func _notify_ready(started_at: int) -> void:
+	_notify({"type": "park-ready", "track": race.track_id, "rival": "coop" if race.mode == "coop" else race.rival_id, "setupMs": (Time.get_ticks_usec() - started_at) / 1000.0})
 
 func _create_fruit(color: String) -> Area3D:
 	var holder := Area3D.new()
@@ -148,6 +145,23 @@ func _create_arrow() -> Node3D:
 			var arm := _box(Vector3(0.14, 0.03, 0.6), Vector3(side * 0.2, 0.04, tip + 0.2), "f6b93b", holder)
 			arm.rotation.y = side * PI / 4
 	return holder
+
+func _create_runners() -> void:
+	dinosaur = _runner(false)
+	friend = _runner(true)
+	dinosaur_animation = dinosaur.get_node("Model/AnimationPlayer")
+	friend_animation = friend.get_node("Model/AnimationPlayer")
+	_tint(dinosaur, PLAYER_COLORS.get(get_tree().get_meta("race_color", "natural"), Color.WHITE))
+	if race.solo:
+		friend.visible = false
+		friend.collision_layer = 0
+		friend.collision_mask = 0
+	speed_effects = preload("res://race/speed_effects.gd").new()
+	add_child(speed_effects)
+	speed_effects.setup(self)
+	speed_effects.paint(0, _trail_color())
+	if race.mode == "coop":
+		speed_effects.paint(1, _partner_trail_color())
 
 func _runner(green: bool) -> Node3D:
 	var runner := CharacterBody3D.new()
@@ -424,7 +438,7 @@ func _decorate_track() -> void:
 		var pose: Transform2D = race.sample(race.lap_length * i / 40, 6.2 if i % 2 else -6.2)
 		var p := pose.origin
 		if p.distance_to(forest.POND) > 3.5 and not forest.trees.any(func(tree): return tree.position.distance_to(p) < 2.5):
-			forest.tree(p, 1.5 + float(i % 3) * 0.15, i)
+			forest.tree(p, 1.5 + float(i % 3) * 0.15, i, true)
 	var markers := maxi(50, ceili(race.lap_length / 2))
 	for i in range(markers):
 		for side in [-1, 1]:
@@ -479,12 +493,14 @@ func _appearance(slot: int) -> Dictionary:
 
 func _apply_appearance(slot: int, appearance: Dictionary) -> void:
 	var appearances := [_appearance(1).duplicate(), _appearance(2).duplicate()]
+	var changed_species: bool = appearance.species != (race.dino_id if slot == 1 else race.partner_id)
+	if appearances[slot - 1] == appearance and not changed_species:
+		return
 	appearances[slot - 1] = appearance
 	get_tree().set_meta("race_appearances", appearances)
 	if slot == 2 and race.mode != "coop":
 		return
 	var runner: Node3D = dinosaur if slot == 1 else friend
-	var changed_species: bool = appearance.species != (race.dino_id if slot == 1 else race.partner_id)
 	if slot == 1:
 		get_tree().set_meta("race_color", appearance.color)
 	if changed_species:
@@ -530,6 +546,24 @@ func _steering(slot: int) -> float:
 			right = right or source.direction == "right"
 	return float(right) - float(left)
 
+func _select_race(selection: Array) -> void:
+	if selection[1] == race.track_id:
+		var started_at := Time.get_ticks_usec()
+		_configure_selection(selection)
+		get_tree().set_meta("race_selection", selection)
+		for node in [dinosaur, friend, speed_effects]:
+			remove_child(node)
+			node.queue_free()
+		_create_runners()
+		reset_race()
+		_notify_ready(started_at)
+		return
+	var previous: Array = get_tree().get_meta("race_selection", ["triceratops", "forest"])
+	get_tree().set_meta("race_selection", selection)
+	if get_tree().reload_current_scene() != OK:
+		get_tree().set_meta("race_selection", previous)
+		_notify({"type": "park-error"})
+
 func _web_command(arguments: Array) -> void:
 	if arguments.size() != 1 or not arguments[0] is String:
 		return
@@ -547,12 +581,8 @@ func _web_command(arguments: Array) -> void:
 		var values: PackedStringArray = arguments[0].split(":")
 		if values.size() != 4 or not race.can_configure_coop(values[1], values[2], values[3]):
 			return
-		var previous: Array = get_tree().get_meta("race_selection", ["triceratops", "forest"])
 		_release_inputs()
-		get_tree().set_meta("race_selection", [values[1], values[3], "coop", values[2]])
-		if get_tree().reload_current_scene() != OK:
-			get_tree().set_meta("race_selection", previous)
-			_notify({"type": "park-error"})
+		_select_race([values[1], values[3], "coop", values[2]])
 		return
 	if arguments[0].begins_with("appearance:"):
 		var values: PackedStringArray = arguments[0].split(":")
@@ -574,11 +604,7 @@ func _web_command(arguments: Array) -> void:
 		var selection: PackedStringArray = arguments[0].split(":")
 		if selection.size() != 4 or not race.can_configure(selection[1], selection[2], selection[3]):
 			return
-		var previous: Array = get_tree().get_meta("race_selection", ["triceratops", "forest"])
-		get_tree().set_meta("race_selection", [selection[1], selection[2], selection[3]])
-		if get_tree().reload_current_scene() != OK:
-			get_tree().set_meta("race_selection", previous)
-			_notify({"type": "park-error"})
+		_select_race([selection[1], selection[2], selection[3]])
 		return
 	match arguments[0]:
 		"start": race.start()

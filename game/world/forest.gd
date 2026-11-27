@@ -9,6 +9,7 @@ const POND := Vector2(-7.2, 0.1)
 const AREAS := [Vector3(0, 1.0, 4.0), Vector3(-6.2, 0, 3.3), Vector3(0, -6.8, 3.2), Vector3(-11, -8, 4.2), Vector3(6, -12, 4.8), Vector3(0, -20, 3.7)]
 const GRID := Rect2i(-80, -104, 145, 145)
 const POND_SIZE := Vector2(1.55, 1.25)
+static var track_tree_meshes: Dictionary[Vector3, ArrayMesh] = {}
 var navigation := AStarGrid2D.new()
 var trail := Curve2D.new()
 var trails: Array[Curve2D] = []
@@ -233,12 +234,19 @@ func _solid(position_3d: Vector3, radius: float, height: float) -> void:
 	shape.shape.height = height
 	body.add_child(shape)
 
-func tree(p: Vector2, size: float, variant: int) -> void:
+func tree(p: Vector2, size: float, variant: int, reuse_mesh: bool = false) -> void:
 	if race_track and distance_to_trail(p) < 3.6:
 		return
 	var base := point(p.x, p.y)
 	var tree_mesh := MeshInstance3D.new()
-	tree_mesh.mesh = SCENERY_MESHES.tree(size, variant, theme == "beach")
+	var palm := theme == "beach"
+	if reuse_mesh:
+		var key := Vector3(size, variant, int(palm))
+		if not track_tree_meshes.has(key):
+			track_tree_meshes[key] = SCENERY_MESHES.tree(size, variant, palm)
+		tree_mesh.mesh = track_tree_meshes[key]
+	else:
+		tree_mesh.mesh = SCENERY_MESHES.tree(size, variant, palm)
 	tree_mesh.position = base
 	tree_mesh.material_override = ShaderMaterial.new()
 	tree_mesh.material_override.shader = TREE_SHADER

@@ -62,3 +62,48 @@ O Vale usa a malha binária do terreno, gerada a partir da mesma curva e dos mes
 Com Chrome local, perfil Pixel 7, renderização por software e desaceleração de CPU de 4×, a primeira troca de Floresta para Vale levou de 11,7 a 12,5 s em duas execuções da 0.34.3. Um protótipo com só a malha pronta levou 10,5 s, e a 0.34.4 com o aviso levou 11,4 s. A medição começa na seleção e termina em `park-ready`. O aviso fica visível por pelo menos um quadro antes de o navegador enviar o comando ao Godot. Essas medições representam o navegador local emulado.
 
 O perfil headless da 0.34.4 mediu cerca de 522 ms nas árvores decorativas do Vale em duas visitas. O portal levou cerca de 1 ms e os marcadores da borda, de 15 a 16 ms. A próxima otimização a testar é reutilizar a geometria das árvores de beira de pista pela combinação de variante, tamanho e tipo, preservando a transparência e a colisão de cada instância. [Decoração da corrida](../../game/race/race.gd#L405), [geração da malha das árvores](../../game/world/scenery_meshes.gd#L31).
+
+## Abertura e troca de pista na 0.34.5
+
+O PCK Web passou de **17.075.752** para **3.207.904 bytes**. Excluir o modelo antigo e sua textura baixou o pacote para **14.648.912 bytes**. A compressão com qualidade 0,90 nas quatro texturas jogáveis manteve os limites de resolução do import. As imagens originais continuam disponíveis. [Preset Web](../../game/export_presets.cfg), [modelos jogáveis](../../game/dinos/runner_model.gd).
+
+| Mediana de três execuções locais por versão | 0.34.4 | 0.34.5 |
+| --- | ---: | ---: |
+| Navegação até habilitar “Vamos correr” | 18,05 s | 12,93 s |
+| Escolher Vale na Floresta até `park-ready` | 3,45 s | 2,76 s |
+| Escolher Rapidinho no Vale até `park-ready` | 3,32 s | 0,82 s |
+
+As duas builds foram servidas no mesmo servidor HTTP local com gzip. O Chrome 158 headless usou SwiftShader, 960 × 600, cache frio, download de 20 Mbit/s, upload de 5 Mbit/s e latência emulada de 70 ms. Na 0.34.5, as escolhas estavam disponíveis em **0,26 s** de mediana. O PCK terminou de baixar em **3,01 s** e o WASM, em **6,04 s**. A inicialização do WASM terminou em **6,12 s** e a montagem da Floresta em `_ready()` consumiu **1,76 s**. Esses valores são medianas de marcos que podem se sobrepor. O benchmark público da 0.34.3 e o Moto G56 usam ambientes diferentes.
+
+Para repetir, leia as entradas `resource` no Performance Timeline do iframe e alinhe seu `timeOrigin` com o da página. O iframe marca `godot:init`. A página marca `race:menu`, `race:play-ready`, `race:start` e `race:control-ready`. A mensagem `park-ready` informa a pista, o rival e a duração da montagem em `setupMs`. [Carregador Web](../../game/shell.html), [menu](../../web/game.js), [cena da corrida](../../game/race/race.gd).
+
+O teste no Chrome conferiu capturas dos quatro dinos nas duas builds. Ao escolher Vale, Dupla e Velociraptor durante o download, o primeiro e único `park-ready` chegou com a configuração escolhida. A tecla A mudou a posição lateral do jogador 1 depois que o controle foi liberado.
+
+Em outra série, o navegador acionou “Vamos correr” assim que o botão foi habilitado na Floresta. A contagem regressiva foi incluída no tempo até o controle. Foram três execuções por variante no mesmo perfil local.
+
+| Variante | Tempo até habilitar o botão | Tempo desde a navegação até o controle |
+| --- | ---: | ---: |
+| 0.34.4 | 18,58 s | 33,08 s |
+| 0.34.4 sem o dino antigo | 17,24 s | |
+| 0.34.5 | 11,87 s | 26,96 s |
+
+As três aberturas da variante sem o dino antigo foram 19,24 s, 16,55 s e 17,24 s. Houve sobreposição com a faixa de 17,70–18,89 s da 0.34.4 original. A 0.34.5 teve três aberturas entre 11,83 e 11,88 s nessa série.
+
+## Moto G56 físico
+
+Em 27 de novembro de 2026, o Moto G56 5G rodou as duas builds locais via USB no Chrome 158.0.8127.42 e Android 16. A área da página em retrato mediu 523 × 1027 px CSS, com DPR 2,0625. O servidor local usou gzip e o navegador limitou o download a 20 Mbit/s, o upload a 5 Mbit/s e emulou 70 ms de latência. O cache HTTP ficou desabilitado na aba de teste. Cada rodada começou com uma nova navegação. O botão foi acionado assim que habilitou, e o tempo até o controle inclui a contagem regressiva. Cada troca foi cronometrada da alteração da opção até o respectivo `park-ready`.
+
+| Rodada | Build | Até “Vamos correr” | Até o controle | Floresta → Vale | Rival no Vale |
+| --- | --- | ---: | ---: | ---: | ---: |
+| 1 | 0.34.4 | 29,27 s | 32,40 s | 7,78 s | 8,99 s |
+| 2 | 0.34.5 | 22,88 s | 26,05 s | 8,95 s | 0,13 s |
+| 3 | 0.34.5 | 22,77 s | 25,92 s | 8,14 s | 0,15 s |
+| 4 | 0.34.4 | 29,69 s | 32,86 s | 11,94 s | 11,45 s |
+| 5 | 0.34.4 | 28,89 s | 32,03 s | 11,78 s | 10,76 s |
+| 6 | 0.34.5 | 21,84 s | 25,00 s | 8,13 s | 0,07 s |
+| **Mediana** | **0.34.4** | **29,27 s** | **32,40 s** | **11,78 s** | **10,76 s** |
+| **Mediana** | **0.34.5** | **22,77 s** | **25,92 s** | **8,14 s** | **0,13 s** |
+
+Na 0.34.5, as escolhas ficaram disponíveis em mediana aos **0,43 s**. O PCK transferido caiu de 16,62 MB para 3,16 MB, e a mediana até o fim do último download passou de 13,25 s para 7,24 s. A espera do último download até o botão foi semelhante nas duas builds, com medianas de 15,73 s e 15,58 s. Na 0.34.5, a marca `godot:init` chegou aos 7,41 s, e a montagem da Floresta em `_ready()` consumiu 9,96 s de mediana. A primeira troca para o Vale ainda consumiu cerca de 8 s, com sobreposição entre as faixas observadas.
+
+No piloto da 0.34.5, manter pressionado o controle esquerdo por toque moveu o dino para a esquerda. O Godot registrou nas duas builds a conversão de texturas RGBAFloat para RGBAHalf no aparelho. As seis rodadas completaram os fluxos medidos.

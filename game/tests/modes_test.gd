@@ -128,6 +128,34 @@ func _run() -> void:
 			assert(game.race.rival_distance > 2)
 		game.queue_free()
 		await process_frame
+	set_meta("race_selection", ["triceratops", "forest", "playful"])
+	var scene: Node3D = load("res://race/race.tscn").instantiate()
+	root.add_child(scene)
+	var forest: Node3D = scene.forest
+	var scenery: Node3D = scene.scenery
+	scene._web_command(["select:triceratops:forest:none"])
+	assert(scene.race.solo and not scene.friend.visible and scene.friend.collision_layer == 0)
+	scene._web_command(["select-coop:triceratops:pteranodon:forest"])
+	assert(scene.race.mode == "coop" and scene.race.partner_id == "pteranodon")
+	assert(scene.friend.visible and scene.friend.collision_layer == 1)
+	assert(scene.friend.get_node("Model").get_meta("flying") and scene.friend.has_node("PlayerLabel"))
+	scene._web_command(["select:triceratops:forest:speedy"])
+	assert(scene.race.rival_id == "speedy" and scene.friend.visible)
+	assert(not scene.friend.get_node("Model").get_meta("flying") and not scene.friend.has_node("PlayerLabel"))
+	assert(scene.forest == forest and scene.scenery == scenery)
+	var meshes_by_material := {}
+	for tree in forest.trees:
+		meshes_by_material[tree.node.mesh] = tree.node.material_override
+	set_meta("race_selection", ["triceratops", "valley", "playful"])
+	var valley: Node3D = load("res://race/race.tscn").instantiate()
+	root.add_child(valley)
+	var shared: Array = valley.forest.trees.filter(func(tree): return meshes_by_material.has(tree.node.mesh))
+	assert(not shared.is_empty())
+	for tree in shared:
+		assert(tree.node.material_override != meshes_by_material[tree.node.mesh])
+	valley.queue_free()
+	scene.queue_free()
+	await process_frame
 	remove_meta("race_selection")
 	remove_meta("race_color")
 	print("Modes checks passed: three rival profiles, misses, distraction with pause/reset, solo lap without rival or golden fruit, light assist that yields to steering, golden counter, hidden solo rival, rival and player colors.")

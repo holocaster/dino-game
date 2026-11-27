@@ -1,8 +1,8 @@
-import { SteeringInputs, keyDirection } from './controls.mjs?v=0.34.4';
-import { validRaceReport } from './race-report.mjs?v=0.34.4';
-import { ParkAudio } from './audio.mjs?v=0.34.4';
-import { loadAppearances, saveAppearances } from './appearance.mjs?v=0.34.4';
-import { STICKERS, COLORS, award, unlocked, prizeText, loadRewards, saveRewards } from './rewards.mjs?v=0.34.4';
+import { SteeringInputs, keyDirection } from './controls.mjs?v=0.34.5';
+import { validRaceReport } from './race-report.mjs?v=0.34.5';
+import { ParkAudio } from './audio.mjs?v=0.34.5';
+import { loadAppearances, saveAppearances } from './appearance.mjs?v=0.34.5';
+import { STICKERS, COLORS, award, unlocked, prizeText, loadRewards, saveRewards } from './rewards.mjs?v=0.34.5';
 
 const frame = document.querySelector('#game');
 const welcome = document.querySelector('#welcome');
@@ -24,6 +24,7 @@ let shownLap = 1;
 const controls = [...document.querySelectorAll('[data-direction]')];
 const choices = [...document.querySelectorAll('.choices')];
 let selectionFocus = null;
+let parkReady = false;
 let sound = null;
 let muted = false;
 let environment = { lake: 0, grove: 0 };
@@ -163,6 +164,7 @@ function renderRace(data) {
   park.dataset.speed = level;
   sound?.speed(level);
   if (!started) return;
+  if (data.stage === 'racing' && previous?.stage === 'countdown') performance.mark('race:control-ready');
   const arrow = data.stage === 'racing' && data.arrows > (previous?.arrows ?? 0);
   document.querySelector('#race-hud').hidden = false;
   document.querySelector('#lap-title').textContent = data.laps > 1 ? 'TRÊS VOLTAS' : 'UMA VOLTA';
@@ -239,6 +241,9 @@ function renderRace(data) {
 }
 
 play.addEventListener('click', () => {
+  performance.clearMarks('race:start');
+  performance.clearMarks('race:control-ready');
+  performance.mark('race:start');
   started = true;
   welcome.hidden = true;
   delete park.dataset.preview;
@@ -264,6 +269,19 @@ function showSelectionLoading(text) {
   return afterPaint();
 }
 
+function saveRaceSelection() {
+  const track = document.querySelector('[name="track"]:checked').value;
+  const rival = document.querySelector('[name="rival"]:checked').value;
+  const selection = [appearances[0].species, track, rival];
+  if (rival === 'coop') selection.push(appearances[1].species);
+  frame.dataset.raceSelection = JSON.stringify(selection);
+  return selection;
+}
+
+function sendRaceSelection([dino, track, rival, partner]) {
+  command(rival === 'coop' ? `select-coop:${dino}:${partner}:${track}` : `select:${dino}:${track}:${rival}`);
+}
+
 function finishSelectionLoading() {
   selectionLoading.hidden = true;
   play.disabled = false;
@@ -281,6 +299,8 @@ for (const [index, suffix] of ['', '2'].entries()) {
       appearances[index].species = dino.value;
       appearances[index].accessory = document.querySelector(`[name="accessory${suffix}"]:checked`).value;
       saveAppearances(storage, appearances, rewards);
+      saveRaceSelection();
+      if (!parkReady) return;
       await showSelectionLoading(`Preparando ${dino.labels[0].querySelector('strong').textContent}...`);
       sendAppearance(index + 1);
       await afterPaint();
@@ -292,16 +312,18 @@ for (const [index, suffix] of ['', '2'].entries()) {
 async function configureRace(event) {
   releaseDirections();
   const track = document.querySelector('[name="track"]:checked');
-  const rival = document.querySelector('[name="rival"]:checked').value;
+  const selection = saveRaceSelection();
+  const rival = selection[2];
   const coop = rival === 'coop';
   document.body.dataset.mode = coop ? 'coop' : rival === 'none' ? 'solo' : 'competitive';
   document.querySelector('#partner-appearance').hidden = !coop;
   document.querySelector('[data-slot="2"]').hidden = !coop;
   document.querySelector('#control-hint').textContent = coop ? 'Jogador 1: A/D. Jogador 2: setas. Juntem as frutinhas!' : 'Segure as setas para mudar de lado e pegar frutas.';
   frame.title = coop ? 'Corrida em dupla: jogador 1 usa A/D; jogador 2 usa as setas' : 'Corrida: use as setas esquerda e direita para pegar frutas';
+  if (!parkReady) return;
   const loadingText = event.target === track ? `Mudando para ${track.labels[0].querySelector('strong').textContent}...` : 'Preparando a corrida...';
   await showSelectionLoading(loadingText);
-  command(coop ? `select-coop:${appearances[0].species}:${appearances[1].species}:${track.value}` : `select:${appearances[0].species}:${track.value}:${rival}`);
+  sendRaceSelection(selection);
 }
 
 for (const input of document.querySelectorAll('[name="track"], [name="rival"]')) input.addEventListener('change', configureRace);
@@ -413,17 +435,31 @@ window.addEventListener('message', event => {
   }
   if (data?.type === 'park-sound' && started && typeof data.name === 'string') sound?.play(data.name);
   if (data?.type === 'park-ready') {
+    const selection = saveRaceSelection();
+    parkReady = true;
+    if (data.track !== selection[1] || data.rival !== selection[2]) {
+      for (const group of choices) group.disabled = true;
+      sendRaceSelection(selection);
+      return;
+    }
     sendAppearance(1);
     sendAppearance(2);
     finishSelectionLoading();
+    if (!performance.getEntriesByName('race:play-ready').length) performance.mark('race:play-ready');
   }
   if (data?.type === 'park-error') {
     selectionLoading.hidden = true;
     loadStatus.textContent = data.message || 'Não foi possível preparar a corrida. Recarregue a página para tentar de novo.';
     play.disabled = true;
+    for (const group of choices) group.disabled = true;
   }
   if (data?.type === 'park-blur') {
     if (!document.hasFocus()) pauseRace();
   }
   if (validRaceReport(data)) renderRace(data);
 });
+
+saveRaceSelection();
+for (const group of choices) group.disabled = false;
+loadStatus.textContent = 'Escolha enquanto a pista carrega.';
+performance.mark('race:menu');
