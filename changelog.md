@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.34.6
+
+- A Floresta carrega o chão pré-calculado e tem 49 árvores. Floresta e Vale compartilham a geometria das árvores de mesma variante.
+
 ## 0.34.5
 
 - O menu aceita escolhas enquanto o Godot carrega e prepara a pista escolhida.

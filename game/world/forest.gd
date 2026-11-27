@@ -18,7 +18,7 @@ var materials: Dictionary = {}
 var trees: Array[Dictionary] = []
 var race_track: Curve2D
 var theme := "forest"
-var valley_terrain: ArrayMesh
+var race_terrain: ArrayMesh
 var lava_material: ShaderMaterial
 var water_material: ShaderMaterial
 var cave_stones: Array[MeshInstance3D] = []
@@ -105,28 +105,9 @@ func _ready() -> void:
 	var horizon := place(backdrop, Vector3(0, -0.45, 0), "719864")
 	horizon.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	horizon.material_override.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	var surface := SurfaceTool.new()
-	surface.begin(Mesh.PRIMITIVE_TRIANGLES)
-	var distances: Dictionary[Vector2, float] = {}
-	for x in range(-48, 41):
-		for z in range(-74, 29):
-			for offset in [Vector2(0, 0), Vector2(1, 0), Vector2(0, 1), Vector2(1, 0), Vector2(1, 1), Vector2(0, 1)]:
-				var p := Vector2(x + offset.x, z + offset.y) * 0.5
-				if not distances.has(p):
-					distances[p] = distance_to_trail(p)
-				var distance := distances[p]
-				var color := Color("7ba45a").lerp(Color("638e50"), (sin(p.x * 0.55) * cos(p.y * 0.45) + 1) * 0.3)
-				color = color.lerp(Color("61994c"), 1 - smoothstep(1.8, 4.2, p.distance_to(Vector2(0, -6.8))))
-				color = color.lerp(Color("4e8961"), 1 - smoothstep(2.5, 5.5, p.distance_to(Vector2(-11, -8))))
-				color = color.lerp(Color("a7bd5d"), 1 - smoothstep(3.0, 6.0, p.distance_to(Vector2(6, -12))))
-				color = color.lerp(Color("aaa987"), 1 - smoothstep(2.5, 4.5, p.distance_to(Vector2(0, -20))))
-				surface.set_color(color.srgb_to_linear())
-				surface.set_uv(Vector2(distance, 0))
-				surface.add_vertex(point(p.x, p.y))
-	surface.generate_normals()
 	var terrain := MeshInstance3D.new()
 	terrain.name = "Terrain"
-	terrain.mesh = surface.commit()
+	terrain.mesh = race_terrain if race_terrain else _forest_mesh()
 	terrain.material_override = _ground_material("bba98c", 2.8 if race_track else 0.85)
 	terrain.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(terrain)
@@ -197,6 +178,28 @@ func _ready() -> void:
 	_track_border()
 	_hills(Vector2(-1, -5), 64)
 
+func _forest_mesh() -> ArrayMesh:
+	var surface := SurfaceTool.new()
+	surface.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var distances: Dictionary[Vector2, float] = {}
+	for x in range(-48, 41):
+		for z in range(-74, 29):
+			for offset in [Vector2(0, 0), Vector2(1, 0), Vector2(0, 1), Vector2(1, 0), Vector2(1, 1), Vector2(0, 1)]:
+				var p := Vector2(x + offset.x, z + offset.y) * 0.5
+				if not distances.has(p):
+					distances[p] = distance_to_trail(p)
+				var distance := distances[p]
+				var color := Color("7ba45a").lerp(Color("638e50"), (sin(p.x * 0.55) * cos(p.y * 0.45) + 1) * 0.3)
+				color = color.lerp(Color("61994c"), 1 - smoothstep(1.8, 4.2, p.distance_to(Vector2(0, -6.8))))
+				color = color.lerp(Color("4e8961"), 1 - smoothstep(2.5, 5.5, p.distance_to(Vector2(-11, -8))))
+				color = color.lerp(Color("a7bd5d"), 1 - smoothstep(3.0, 6.0, p.distance_to(Vector2(6, -12))))
+				color = color.lerp(Color("aaa987"), 1 - smoothstep(2.5, 4.5, p.distance_to(Vector2(0, -20))))
+				surface.set_color(color.srgb_to_linear())
+				surface.set_uv(Vector2(distance, 0))
+				surface.add_vertex(point(p.x, p.y))
+	surface.generate_normals()
+	return surface.commit()
+
 func place(mesh: Mesh, position_3d: Vector3, color: String) -> MeshInstance3D:
 	var node := MeshInstance3D.new()
 	node.mesh = mesh
@@ -240,10 +243,14 @@ func tree(p: Vector2, size: float, variant: int, reuse_mesh: bool = false) -> vo
 	var base := point(p.x, p.y)
 	var tree_mesh := MeshInstance3D.new()
 	var palm := theme == "beach"
-	if reuse_mesh:
-		var key := Vector3(size, variant, int(palm))
+	var share_variant := race_track != null and theme in ["forest", "valley"]
+	if share_variant:
+		tree_mesh.scale = Vector3.ONE * size
+	if share_variant or reuse_mesh:
+		var mesh_size := 1.0 if share_variant else size
+		var key := Vector3(mesh_size, variant, int(palm))
 		if not track_tree_meshes.has(key):
-			track_tree_meshes[key] = SCENERY_MESHES.tree(size, variant, palm)
+			track_tree_meshes[key] = SCENERY_MESHES.tree(mesh_size, variant, palm)
 		tree_mesh.mesh = track_tree_meshes[key]
 	else:
 		tree_mesh.mesh = SCENERY_MESHES.tree(size, variant, palm)
@@ -452,7 +459,7 @@ func _valley() -> void:
 	horizon.material_override.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	var terrain := MeshInstance3D.new()
 	terrain.name = "Terrain"
-	terrain.mesh = valley_terrain if valley_terrain else _valley_mesh()
+	terrain.mesh = race_terrain if race_terrain else _valley_mesh()
 	terrain.material_override = _ground_material("bba98c")
 	terrain.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(terrain)

@@ -87,8 +87,8 @@ func _ready() -> void:
 	forest = preload("res://world/forest.gd").new()
 	forest.race_track = race.track
 	forest.theme = race.track_id
-	if race.track_id == "valley":
-		forest.valley_terrain = load("res://world/valley_terrain.res")
+	if race.track_id in ["forest", "valley"]:
+		forest.race_terrain = load("res://world/%s_terrain.res" % race.track_id)
 	add_child(forest)
 	_create_runners()
 	for index in range(race.fruits.size()):
@@ -435,6 +435,8 @@ func _decorate_track() -> void:
 			var z := start.origin.y + row * 0.3
 			_box(Vector3(0.46, 0.025, 0.3), forest.point(x, z) + Vector3.UP * 0.025, "fff4d4" if (row + column) % 2 else "7c9462").cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	for i in range(0 if race.track_id in ["volcano", "cave"] else 40):
+		if race.track_id == "forest" and i % 4 >= 2:
+			continue
 		var pose: Transform2D = race.sample(race.lap_length * i / 40, 6.2 if i % 2 else -6.2)
 		var p := pose.origin
 		if p.distance_to(forest.POND) > 3.5 and not forest.trees.any(func(tree): return tree.position.distance_to(p) < 2.5):

@@ -23,7 +23,24 @@ func _run() -> void:
 				assert(game.forest.distance_to_trail(p) - radius > game.race.TRACK_WIDTH, "Scenery must leave the full track clear")
 				assert(((p - game.forest.POND) / (game.forest.POND_SIZE + Vector2.ONE * radius)).length() > 1)
 			var terrain: MeshInstance3D = game.forest.get_node("Terrain")
+			assert(terrain.mesh.resource_path == "res://world/forest_terrain.res")
+			assert(game.forest.trees.size() == 49)
+			var meshes := {}
+			for tree in game.forest.trees:
+				meshes[tree.node.mesh] = true
+			assert(meshes.size() == 30)
 			var arrays := terrain.mesh.surface_get_arrays(0)
+			var source: ArrayMesh = game.forest._forest_mesh()
+			var original := source.surface_get_arrays(0)
+			var indices: PackedInt32Array = arrays[Mesh.ARRAY_INDEX]
+			assert(source.get_aabb() == terrain.mesh.get_aabb())
+			assert(indices.size() == original[Mesh.ARRAY_VERTEX].size())
+			for i in indices.size():
+				var j := indices[i]
+				assert(original[Mesh.ARRAY_VERTEX][i] == arrays[Mesh.ARRAY_VERTEX][j])
+				assert(original[Mesh.ARRAY_COLOR][i] == arrays[Mesh.ARRAY_COLOR][j])
+				assert(original[Mesh.ARRAY_TEX_UV][i] == arrays[Mesh.ARRAY_TEX_UV][j])
+				assert(original[Mesh.ARRAY_NORMAL][i].distance_to(arrays[Mesh.ARRAY_NORMAL][j]) < 0.0001)
 			var vertices: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
 			var distances: PackedVector2Array = arrays[Mesh.ARRAY_TEX_UV]
 			for i in range(0, vertices.size(), 37):
