@@ -24,6 +24,11 @@ func _run() -> void:
 					continue
 				var normal := (normals[a] + normals[b] + normals[c]).normalized()
 				assert(normal.is_finite() and face.normalized().dot(normal) > 0.4, "Tree shading must follow the deformed surface")
+	var baked: Dictionary = load("res://world/race_trees.res").get_meta("meshes")
+	for key: Vector3 in baked:
+		var generated := preload("res://world/scenery_meshes.gd").tree(key.x, int(key.y), bool(key.z))
+		assert(baked[key].get_aabb() == generated.get_aabb())
+		assert(baked[key].surface_get_arrays(0) == generated.surface_get_arrays(0))
 	set_meta("race_selection", ["triceratops", "forest"])
 	var game: Node3D = load("res://race/race.tscn").instantiate()
 	root.add_child(game)

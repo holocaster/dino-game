@@ -1,8 +1,8 @@
-import { SteeringInputs, keyDirection } from './controls.mjs?v=0.34.6';
-import { validRaceReport } from './race-report.mjs?v=0.34.6';
-import { ParkAudio } from './audio.mjs?v=0.34.6';
-import { loadAppearances, saveAppearances } from './appearance.mjs?v=0.34.6';
-import { STICKERS, COLORS, award, unlocked, prizeText, loadRewards, saveRewards } from './rewards.mjs?v=0.34.6';
+import { SteeringInputs, keyDirection } from './controls.mjs?v=0.34.7';
+import { validRaceReport } from './race-report.mjs?v=0.34.7';
+import { ParkAudio } from './audio.mjs?v=0.34.7';
+import { loadAppearances, saveAppearances } from './appearance.mjs?v=0.34.7';
+import { STICKERS, COLORS, award, unlocked, prizeText, loadRewards, saveRewards } from './rewards.mjs?v=0.34.7';
 
 const frame = document.querySelector('#game');
 const welcome = document.querySelector('#welcome');

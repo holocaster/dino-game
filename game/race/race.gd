@@ -87,8 +87,10 @@ func _ready() -> void:
 	forest = preload("res://world/forest.gd").new()
 	forest.race_track = race.track
 	forest.theme = race.track_id
-	if race.track_id in ["forest", "valley"]:
+	if race.track_id in ["forest", "beach", "valley"]:
 		forest.race_terrain = load("res://world/%s_terrain.res" % race.track_id)
+	if race.track_id in ["forest", "valley"]:
+		forest.load_race_tree_meshes()
 	add_child(forest)
 	_create_runners()
 	for index in range(race.fruits.size()):

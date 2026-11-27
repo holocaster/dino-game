@@ -1,6 +1,6 @@
 # Corrida dos dinos
 
-Corrida infantil em **Godot + GDScript**, versão **0.34.6**: tricerátopo, T-rex, velociraptor e pteranodonte na Floresta, Praia, Vale, Vulcão ou Caverna dos Cristais. Cristais respondem com luz e notas curtas opcionais na Caverna. Avanço automático, frutas e Setas de impulso, poças, caminhos com efeitos diferentes e um Filhote que comemora na chegada, mesmo sem frutas.
+Corrida infantil em **Godot + GDScript**, versão **0.34.7**: tricerátopo, T-rex, velociraptor e pteranodonte na Floresta, Praia, Vale, Vulcão ou Caverna dos Cristais. Cristais respondem com luz e notas curtas opcionais na Caverna. Avanço automático, frutas e Setas de impulso, poças, caminhos com efeitos diferentes e um Filhote que comemora na chegada, mesmo sem frutas.
 
 Execute `npm run dev` e abra [o jogo](http://127.0.0.1:4173). A exportação web está incluída; jogar não exige Godot nem instalar dependências.
 
@@ -31,7 +31,7 @@ A suíte cobre Node, regras/física/câmera/cenário/animações no Godot e rigs
 
 A exportação completa exige templates Web 4.7.2. Nesta entrega, `godot --headless --path game --export-pack Web ../web/godot/index.pck` atualizou apenas o PCK, reutilizando JS/WASM 4.7.2 existentes; mantenha `fileSizes` e todos os `?v=` sincronizados com `package.json`. Emulação não comprova desempenho físico nem preferência infantil.
 
-Ao alterar o terreno ou a curva da Floresta ou do Vale, regenere a malha antes de exportar. Use `godot --headless --path game --script ../scripts/build_forest_terrain.gd` para a Floresta ou `build_valley_terrain.gd` no mesmo diretório para o Vale.
+Ao alterar o terreno ou a curva da Floresta, da Praia ou do Vale, regenere a malha com `godot --headless --path game --script ../scripts/build_forest_terrain.gd`, usando `build_beach_terrain.gd` para a Praia ou `build_valley_terrain.gd` para o Vale. Depois de alterar as árvores ou a decoração da Floresta e do Vale, execute `build_race_trees.gd` com o mesmo comando.
 
 ## Arte
 

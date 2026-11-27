@@ -11,6 +11,10 @@ func _run() -> void:
 		root.add_child(game)
 		game.set_physics_process(false)
 		await process_frame
+		if circuit in ["forest", "valley"]:
+			assert(not game.forest.trees.is_empty())
+			for tree in game.forest.trees:
+				assert(tree.node.mesh.resource_path.begins_with("res://world/race_trees.res::"))
 		var border := game.forest.get_node_or_null("ForestBorder") as MultiMeshInstance3D
 		if circuit == "forest":
 			assert(border != null and border.multimesh.instance_count > 100)
@@ -22,15 +26,18 @@ func _run() -> void:
 				var radius := maxf(placement.basis.x.length(), placement.basis.z.length())
 				assert(game.forest.distance_to_trail(p) - radius > game.race.TRACK_WIDTH, "Scenery must leave the full track clear")
 				assert(((p - game.forest.POND) / (game.forest.POND_SIZE + Vector2.ONE * radius)).length() > 1)
-			var terrain: MeshInstance3D = game.forest.get_node("Terrain")
-			assert(terrain.mesh.resource_path == "res://world/forest_terrain.res")
 			assert(game.forest.trees.size() == 49)
 			var meshes := {}
 			for tree in game.forest.trees:
 				meshes[tree.node.mesh] = true
 			assert(meshes.size() == 30)
+		else:
+			assert(border == null, "Forest dressing must stay out of other tracks")
+		if circuit in ["forest", "beach"]:
+			var terrain: MeshInstance3D = game.forest.get_node("Terrain")
+			assert(terrain.mesh.resource_path == "res://world/%s_terrain.res" % circuit)
 			var arrays := terrain.mesh.surface_get_arrays(0)
-			var source: ArrayMesh = game.forest._forest_mesh()
+			var source: ArrayMesh = game.forest._forest_mesh() if circuit == "forest" else game.forest._beach_mesh()
 			var original := source.surface_get_arrays(0)
 			var indices: PackedInt32Array = arrays[Mesh.ARRAY_INDEX]
 			assert(source.get_aabb() == terrain.mesh.get_aabb())
@@ -48,8 +55,6 @@ func _run() -> void:
 				assert(is_equal_approx(vertices[i].y, game.forest.height_at(p.x, p.y)))
 				assert(is_equal_approx(distances[i].x, game.forest.distance_to_trail(p)))
 			assert(is_equal_approx(terrain.material_override.get_shader_parameter("path_width"), game.race.TRACK_WIDTH))
-		else:
-			assert(border == null, "Forest dressing must stay out of other tracks")
 		game.queue_free()
 		await process_frame
 	remove_meta("race_selection")

@@ -10,6 +10,7 @@ const AREAS := [Vector3(0, 1.0, 4.0), Vector3(-6.2, 0, 3.3), Vector3(0, -6.8, 3.
 const GRID := Rect2i(-80, -104, 145, 145)
 const POND_SIZE := Vector2(1.55, 1.25)
 static var track_tree_meshes: Dictionary[Vector3, ArrayMesh] = {}
+static var race_tree_meshes_loaded := false
 var navigation := AStarGrid2D.new()
 var trail := Curve2D.new()
 var trails: Array[Curve2D] = []
@@ -237,6 +238,12 @@ func _solid(position_3d: Vector3, radius: float, height: float) -> void:
 	shape.shape.height = height
 	body.add_child(shape)
 
+func load_race_tree_meshes() -> void:
+	if not race_tree_meshes_loaded:
+		var pack := load("res://world/race_trees.res")
+		track_tree_meshes.merge(pack.get_meta("meshes"))
+		race_tree_meshes_loaded = true
+
 func tree(p: Vector2, size: float, variant: int, reuse_mesh: bool = false) -> void:
 	if race_track and distance_to_trail(p) < 3.6:
 		return
@@ -420,6 +427,22 @@ func _beach() -> void:
 	ocean.name = "OceanWater"
 	ocean.material_override = water_material
 	ocean.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	var terrain := MeshInstance3D.new()
+	terrain.name = "Terrain"
+	terrain.mesh = race_terrain if race_terrain else _beach_mesh()
+	terrain.material_override = _ground_material("c8bfa8")
+	terrain.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	add_child(terrain)
+	for i in range(16):
+		var angle := i * TAU / 16
+		var p := Vector2(-1, -5) + Vector2(cos(angle) * 8, sin(angle) * 5)
+		tree(p, 1.3 + (i % 3) * 0.15, i)
+		rock(point(p.x + 0.8, p.y + 0.6), Vector3(0.35, 0.22, 0.3), "b3b5a1", true)
+	_track_border()
+	for island in [Vector3(-45, -1.0, -34), Vector3(35, -1.0, -46), Vector3(-42, -1.0, 36)]:
+		rock(island, Vector3(8, 3.5, 6), "9faaa1")
+
+func _beach_mesh() -> ArrayMesh:
 	var surface := SurfaceTool.new()
 	surface.begin(Mesh.PRIMITIVE_TRIANGLES)
 	var distances: Dictionary[Vector2, float] = {}
@@ -436,20 +459,7 @@ func _beach() -> void:
 				surface.set_uv(Vector2(distances[p], 0))
 				surface.add_vertex(point(p.x, p.y))
 	surface.generate_normals()
-	var terrain := MeshInstance3D.new()
-	terrain.name = "Terrain"
-	terrain.mesh = surface.commit()
-	terrain.material_override = _ground_material("c8bfa8")
-	terrain.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	add_child(terrain)
-	for i in range(16):
-		var angle := i * TAU / 16
-		var p := Vector2(-1, -5) + Vector2(cos(angle) * 8, sin(angle) * 5)
-		tree(p, 1.3 + (i % 3) * 0.15, i)
-		rock(point(p.x + 0.8, p.y + 0.6), Vector3(0.35, 0.22, 0.3), "b3b5a1", true)
-	_track_border()
-	for island in [Vector3(-45, -1.0, -34), Vector3(35, -1.0, -46), Vector3(-42, -1.0, 36)]:
-		rock(island, Vector3(8, 3.5, 6), "9faaa1")
+	return surface.commit()
 
 func _valley() -> void:
 	var backdrop := PlaneMesh.new()

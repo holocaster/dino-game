@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.34.7
+
+- Floresta e Vale carregam as malhas de árvores pré-calculadas. A Praia carrega o terreno pré-calculado.
+
 ## 0.34.6
 
 - A Floresta carrega o chão pré-calculado e tem 49 árvores. Floresta e Vale compartilham a geometria das árvores de mesma variante.
