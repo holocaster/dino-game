@@ -1,6 +1,6 @@
 # Corrida dos dinos
 
-Corrida infantil em **Godot + GDScript**, versão **0.34.7**: tricerátopo, T-rex, velociraptor e pteranodonte na Floresta, Praia, Vale, Vulcão ou Caverna dos Cristais. Cristais respondem com luz e notas curtas opcionais na Caverna. Avanço automático, frutas e Setas de impulso, poças, caminhos com efeitos diferentes e um Filhote que comemora na chegada, mesmo sem frutas.
+Corrida infantil em **Godot + GDScript**, versão **0.34.8**: tricerátopo, T-rex, velociraptor e pteranodonte na Floresta, Praia, Vale, Vulcão ou Caverna dos Cristais. Cristais respondem com luz e notas curtas opcionais na Caverna. Avanço automático, frutas e Setas de impulso, poças, caminhos com efeitos diferentes e um Filhote que comemora na chegada, mesmo sem frutas.
 
 Execute `npm run dev` e abra [o jogo](http://127.0.0.1:4173). A exportação web está incluída; jogar não exige Godot nem instalar dependências.
 

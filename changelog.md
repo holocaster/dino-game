@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.34.8
+
+- No navegador, a corrida desliga o depth prepass, que o Godot não detecta como desnecessário em GPUs de celular. As cinco pistas ficam mais fluidas e abrem um pouco antes.
+
 ## 0.34.7
 
 - Floresta e Vale carregam as malhas de árvores pré-calculadas. A Praia carrega o terreno pré-calculado.

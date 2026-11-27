@@ -2,7 +2,7 @@ config_version=5
 
 [application]
 config/name="Parque dos dinos"
-config/version="0.34.7"
+config/version="0.34.8"
 run/main_scene="res://race/race.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 
@@ -18,6 +18,7 @@ renderer/rendering_method.mobile="gl_compatibility"
 environment/defaults/default_clear_color=Color(0.91, 0.95, 0.93, 1)
 lights_and_shadows/directional_shadow/size=2048
 anti_aliasing/quality/msaa_3d=1
+driver/depth_prepass/enable.web=false
 
 [input_devices]
 pointing/emulate_mouse_from_touch=true

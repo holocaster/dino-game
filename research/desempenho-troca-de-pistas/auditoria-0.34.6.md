@@ -110,3 +110,21 @@ A fluidez ficou semelhante nas duas escalas. A 0.34.7 conserva a escala original
 ### Validação da exportação final
 
 A 0.34.7 exportada abriu na Floresta e completou as trocas para Praia, Vulcão, Caverna e Vale, com início, pausa e retomada no Chrome do Moto G56. Nessa rodada, o primeiro controle na Floresta chegou em 17,76 s e o PCK transferiu 5.312.903 bytes com gzip. As suítes Node e Godot passaram. Os dois geradores produziram arquivos idênticos ao serem executados novamente em outra cópia do projeto.
+
+## Depth prepass no navegador na 0.34.8
+
+Marcas de desempenho numa cópia instrumentada da 0.34.7 dividiram a abertura da Floresta no Moto G56, nas mesmas condições de rede. Do `godot:init` ao autoload, o motor levou 1,83–2,34 s. A carga de `race.tscn` com os `preload()` levou 1,02–1,09 s, e `_ready()` levou 0,73–0,77 s. O primeiro quadro levou 3,21–3,32 s, e `park-ready` só chega ao menu depois dele. Nesse quadro, as consultas de compilação de shaders WebGL bloquearam 2,17 s em 51 programas.
+
+Cada material compilava as variantes base, depth e sombra, com e sem instancing. As variantes depth vêm do depth prepass. O Godot desliga esse passe para `PowerVR,Mali,Adreno,Apple`, mas no navegador reconhece a GPU como `WebKit - WebKit WebGL`. Por isso o passe continuava ativo na GPU PowerVR do aparelho. A 0.34.8 usa `rendering/driver/depth_prepass/enable.web=false`.
+
+| Pista | Programas no 1º quadro | 1º quadro | FPS em corrida | P95 |
+| --- | ---: | ---: | ---: | ---: |
+| Floresta | 51 → 44 | 3,30 → 2,88 s | 41,9 → 49,9 | 44,9 → 22,5 ms |
+| Praia | 45 → 39 | 2,95 → 2,44 s | 45,4 → 52,4 | 33,5 → 22,5 ms |
+| Vale | 45 → 39 | 2,86 → 1,97 s | 43,0 → 43,7 | 33,6 → 22,6 ms |
+| Vulcão | 40 → 34 | 2,54 → 2,19 s | 44,1 → 57,5 | 22,6 → 22,5 ms |
+| Caverna dos Cristais | 32 → 28 | 1,97 → 1,87 s | 47,1 → 56,8 | 33,5 → 22,5 ms |
+
+A Floresta usou A/B/B/A, e as demais pistas usaram um par em ordem alternada. Os valores da Floresta são médias das duas rodadas. A medição de FPS cobriu dez segundos após a contagem e usou intervalos de `requestAnimationFrame` no iframe do jogo. As capturas não mostraram diferença em sombras, folhagem, água ou cristais. A build exportada abriu as cinco pistas e completou trocas, pausa, retomada e volta ao menu. As suítes Node e Godot passaram.
+
+O primeiro quadro ainda compila 28–44 programas. Entre 1 e 6 programas ainda são compilados durante os dez segundos de corrida, o que pode causar travadas pontuais.
