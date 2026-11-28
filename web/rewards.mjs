@@ -1,4 +1,4 @@
-import { validCoopFinish } from './race-report.mjs?v=0.34.8';
+import { validCoopFinish } from './race-report.mjs?v=0.34.9';
 
 const KEY = 'dino-race-rewards';
 

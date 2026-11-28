@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.34.9
+
+- A versão web prepara o shader dos efeitos de aceleração antes da corrida para reduzir travadas na primeira coleta.
+- As pistas reutilizam a geometria base das pedras, reduzindo leituras da GPU na montagem.
+- Ao trocar de pista, o menu mostra a miniatura escolhida enquanto a cena 3D carrega.
+
 ## 0.34.8
 
 - No navegador, a corrida desliga o depth prepass, que o Godot não detecta como desnecessário em GPUs de celular. As cinco pistas ficam mais fluidas e abrem um pouco antes.

@@ -1,5 +1,7 @@
 # Próximos passos depois da 0.34.8
 
+As medições e os resultados desses passos estão no [relatório da 0.34.9](validacao-0.34.9.md).
+
 A 0.34.8 desligou o depth prepass no navegador. A abertura da Floresta no Moto G56 ainda leva cerca de 15 s até `park-ready` e 18 s até o primeiro controle. Os números abaixo vêm de [Depth prepass no navegador na 0.34.8](auditoria-0.34.6.md#depth-prepass-no-navegador-na-0348). Cada item deve ser medido antes de qualquer mudança e comparado em A/B/B/A no aparelho.
 
 ## Onde está o tempo hoje

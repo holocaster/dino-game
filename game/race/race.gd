@@ -112,17 +112,21 @@ func _ready() -> void:
 		web_callback = JavaScriptBridge.create_callback(_web_command)
 		JavaScriptBridge.get_interface("window").parkCommand = web_callback
 	reset_race()
-	_notify_ready(started_at)
 	set_process(false)
 	set_physics_process(true)
+	var setup_ms := (Time.get_ticks_usec() - started_at) / 1000.0
+	if OS.has_feature("web") and not get_tree().has_meta("speed_shader_warmed"):
+		await speed_effects.warm_shader()
+		get_tree().set_meta("speed_shader_warmed", true)
+	_notify_ready(setup_ms)
 
 func _configure_selection(selection: Array) -> bool:
 	if selection.size() == 4 and selection[2] == "coop":
 		return race.configure_coop(selection[0], selection[3], selection[1])
 	return race.configure(selection[0], selection[1], selection[2] if selection.size() > 2 else "playful")
 
-func _notify_ready(started_at: int) -> void:
-	_notify({"type": "park-ready", "track": race.track_id, "rival": "coop" if race.mode == "coop" else race.rival_id, "setupMs": (Time.get_ticks_usec() - started_at) / 1000.0})
+func _notify_ready(setup_ms: float) -> void:
+	_notify({"type": "park-ready", "track": race.track_id, "rival": "coop" if race.mode == "coop" else race.rival_id, "setupMs": setup_ms})
 
 func _create_fruit(color: String) -> Area3D:
 	var holder := Area3D.new()
@@ -560,7 +564,7 @@ func _select_race(selection: Array) -> void:
 			node.queue_free()
 		_create_runners()
 		reset_race()
-		_notify_ready(started_at)
+		_notify_ready((Time.get_ticks_usec() - started_at) / 1000.0)
 		return
 	var previous: Array = get_tree().get_meta("race_selection", ["triceratops", "forest"])
 	get_tree().set_meta("race_selection", selection)

@@ -1,8 +1,8 @@
-import { SteeringInputs, keyDirection } from './controls.mjs?v=0.34.8';
-import { validRaceReport } from './race-report.mjs?v=0.34.8';
-import { ParkAudio } from './audio.mjs?v=0.34.8';
-import { loadAppearances, saveAppearances } from './appearance.mjs?v=0.34.8';
-import { STICKERS, COLORS, award, unlocked, prizeText, loadRewards, saveRewards } from './rewards.mjs?v=0.34.8';
+import { SteeringInputs, keyDirection } from './controls.mjs?v=0.34.9';
+import { validRaceReport } from './race-report.mjs?v=0.34.9';
+import { ParkAudio } from './audio.mjs?v=0.34.9';
+import { loadAppearances, saveAppearances } from './appearance.mjs?v=0.34.9';
+import { STICKERS, COLORS, award, unlocked, prizeText, loadRewards, saveRewards } from './rewards.mjs?v=0.34.9';
 
 const frame = document.querySelector('#game');
 const welcome = document.querySelector('#welcome');
@@ -259,7 +259,8 @@ function afterPaint() {
   return new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
 }
 
-function showSelectionLoading(text) {
+function showSelectionLoading(text, preview = '') {
+  selectionLoading.className = preview ? `selection-loading ${preview}-preview` : 'selection-loading';
   selectionFocus = document.activeElement;
   selectionLoading.firstElementChild.textContent = text;
   selectionLoading.hidden = false;
@@ -321,8 +322,9 @@ async function configureRace(event) {
   document.querySelector('#control-hint').textContent = coop ? 'Jogador 1: A/D. Jogador 2: setas. Juntem as frutinhas!' : 'Segure as setas para mudar de lado e pegar frutas.';
   frame.title = coop ? 'Corrida em dupla: jogador 1 usa A/D; jogador 2 usa as setas' : 'Corrida: use as setas esquerda e direita para pegar frutas';
   if (!parkReady) return;
-  const loadingText = event.target === track ? `Mudando para ${track.labels[0].querySelector('strong').textContent}...` : 'Preparando a corrida...';
-  await showSelectionLoading(loadingText);
+  const changingTrack = event.target === track;
+  const loadingText = changingTrack ? `Mudando para ${track.labels[0].querySelector('strong').textContent}...` : 'Preparando a corrida...';
+  await showSelectionLoading(loadingText, changingTrack ? track.value : undefined);
   sendRaceSelection(selection);
 }
 

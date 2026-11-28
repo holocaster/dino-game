@@ -1,5 +1,7 @@
 extends RefCounted
 
+static var rock_source_arrays: Array = []
+
 static func _branch(surface: SurfaceTool, start: Vector3, end: Vector3, bottom: float, top: float, color: Color) -> void:
 	var mesh := CylinderMesh.new()
 	mesh.bottom_radius = bottom
@@ -83,14 +85,15 @@ static func tree(size: float, variant: int, palm: bool) -> ArrayMesh:
 	return surface.commit()
 
 static func rock(size: Vector3, seed_value: int, moss: bool) -> ArrayMesh:
-	var source := SphereMesh.new()
-	source.radius = 1
-	source.height = 2
-	source.radial_segments = 9
-	source.rings = 4
-	var arrays := source.surface_get_arrays(0)
-	var vertices: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
-	var indices: PackedInt32Array = arrays[Mesh.ARRAY_INDEX]
+	if rock_source_arrays.is_empty():
+		var source := SphereMesh.new()
+		source.radius = 1
+		source.height = 2
+		source.radial_segments = 9
+		source.rings = 4
+		rock_source_arrays = source.surface_get_arrays(0)
+	var vertices: PackedVector3Array = rock_source_arrays[Mesh.ARRAY_VERTEX]
+	var indices: PackedInt32Array = rock_source_arrays[Mesh.ARRAY_INDEX]
 	var surface := SurfaceTool.new()
 	surface.begin(Mesh.PRIMITIVE_TRIANGLES)
 	surface.set_smooth_group(-1)

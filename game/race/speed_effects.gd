@@ -30,6 +30,24 @@ func setup(scene: Node3D) -> void:
 		runners.append(effects)
 	paint(1, game.RIVAL_COLORS.get(game.race.rival_id, game.RIVAL_COLORS.playful))
 
+func warm_shader() -> void:
+	var preview := SubViewport.new()
+	preview.size = Vector2i(16, 16)
+	preview.own_world_3d = true
+	preview.render_target_update_mode = SubViewport.UPDATE_ONCE
+	preview.add_child(Camera3D.new())
+	var sample := MultiMeshInstance3D.new()
+	sample.multimesh = MultiMesh.new()
+	sample.multimesh.transform_format = MultiMesh.TRANSFORM_3D
+	sample.multimesh.mesh = runners[0].dust.mesh
+	sample.multimesh.instance_count = 1
+	sample.multimesh.set_instance_transform(0, Transform3D(Basis.IDENTITY, Vector3(0, 0, -1)))
+	sample.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	preview.add_child(sample)
+	add_child(preview)
+	await RenderingServer.frame_post_draw
+	preview.queue_free()
+
 func paint(index: int, color: Color) -> void:
 	runners[index].trail.mesh.material.albedo_color = color
 
